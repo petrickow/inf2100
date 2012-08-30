@@ -1,0 +1,7 @@
+Før du koder
+    git pull
+
+Når du har gjort endringer
+    git add <fil som er endret>
+    git commit -m '<kommentar>'
+    git push origin master

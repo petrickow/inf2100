@@ -20,6 +20,7 @@ public class Scanner {
 	
     public static void init() {
 	//-- Must be changed in part 0:
+	// Her har jeg lagt inn en kommentar
     }
 	
     public static void finish() {

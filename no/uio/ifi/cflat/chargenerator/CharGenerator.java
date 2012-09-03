@@ -14,44 +14,50 @@ import no.uio.ifi.cflat.log.Log;
  */
 public class CharGenerator {
     public static char curC, nextC;
-	
+
     private static LineNumberReader sourceFile = null;
     private static String sourceLine;
     private static int sourcePos;
-	
-    public static void init() {
-	try {
-	    sourceFile = new LineNumberReader(new FileReader(Cflat.sourceName));
-	} catch (FileNotFoundException e) {
-	    Error.error("Cannot read " + Cflat.sourceName + "!");
-	}
-	sourceLine = "";  sourcePos = 0;  curC = nextC = ' ';
-	readNext();  readNext();
-    }
-	
-    public static void finish() {
-	if (sourceFile != null) {
-	    try {
-		sourceFile.close();
-	    } catch (IOException e) {
-		Error.error("Could not close source file!");
-	    }
-	}
-    }
-	
-    public static boolean isMoreToRead() {
-	//-- Must be changed in part 0:
-	return false;
-    }
-	
-    public static int curLineNum() {
-	return (sourceFile == null ? 0 : sourceFile.getLineNumber());
-    }
-	
-    public static void readNext() {
-	curC = nextC;
-	if (! isMoreToRead()) return;
 
-	//-- Must be changed in part 0:
+    public static void init() {
+        try {
+            sourceFile = new LineNumberReader(new FileReader(Cflat.sourceName));
+        } catch (FileNotFoundException e) {
+            Error.error("Cannot read " + Cflat.sourceName + "!");
+        }
+        sourceLine = "";  sourcePos = 0;  curC = nextC = ' ';
+        readNext();  readNext();
+    }
+
+    public static void finish() {
+        if (sourceFile != null) {
+            try {
+                sourceFile.close();
+            } catch (IOException e) {
+                Error.error("Could not close source file!");
+            }
+        }
+    }
+//TODO maa ved linjeskift lese inn hele linjen til scourceLine og sette sourcePos = 0
+    public static boolean isMoreToRead() {
+        //-1 Must be changed in part 0:
+        return (nextC != (char)-1);
+		 
+    }
+
+    public static int curLineNum() {
+        return (sourceFile == null ? 0 : sourceFile.getLineNumber());
+    }
+
+    public static void readNext() {
+        curC = nextC;
+        
+        if (! isMoreToRead())
+            return;
+       
+        if (curC == '#') {
+            // kommentarlinje, dump til log, soucreLine -> log
+		}
+		//Les neste char i scourceLine til nextC, om linjeskift/siste tegn, les inn neste om ikke les inn -1...
     }
 }

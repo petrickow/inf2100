@@ -1,0 +1,31 @@
+
+
+
+
+
+CharGenerator:
+
+boolean isMoreToRead():
+  if (soureLine = sourceFile.readLine() == null) {
+     reutnr false;
+  } else {
+    return true;
+  }
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

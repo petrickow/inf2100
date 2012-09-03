@@ -40,11 +40,12 @@ public class Scanner {
 	    if (! CharGenerator.isMoreToRead()) {
 		nextNextToken = eofToken;
 	    } else 
-	    //-- Must be changed in part 0:
-	    {
-		Error.error(nextNextLine,
-			    "Illegal symbol: '" + CharGenerator.curC + "'!");
-	    }
+		//-- Must be changed in part 0:
+		// Skal bli på rundt 400-500 linjer
+		{
+		    Error.error(nextNextLine,
+				"Illegal symbol: '" + CharGenerator.curC + "'!");
+		}
 	}
 	Log.noteToken();
     }

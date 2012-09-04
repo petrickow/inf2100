@@ -42,22 +42,68 @@ public class CharGenerator {
     public static boolean isMoreToRead() {
         //-1 Must be changed in part 0:
         return (nextC != (char)-1);
-		 
     }
 
+    /**
+     * Reads current line number
+     * @param
+     * @return the linenumber
+     */
     public static int curLineNum() {
         return (sourceFile == null ? 0 : sourceFile.getLineNumber());
     }
 
+    //Les neste char i scourceLine til nextC, om ikke tatt med i readLine(linjeskift/siste tegn), les inn neste om ikke les inn -1...
     public static void readNext() {
         curC = nextC;
         
         if (! isMoreToRead())
             return;
-       
+
         if (curC == '#') {
-            // kommentarlinje, dump til log, soucreLine -> log
-		}
-		//Les neste char i scourceLine til nextC, om linjeskift/siste tegn, les inn neste om ikke les inn -1...
+            Log.noteSourceLine(sourceFile.getLineNumber(), sourceLine);
+            try {
+                sourceLine = sourceFile.readLine();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (sourceLine == null)
+                nextC = (char)-1;
+            else {
+                sourcePos = 0;
+                nextC = sourceLine.charAt(sourcePos);
+                System.out.println("Next line first char: " + curC);
+            }
+            return;
+        }
+        
+        else if (sourcePos >= sourceLine.length()) {
+            try {
+                sourceLine = sourceFile.readLine();
+            }
+            catch (IOException e) {
+                //TODO
+            }
+            sourcePos = 0;
+            
+            while (sourcePos >= sourceLine.length()) {
+                Log.noteSourceLine(sourceFile.getLineNumber(), sourceLine);
+                try {
+                    sourceLine = sourceFile.readLine();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            nextC = sourceLine.charAt(sourcePos);
+        }
+        
+        else {
+            nextC = sourceLine.charAt(sourcePos);
+            sourcePos++;
+        }
+        
     }
+
 }

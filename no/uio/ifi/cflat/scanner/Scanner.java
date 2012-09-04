@@ -22,7 +22,9 @@ public class Scanner {
         //-- Must be changed in part 0:
         //--les inn tre tokens og sjekk første token ettersom readNext vil gå til nextToken
         //    løkke som går til vi er ferdig?
+	curName = nextName = nextNextName = "";
     }
+    
 
     public static void finish() {
         //-- Must be changed in part 0:
@@ -36,25 +38,53 @@ public class Scanner {
 
         nextNextToken = null;
         while (nextNextToken == null) {
-            nextNextLine = CharGenerator.curLineNum();
+	    nextNextLine = CharGenerator.curLineNum();
 
             if (! CharGenerator.isMoreToRead()) {
-                nextNextToken = eofToken;
-            } else 
-                nextNextToken = CharGenerator.curC;
-                //-- Must be changed in part 0:
+		System.out.println("Her skal vi ikke komme?");
+		nextNextToken = eofToken;
+	    } else { 
+		//-- Must be changed in part 0:
                 //-- Skal bli på rundt 400-500 linjer, vi har mer å lese
-            {
-                Error.error(nextNextLine,
-                        "Illegal symbol: '" + CharGenerator.curC + "'!");
-            }
-        }
-        Log.noteToken();
+		
+		while (CharGenerator.nextC == '#') {
+		    CharGenerator.readNext();
+		}
+		CharGenerator.readNext();
+		System.out.println("curC: " + CharGenerator.curC);
+		System.out.println("nextC: " + CharGenerator.nextC);
+		
+		
+		if (isLetterAZ(CharGenerator.nextC)) {
+		    //nextNextName += CharGenerator.nextC;
+		    while (CharGenerator.nextC != ' ') {
+			CharGenerator.readNext();
+			nextNextName += CharGenerator.curC;
+		    }
+		    if (nextNextName.compareTo("int") == 0) {
+			System.out.println("int funnet!");
+			nextNextToken = intToken;
+			return;
+		    } else if (nextNextName.compareTo("int") == 0) {
+			System.out.println("double funnet!");
+			nextNextToken = doubleToken;
+		    }
+			
+		    
+		    
+		}
+		System.out.println("Skriver ut curName -> " + nextNextName);
+	    }
+	    {
+		Error.error(nextNextLine,"Illegal symbol: '" + CharGenerator.curC + "'!");
+	    }
+	}
+	Log.noteToken();
     }
 
     private static boolean isLetterAZ(char c) {
         // -2 Must be changed in part 0:
-	int iv = int(c);  // iv = isoValue
+	int iv = (int)c;  // iv = isoValue
         return  ((iv >= 65 && iv <= 90) || (iv >= 97 && iv <=122)); 
     }
 

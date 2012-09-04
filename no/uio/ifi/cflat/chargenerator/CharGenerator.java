@@ -26,9 +26,10 @@ public class CharGenerator {
             Error.error("Cannot read " + Cflat.sourceName + "!");
         }
         sourceLine = "";  sourcePos = 0;  curC = nextC = ' ';
-        readNext();  readNext();
-        //DEBUG PRINT:
-        System.out.println("DEBUG: curent C: " + curC + " next C: " + nextC + " " + sourcePos);
+        readNext();
+	readNext();
+	//DEBUG PRINT:
+        //System.out.println("DEBUG: curent C: " + curC + " next C: " + nextC + " " + sourcePos);
     }
 
     public static void finish() {
@@ -54,60 +55,76 @@ public class CharGenerator {
     public static int curLineNum() {
         return (sourceFile == null ? 0 : sourceFile.getLineNumber());
     }
-
+    
     //Les neste char i scourceLine til nextC, om ikke tatt med i readLine(linjeskift/siste tegn), les inn neste om ikke les inn -1...
+    static int i = 1;
+
     public static void readNext() {
-        curC = nextC;
-        
-        if (! isMoreToRead())
+	
+	// DEBUG PRINT
+	/*try {
+	    char testC = (char)sourceFile.read();
+	    while (testC != (char)-1) {
+		System.out.println(testC);
+		testC = (char)sourceFile.read();
+	    }
+	} catch (IOException e) {
+	
+	}
+	return;
+	*/
+
+	System.out.println( " ==================================== ");
+	System.out.println(i++ + ".gang og sourceline: " + sourceLine);
+	System.out.println("--(length)--> " + sourceLine.length());
+	System.out.println("Sourcepos: " + sourcePos);
+	System.out.println("curC:  " + curC);
+	System.out.println("nextC: " + nextC + "\n");
+	
+	if (sourceLine.length() == 0 && sourceLine != null) { // Vi har en tom linje
+	    commentLine();
+	    return;
+	}
+	curC = nextC;
+	if (! isMoreToRead())
             return;
           
         if (curC == '#') {
-            commentLine();
+	    commentLine();
             return;
         }
         
         else if (sourcePos >= sourceLine.length()) {
-            try {
+	    try {
                 sourceLine = sourceFile.readLine();
-            }
+		sourcePos = 0;
+	    }
             catch (IOException e) {
                 //TODO
             }
-            sourcePos = 0;
             
-            while (sourcePos >= sourceLine.length()) {
-                Log.noteSourceLine(sourceFile.getLineNumber(), sourceLine);
-                try {
-                    sourceLine = sourceFile.readLine();
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            nextC = sourceLine.charAt(sourcePos);
-        }
+	}
         
-        else {
-            sourcePos++;
-            nextC = sourceLine.charAt(sourcePos);
-        }
-    }
+	nextC = sourceLine.charAt(sourcePos++);
+	
+	}
 
     private static void commentLine() {
-        Log.noteSourceLine(sourceFile.getLineNumber(), sourceLine);
+	Log.noteSourceLine(sourceFile.getLineNumber(), sourceLine);
         try {
             sourceLine = sourceFile.readLine();
-        }
+	}
         catch (IOException e) {
             e.printStackTrace();
         }
-        if (sourceLine == null)
-            nextC = (char)-1;
-        else {
+        if (sourceLine == null) {
+	    nextC = (char)-1;
+        } else {
             sourcePos = 0;
-            nextC = sourceLine.charAt(sourcePos);
-            System.out.println("Next line first char: " + curC);
-        }
+	    
+	    if (sourceLine.length() > 0) {
+		nextC = sourceLine.charAt(sourcePos);
+	    }
+	}
     }
 }

@@ -23,52 +23,35 @@ public enum Token {
     whileToken;
 
     public static boolean isFactorOperator(Token t) {
-	// -1 Must be changed in part 0:
-	// if (t.compareTo(multiplyToken) == 0 || t.compareTo(divideToken) == 0) {
-	if (t.compareTo("*") == 0 || t.compareTo("/") == 0) {
-	    return true;
-	} else {
-	    return false;
-	}
+	// -2 Must be changed in part 0:
+	// setter -1 hvis jeg tror den er ferdig
+	// setter -0 hvis jeg har begynt men ikke ferdig
+	// setter -2 hvis helt ferdig
+	return (t == multiplyToken || t == divideToken);
     }
 
     public static boolean isTermOperator(Token t) {
-	// -1 Must be changed in part 0:
-	// addToken, substractToken
-	if (t.compareTo("+") == 0 || t.compareTo("-") == 0) {
-	    return true;
-	} else {
-	    return false;
-	}
+	// -2 Must be changed in part 0:
+	return (t == addToken || t == subtractToken);
     }
 
     public static boolean isRelOperator(Token t) {
-	// -1 Must be changed in part 0:
-	// equalToken(==), greaterEqualToken(>=), greaterToken(>), lessEqualToken(<=), lessToken(<), notEqualToken(!=)
-	if (t.compareTo("==") == 0 || t.compareTo(">=") == 0 || t.compareTo(">") == 0 ||
-	    t.compareTo("<=") == 0 || t.compareTo("<") == 0 || t.compareTo("!=") == 0) {
-	    return true;
-	} else {
-	    return false;
-	}
+	// -2 Must be changed in part 0:
+	return (t == equalToken || t == greaterEqualToken || t == greaterToken || t == lessEqualToken || t == lessToken ||
+		t == notEqualToken);
     }
 
     public static boolean isOperand(Token t) {
-	// -- Must be changed in part 0:
-	// assignToken, commaToken, elseToken, eofToken, forToken, ifToken,
-	// leftBracketToken, leftCurlToken, leftParToken, numberToken, 
-	// rightBracketToken, rightCurlToken, rightParToken, returnToken, semicolonToken, whileToken
-	return false;
+	// -2 Must be changed in part 0:
+	return (t == assignToken || t == commaToken || t == elseToken || t == eofToken || t == forToken ||
+	     t == ifToken || t == leftBracketToken || t == leftCurlToken || t == leftParToken ||
+	     t == numberToken || t == rightBracketToken || t == rightCurlToken || t == rightParToken || 
+		t == returnToken ||  t == semicolonToken || t == whileToken);
     }
 
     public static boolean isTypeName(Token t) {
-	// -1 Must be changed in part 0:
-	// intToken, doubleToken
-	if (t.compareTo("int") == 0 || t.compareTo("double") == 0) {
-	    return true;
-	} else {
-	    return false;
-	}
+	// -2 Must be changed in part 0:
+	return (t == intToken || t == doubleToken);
     }
 	
 }

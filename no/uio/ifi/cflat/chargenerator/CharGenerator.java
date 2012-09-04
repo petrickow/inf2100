@@ -40,14 +40,20 @@ public class CharGenerator {
     }
 //TODO maa ved linjeskift lese inn hele linjen til scourceLine og sette sourcePos = 0
     public static boolean isMoreToRead() {
+<<<<<<< Updated upstream
         //-1 Must be changed in part 0:
         return (nextC != (char)-1);
 		 
+=======
+	// -1 Must be changed in part 0:
+	return (nextC != (char)-1);
+>>>>>>> Stashed changes
     }
 
     public static int curLineNum() {
         return (sourceFile == null ? 0 : sourceFile.getLineNumber());
     }
+<<<<<<< Updated upstream
 
     public static void readNext() {
         curC = nextC;
@@ -59,5 +65,15 @@ public class CharGenerator {
             // kommentarlinje, dump til log, soucreLine -> log
 		}
 		//Les neste char i scourceLine til nextC, om linjeskift/siste tegn, les inn neste om ikke les inn -1...
+=======
+	
+    public static void readNext() {
+	curC = nextC;
+	if (! isMoreToRead()) return;
+	if (curC == '#') {
+	    System.out.println("Fant # tegn");
+	}
+	//-- Must be changed in part 0:
+>>>>>>> Stashed changes
     }
 }

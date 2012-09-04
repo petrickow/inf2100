@@ -51,8 +51,9 @@ public class Scanner {
     }
 
     private static boolean isLetterAZ(char c) {
-        //-- Must be changed in part 0:
-        return false;
+        // -2 Must be changed in part 0:
+	int iv = int(c);  // iv = isoValue
+        return  ((iv >= 65 && iv <= 90) || (iv >= 97 && iv <=122)); 
     }
 
     public static void check(Token t) {

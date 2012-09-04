@@ -71,7 +71,6 @@ public class Log {
      */
     public static void noteSourceLine(int lineNum, String line) {
 	if (! doLogParser && ! doLogScanner) return;
-
 	//-- Must be changed in part 0:
     }
 	

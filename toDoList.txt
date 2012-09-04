@@ -7,7 +7,7 @@ CharGenerator:
 
 boolean isMoreToRead():
   if (soureLine = sourceFile.readLine() == null) {
-     reutnr false;
+     return false;
   } else {
     return true;
   }

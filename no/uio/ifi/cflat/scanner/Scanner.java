@@ -20,6 +20,8 @@ public class Scanner {
 
     public static void init() {
         //-- Must be changed in part 0:
+        //--les inn tre tokens og sjekk første token ettersom readNext vil gå til nextToken
+        //    løkke som går til vi er ferdig?
     }
 
     public static void finish() {

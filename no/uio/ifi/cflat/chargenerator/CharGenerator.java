@@ -27,6 +27,8 @@ public class CharGenerator {
         }
         sourceLine = "";  sourcePos = 0;  curC = nextC = ' ';
         readNext();  readNext();
+        //DEBUG PRINT:
+        System.out.println("DEBUG: curent C: " + curC + " next C: " + nextC + " " + sourcePos);
     }
 
     public static void finish() {
@@ -47,7 +49,7 @@ public class CharGenerator {
     /**
      * Reads current line number
      * @param
-     * @return the linenumber
+     *
      */
     public static int curLineNum() {
         return (sourceFile == null ? 0 : sourceFile.getLineNumber());
@@ -59,22 +61,9 @@ public class CharGenerator {
         
         if (! isMoreToRead())
             return;
-
+          
         if (curC == '#') {
-            Log.noteSourceLine(sourceFile.getLineNumber(), sourceLine);
-            try {
-                sourceLine = sourceFile.readLine();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-            if (sourceLine == null)
-                nextC = (char)-1;
-            else {
-                sourcePos = 0;
-                nextC = sourceLine.charAt(sourcePos);
-                System.out.println("Next line first char: " + curC);
-            }
+            commentLine();
             return;
         }
         
@@ -100,10 +89,25 @@ public class CharGenerator {
         }
         
         else {
-            nextC = sourceLine.charAt(sourcePos);
             sourcePos++;
+            nextC = sourceLine.charAt(sourcePos);
         }
-        
     }
 
+    private static void commentLine() {
+        Log.noteSourceLine(sourceFile.getLineNumber(), sourceLine);
+        try {
+            sourceLine = sourceFile.readLine();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (sourceLine == null)
+            nextC = (char)-1;
+        else {
+            sourcePos = 0;
+            nextC = sourceLine.charAt(sourcePos);
+            System.out.println("Next line first char: " + curC);
+        }
+    }
 }

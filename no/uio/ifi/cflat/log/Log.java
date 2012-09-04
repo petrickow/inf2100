@@ -71,6 +71,8 @@ public class Log {
      */
     public static void noteSourceLine(int lineNum, String line) {
 	if (! doLogParser && ! doLogScanner) return;
+	
+	writeLogLine(lineNum + ":" + line);
 	//-- Must be changed in part 0:
     }
 	

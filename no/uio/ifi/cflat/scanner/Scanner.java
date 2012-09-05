@@ -41,7 +41,6 @@ public class Scanner {
 	    nextNextLine = CharGenerator.curLineNum();
 
             if (! CharGenerator.isMoreToRead()) {
-		System.out.println("Her skal vi ikke komme?");
 		nextNextToken = eofToken;
 	    } else { 
 		//-- Must be changed in part 0:
@@ -54,29 +53,39 @@ public class Scanner {
 		System.out.println("curC: " + CharGenerator.curC);
 		System.out.println("nextC: " + CharGenerator.nextC);
 		
-		
+		nextNextName = "";
 		if (isLetterAZ(CharGenerator.nextC)) {
 		    //nextNextName += CharGenerator.nextC;
-		    while (CharGenerator.nextC != ' ') {
+		    while (isLetterAZ(CharGenerator.nextC)) {
 			CharGenerator.readNext();
 			nextNextName += CharGenerator.curC;
 		    }
 		    if (nextNextName.compareTo("int") == 0) {
-			System.out.println("int funnet!");
+			System.out.println("-------------->  intToken");
 			nextNextToken = intToken;
-			return;
-		    } else if (nextNextName.compareTo("int") == 0) {
-			System.out.println("double funnet!");
+		    } else if (nextNextName.compareTo("double") == 0) {
+			System.out.println("--------------> doubleToken");
 			nextNextToken = doubleToken;
+		    } else {
+			System.out.println("--------------> nameToken");
+			nextNextToken = nameToken;
 		    }
-			
 		    
-		    
+		    readNext();
+		} else {
+		    nextNextName += CharGenerator.nextC;
+		    if (nextNextName.compareTo("(") == 0) {
+			System.out.println("--------------> leftParToken");
+			nextNextToken = leftParToken;
+		    } else if (nextNextName.compareTo(")") == 0) {
+			nextNextToken = rightParToken;
+			System.out.println("--------------> rightParToken");
+		    }
+		    readNext();
 		}
-		System.out.println("Skriver ut curName -> " + nextNextName);
-	    }
-	    {
+		{
 		Error.error(nextNextLine,"Illegal symbol: '" + CharGenerator.curC + "'!");
+		}
 	    }
 	}
 	Log.noteToken();

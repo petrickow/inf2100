@@ -58,22 +58,14 @@ public class CharGenerator {
     
     //Les neste char i scourceLine til nextC, om ikke tatt med i readLine(linjeskift/siste tegn), les inn neste om ikke les inn -1...
     static int i = 1;
-
+    
     public static void readNext() {
 	
-	// DEBUG PRINT
-	/*try {
-	    char testC = (char)sourceFile.read();
-	    while (testC != (char)-1) {
-		System.out.println(testC);
-		testC = (char)sourceFile.read();
-	    }
-	} catch (IOException e) {
+	curC = nextC;
 	
-	}
-	return;
-	*/
-
+	if (! isMoreToRead())
+	    return;
+	
 	System.out.println( " ==================================== ");
 	System.out.println(i++ + ".gang og sourceline: " + sourceLine);
 	System.out.println("--(length)--> " + sourceLine.length());
@@ -85,19 +77,25 @@ public class CharGenerator {
 	    commentLine();
 	    return;
 	}
-	curC = nextC;
-	if (! isMoreToRead())
-            return;
-          
+		          
         if (curC == '#') {
 	    commentLine();
             return;
         }
-        
-        else if (sourcePos >= sourceLine.length()) {
+	
+	if (sourcePos < 1) {
+	    Log.noteSourceLine(sourceFile.getLineNumber(), sourceLine);
+	}
+	
+        while (sourcePos >= sourceLine.length()) {
 	    try {
                 sourceLine = sourceFile.readLine();
+		if (sourceLine == null) {
+		    nextC = (char)-1;
+		    return;
+		}
 		sourcePos = 0;
+		return;
 	    }
             catch (IOException e) {
                 //TODO
@@ -107,7 +105,7 @@ public class CharGenerator {
         
 	nextC = sourceLine.charAt(sourcePos++);
 	
-	}
+    }
 
     private static void commentLine() {
 	Log.noteSourceLine(sourceFile.getLineNumber(), sourceLine);
@@ -121,7 +119,6 @@ public class CharGenerator {
 	    nextC = (char)-1;
         } else {
             sourcePos = 0;
-	    
 	    if (sourceLine.length() > 0) {
 		nextC = sourceLine.charAt(sourcePos);
 	    }

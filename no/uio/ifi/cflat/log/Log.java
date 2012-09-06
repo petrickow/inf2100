@@ -58,7 +58,7 @@ public class Log {
 
     public static void leaveParser(String symbol) {
 	if (! doLogParser) return;
-
+        
 	//-- Must be changed in part 1:
     }
 
@@ -83,7 +83,7 @@ public class Log {
      */
     public static void noteToken() {
 	if (! doLogScanner) return;
-
+        writeLogLine("Scanner:\t" + Scanner.curName);
 	//-- Must be changed in part 0:
     }
 

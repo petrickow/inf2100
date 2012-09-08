@@ -40,33 +40,32 @@ public class Scanner {
         nextNextToken = null;
         nextNextName = "";
         while (nextNextToken == null) {
-            nextNextLine = CharGenerator.curLineNum(); //sjekk om denne skal være her
-
+            nextNextLine = CharGenerator.curLineNum(); // Denne skal være her i følge prekoden
+	    	    
             if (! CharGenerator.isMoreToRead()) {
                 System.out.println("FUNNET SISTE TEGN i linje" + CharGenerator.sourceLine);
                 nextNextToken = eofToken;
             } else { 
                 //-- Must be changed in part 0:
                 //-- Skal bli på rundt 400-500 linjer, vi har mer å lese
-
-                /*while (CharGenerator.nextC == '#') {
-                    CharGenerator.readNext();
-                }*/
-                CharGenerator.readNext();
+		
+		CharGenerator.readNext();
+		
+		nextNextName = "";
                 if (isLetterAZ(CharGenerator.curC)) {
-                    nextNextName += CharGenerator.curC;
-                    while (isLetterAZ(CharGenerator.nextC)) {
-                        CharGenerator.readNext();
-                        nextNextName += CharGenerator.curC;
-                    }
-                    if (nextNextName.compareTo("int") == 0) {
+		    nextNextName += CharGenerator.curC;
+		    while (isLetterAZ(CharGenerator.nextC)) {
+			CharGenerator.readNext();
+			nextNextName += CharGenerator.curC;
+		    }
+		    if (nextNextName.compareTo("int") == 0) {
                         System.out.println("-------------->  intToken");
                         nextNextToken = intToken;
                     } else if (nextNextName.compareTo("double") == 0) {
                         System.out.println("--------------> doubleToken");
                         nextNextToken = doubleToken;
                     } else {
-                        System.out.println("--------------> nameToken");
+                        System.out.println("--------------> nameToken -> " + nextNextName);
                         nextNextToken = nameToken;
                     }
 
@@ -78,15 +77,23 @@ public class Scanner {
                     } else if (nextNextName.compareTo(")") == 0) {
                         nextNextToken = rightParToken;
                         System.out.println("--------------> rightParToken");
-                    }
+                    } else if(nextNextName.compareTo("{") == 0) {
+			nextNextToken = leftCurlToken;
+			System.out.println("--------------> leftCurlToken");
+		    } else if(nextNextName.compareTo("}") == 0) {
+			nextNextToken = rightCurlToken;
+			System.out.println("--------------> rightCurlToken");
+		    } else if(nextNextName.compareTo(";") == 0) {
+			nextNextToken = semicolonToken;
+			System.out.println("--------------> semicolonToken");
+		    } 
                 }
                 /*else { //TODO
                     Error.error(nextNextLine,"Illegal symbol: '" + CharGenerator.curC + "'!");
                 }*/
             }
         }
-    System.out.println("----");
-        Log.noteToken();
+	Log.noteToken();
     }
 
     private static boolean isLetterAZ(char c) {

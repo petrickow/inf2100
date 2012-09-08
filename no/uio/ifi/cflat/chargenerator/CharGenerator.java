@@ -28,8 +28,7 @@ public class CharGenerator {
         sourceLine = "";  sourcePos = 0;  curC = nextC = ' ';
         readNext();
 	readNext();
-	//DEBUG PRINT:
-        //System.out.println("DEBUG: curent C: " + curC + " next C: " + nextC + " " + sourcePos);
+    
     }
 
     public static void finish() {
@@ -73,8 +72,8 @@ public class CharGenerator {
         System.out.println("curC:  " + curC);
 
         // Vi har en tom linje eller linjen er kommentert eller vi har lest til slutten av linjen
-        if (sourceLine.length() == 0 && sourceLine != null || curC == '#' || sourcePos >= sourceLine.length()) {             
-            commentLine();
+        if (sourceLine.length() == 0 && sourceLine != null || curC == '#' || sourcePos >= sourceLine.length()) { 
+	    commentLine();
             //return;
         }
         else {

@@ -23,7 +23,7 @@ public class Scanner {
         //--les inn tre tokens og sjekk første token ettersom readNext vil gå til nextToken
         //    løkke som går til vi er ferdig?
         curName = nextName = nextNextName = "";
-        readNext(); readNext();
+        //readNext(); readNext();
     }
 
 
@@ -58,6 +58,7 @@ public class Scanner {
 			CharGenerator.readNext();
 			nextNextName += CharGenerator.curC;
 		    }
+            System.out.println("===============> " + nextNextName);
 		    if (nextNextName.compareTo("int") == 0) {
                         System.out.println("-------------->  intToken");
                         nextNextToken = intToken;

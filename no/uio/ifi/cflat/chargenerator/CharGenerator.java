@@ -26,8 +26,8 @@ public class CharGenerator {
             Error.error("Cannot read " + Cflat.sourceName + "!");
         }
         sourceLine = "";  sourcePos = 0;  curC = nextC = ' ';
-        readNext();
-	readNext();
+        readNext(); readNext();
+	
     
     }
 
@@ -40,9 +40,9 @@ public class CharGenerator {
             }
         }
     }
-//TODO maa ved linjeskift lese inn hele linjen til scourceLine og sette sourcePos = 0
+    
     public static boolean isMoreToRead() {
-        //-1 Must be changed in part 0:
+        //-2 Must be changed in part 0:
         return (nextC != (char)-1);
     }
 
@@ -65,11 +65,11 @@ public class CharGenerator {
         if (! isMoreToRead())
             return;
 
-        System.out.println( " ==================================== ");
+/*        System.out.println( " ==================================== ");
         System.out.println(i++ + ".gang og sourceline: " + sourceLine);
         System.out.println("--(length)--> " + sourceLine.length());
         System.out.println("Sourcepos: " + sourcePos);
-        System.out.println("curC:  " + curC);
+        System.out.println("curC:  " + curC);*/
 
         // Vi har en tom linje eller linjen er kommentert eller vi har lest til slutten av linjen
         if (sourceLine.length() == 0 && sourceLine != null || curC == '#' || sourcePos >= sourceLine.length()) { 
@@ -80,7 +80,6 @@ public class CharGenerator {
             nextC = sourceLine.charAt(sourcePos++);
         }
 
-        System.out.println("nextC: " + nextC + "\n");
     }
 
     /**
@@ -105,6 +104,7 @@ public class CharGenerator {
             }
             else {
                 commentLine();                          //rekursivt kall dersom neste linje er tom den også
+                sourcePos++;
             }
         }
     }

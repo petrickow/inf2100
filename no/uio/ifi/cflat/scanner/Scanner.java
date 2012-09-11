@@ -49,18 +49,20 @@ public class Scanner {
             } else { 
                 //-- Must be changed in part 0:
                 //-- Skal bli på rundt 400-500 linjer, vi har mer å lese
-                CharGenerator.readNext();
-                nextNextName = "";
-                
-                nextNextName += CharGenerator.curC;
-                /*Trenger håndtering av whitespaces og andre fylletegn*/
 
-                if (isLetterAZ(CharGenerator.curC)) { //ENTEN int, double eller nameToken, håndter det
-                    while (!(isReserved(CharGenerator.nextC)) || CharGenerator.nextC == ' ') {
+                
+                nextNextName = "";                      //vi har en ny nextnext...
+
+                CharGenerator.readNext();               //flyttet denne ut for å unngå dobbel/trippel kode
+                nextNextName += CharGenerator.curC;     //leser første tegn og tester på det
+                
+                /*OBS! denne whilen gjør den overordnede overflødig, sjekket med grlærer at det er ok*/
+                if (isLetterAZ(CharGenerator.curC)) { //ENTEN int, double eller nameToken, tåler tall i navn 
+                    while (!(isReserved(CharGenerator.nextC)) && CharGenerator.nextC != ' ') { 
                         CharGenerator.readNext();
+                        System.out.println("DEBUG:\t"+nextNextName);
                         nextNextName += CharGenerator.curC;
                     }
-                    System.out.println("===============> " + nextNextName);
                     if (nextNextName.compareTo("int") == 0) {
                         System.out.println("-------------->  intToken");
                         nextNextToken = intToken;
@@ -68,11 +70,12 @@ public class Scanner {
                         System.out.println("--------------> doubleToken");
                         nextNextToken = doubleToken;
                     } else {
-                        System.out.println("--------------> nameToken -> " + nextNextName); //OBS denne behandler feks 'x' som en nametoken, det må nesten være en int?
+                        System.out.println("--------------> nameToken -> " + nextNextName); //OBS denne behandler feks 'x' som en nametoken, det må nesten være en verdi??
                         nextNextToken = nameToken;
                     }
-
-                } else if (isReserved(CharGenerator.curC)) { //ALLE reserverte enkelt-tegn
+                } 
+                else if (isReserved(CharGenerator.curC)) { //ALLE reserverte enkelt-tegn
+                    //System.out.println("IS RESERVED" + CharGenerator.curC);
                     if (nextNextName.compareTo("(") == 0) {
                         System.out.println("--------------> leftParToken");
                         nextNextToken = leftParToken;
@@ -88,12 +91,21 @@ public class Scanner {
                     } else if(nextNextName.compareTo(";") == 0) {
                         nextNextToken = semicolonToken;
                         System.out.println("--------------> semicolonToken");
-                    } 
+                    } else if(nextNextName.equals("/")) {
+                        if (CharGenerator.nextC == '*')
+                            skipComment();
+                        else  {
+                            nextNextToken = divideToken;
+                        }
+                    }
+                    //...osv 
                 }
-
-                /*else { //TODO
+                else if (CharGenerator.curC == ' ') {
+                    //TODO
+                }
+                else { //TODO
                     Error.error(nextNextLine,"Illegal symbol: '" + CharGenerator.curC + "'!");
-                }*/
+                }
 
                 
             }
@@ -103,8 +115,7 @@ public class Scanner {
     private static boolean isReserved(char c) {
         int ch = (int)c;
         //ASCII values of reserved characters
-        if ((ch >= 33 && ch <= 45) || (ch == 47) || (ch >= 91 && ch <=93) || (ch >= 123 && ch <=125)) {  
-            System.out.println(c+" is: " + ch);
+        if ((ch >= 33 && ch <= 45) || (ch == 47) || (ch >= 58 && ch <= 62) || (ch >= 91 && ch <=93) || ch == 96 || (ch >= 123 && ch <=125)) {  
             return true;
         }
         else
@@ -114,9 +125,19 @@ public class Scanner {
      * Om vi har en /* så leser vi til vi finner avsluttningen
      */
     private static void skipComment() {
+        boolean end = false;
+        System.out.println("DEBUG:\tGot multiline comment!");
         
-        CharGenerator.readNext();
-
+        while (!end) {
+            if (CharGenerator.curC == '*' && CharGenerator.nextC == '/') {
+                CharGenerator.readNext(); CharGenerator.readNext(); //move to right curC
+                end = true;
+            }
+            else {
+                System.out.print(CharGenerator.curC);
+                CharGenerator.readNext();
+            }
+        }
     }
 
     private static boolean isLetterAZ(char c) {

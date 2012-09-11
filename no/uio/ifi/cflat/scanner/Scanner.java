@@ -17,7 +17,7 @@ public class Scanner {
     public static String curName, nextName, nextNextName;
     public static int curNum, nextNum, nextNextNum;
     public static int curLine, nextLine, nextNextLine;
-
+    
     public static void init() {
         //-- Must be changed in part 0:
         //--les inn tre tokens og sjekk første token ettersom readNext vil gå til nextToken
@@ -37,13 +37,15 @@ public class Scanner {
         curNum = nextNum;  nextNum = nextNextNum;
         curLine = nextLine;  nextLine = nextNextLine;
 
+	boolean keepReading;
+
         nextNextToken = null;
         nextNextName = "";
         while (nextNextToken == null) {
             nextNextLine = CharGenerator.curLineNum(); // Denne skal være her i følge prekoden
 	    	    
             if (! CharGenerator.isMoreToRead()) {
-                System.out.println("FUNNET SISTE TEGN i linje" + CharGenerator.sourceLine);
+                System.out.println("FUNNET SISTE TEGN i linje -> " + CharGenerator.sourceLine);
                 nextNextToken = eofToken;
             } else { 
                 //-- Must be changed in part 0:
@@ -54,25 +56,163 @@ public class Scanner {
 		nextNextName = "";
                 if (isLetterAZ(CharGenerator.curC)) {
 		    nextNextName += CharGenerator.curC;
+		    CharGenerator.readNext();
+		    
+		    keepReading = true;
+		    
+		    while (keepReading) {
+			switch (CharGenerator.curC) {
+			    /*
+			     * Først kommer ulovlige tegn hvor programmet 
+	 		     * skal stoppe med en gang
+			     */
+			
+			case '"':
+			    keepReading = false;
+			    break;
+			case '?':
+			    keepReading = false;
+			    break;
+			case '|':
+			    keepReading = false;
+			    break;
+			case '§':
+			    keepReading = false;
+			    break;
+			case '%':
+			    keepReading = false;
+			    break;
+			case '!':
+			    keepReading = false;
+			    break;
+			case '@':
+			    keepReading = false;
+			    break;
+			case '&':
+			    keepReading = false;
+			    break;
+
+			    /*
+			     * Andre tokens funnet. Programmet skal stoppe med en gang
+			     *
+			     */
+
+			case '/':
+			    keepReading = false;
+			    break;
+			case '*':
+			    keepReading = false;
+			    break;
+			case '(':
+			    keepReading = false;
+			    break;
+			case ')':
+			    keepReading = false;
+			    break;
+			case '{':
+			    keepReading = false;
+			    break;
+			case '}':
+			    keepReading = false;
+			    break;
+
+			    /*
+			     * Lovlige, men hvor strengen er ferdig
+			     *
+			     */
+			    
+			
+			case ' ':
+			    keepReading = false;
+			    break;
+			case ';':
+			    keepReading = false;
+			    break;
+			    
+			    /*
+			     * Hvis ingen av testene ovenfor slår inn,
+			     * legg til curC til nextNextName
+			     */
+			    
+			default:
+			    nextNextName += CharGenerator.curC;
+			    CharGenerator.readNext();
+			}
+		    }
+		    /*
 		    while (isLetterAZ(CharGenerator.nextC)) {
 			CharGenerator.readNext();
 			nextNextName += CharGenerator.curC;
 		    }
-            System.out.println("===============> " + nextNextName);
+		    */
 		    if (nextNextName.compareTo("int") == 0) {
-                        System.out.println("-------------->  intToken");
+                        //System.out.println("-------------->  intToken");
                         nextNextToken = intToken;
                     } else if (nextNextName.compareTo("double") == 0) {
-                        System.out.println("--------------> doubleToken");
+                        //System.out.println("--------------> doubleToken");
                         nextNextToken = doubleToken;
-                    } else {
-                        System.out.println("--------------> nameToken -> " + nextNextName);
+                    } else if (nextNextName.compareTo("while") == 0) {
+			nextNextToken = whileToken;
+                    } else if (nextNextName.compareTo("for") == 0) {
+			nextNextToken = forToken;
+                    } else if (nextNextName.compareTo("if") == 0) {
+			nextNextToken = ifToken;
+                    } else if (nextNextName.compareTo("else") == 0) {
+			nextNextToken = elseToken;
+                    } else  {
+			System.out.println("--------------> nameToken -> " + nextNextName);
                         nextNextToken = nameToken;
-                    }
+                    } 
 
                 } else {
                     nextNextName += CharGenerator.curC;
-                    if (nextNextName.compareTo("(") == 0) {
+                    
+
+		    /*
+		     * Først en liste over ulovlige tegn
+		     * Avbryt med en gang
+		     *
+		     */
+		    
+		    if ((nextNextName.compareTo("@") == 0)) {
+			// TODO - husk alle andre ulovlige tegn
+		    }
+
+		    /*
+		     * relOperators 
+		     * !=, ==, <, <=, >, >=
+		     *
+		     */
+
+		    else if ((nextNextName.compareTo("!") == 0)) {
+			if (CharGenerator.nextC == '=') {
+			    nextNextToken = notEqualToken;
+			} else {
+			    // TODO Ulovlig med noe annet enn '=' etter '!'
+			}
+		    } else if ((nextNextName.compareTo("=") == 0)) {
+			if (CharGenerator.nextC == '=') {
+			    nextNextToken = equalToken;
+			} else {
+			    // TODO Ulovlig med noe annet enn '=' etter '='
+			}
+		    } else if ((nextNextName.compareTo("<") == 0)) {
+			if (CharGenerator.nextC == '=') {
+			    nextNextToken = lessEqualToken;
+			} else {
+			    nextNextToken = lessToken;
+			}
+		    } else if ((nextNextName.compareTo(">") == 0)) {
+			if (CharGenerator.nextC == '=') {
+			    nextNextToken = greaterEqualToken;
+			} else {
+			    nextNextToken = greaterToken;
+			}
+		    }
+		    
+		    
+
+		    else if (nextNextName.compareTo("(") == 0) {
                         System.out.println("--------------> leftParToken");
                         nextNextToken = leftParToken;
                     } else if (nextNextName.compareTo(")") == 0) {

@@ -27,8 +27,6 @@ public class CharGenerator {
         }
         sourceLine = "";  sourcePos = 0;  curC = nextC = ' ';
         readNext(); readNext();
-	
-    
     }
 
     public static void finish() {
@@ -62,24 +60,18 @@ public class CharGenerator {
 
         curC = nextC;
 
-        if (! isMoreToRead())
+        if (! isMoreToRead()) {
+            nextC = (char)-1;
             return;
-
-/*        System.out.println( " ==================================== ");
-        System.out.println(i++ + ".gang og sourceline: " + sourceLine);
-        System.out.println("--(length)--> " + sourceLine.length());
-        System.out.println("Sourcepos: " + sourcePos);
-        System.out.println("curC:  " + curC);*/
-
-        // Vi har en tom linje eller linjen er kommentert eller vi har lest til slutten av linjen
+        }
+        
+        // tom linje eller linjen er kommentert eller vi har lest til slutten av linjen
         if (sourceLine.length() == 0 && sourceLine != null || curC == '#' || sourcePos >= sourceLine.length()) { 
-	    commentLine();
-            //return;
+            commentLine();
         }
         else {
             nextC = sourceLine.charAt(sourcePos++);
         }
-
     }
 
     /**
@@ -103,8 +95,8 @@ public class CharGenerator {
                 return;
             }
             else {
-                commentLine();                          //rekursivt kall dersom neste linje er tom den også
-                sourcePos++;
+                commentLine();          //rekursivt kall dersom neste linje er tom den også
+                sourcePos++;            //øke teller ettersom vi allerede har hentet første tegn
             }
         }
     }

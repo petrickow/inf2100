@@ -91,6 +91,9 @@ public class Scanner {
 			case '&':
 			    keepReading = false;
 			    break;
+			case ',':
+			    keepReading = false;
+			    break;
 
 			    /*
 			     * Andre tokens funnet. Programmet skal stoppe med en gang

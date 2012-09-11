@@ -60,7 +60,6 @@ public class Scanner {
                 if (isLetterAZ(CharGenerator.curC)) { //ENTEN int, double eller nameToken, tåler tall i navn 
                     while (!(isReserved(CharGenerator.nextC)) && CharGenerator.nextC != ' ') { 
                         CharGenerator.readNext();
-                        System.out.println("DEBUG:\t"+nextNextName);
                         nextNextName += CharGenerator.curC;
                     }
                     if (nextNextName.compareTo("int") == 0) {
@@ -76,19 +75,19 @@ public class Scanner {
                 } 
                 else if (isReserved(CharGenerator.curC)) { //ALLE reserverte enkelt-tegn
                     //System.out.println("IS RESERVED" + CharGenerator.curC);
-                    if (nextNextName.compareTo("(") == 0) {
+                    if (nextNextName.equals("(")) {
                         System.out.println("--------------> leftParToken");
                         nextNextToken = leftParToken;
-                    } else if (nextNextName.compareTo(")") == 0) {
+                    } else if (nextNextName.equals(")")) {
                         nextNextToken = rightParToken;
                         System.out.println("--------------> rightParToken");
-                    } else if(nextNextName.compareTo("{") == 0) {
+                    } else if(nextNextName.equals("{")) {
                         nextNextToken = leftCurlToken;
                         System.out.println("--------------> leftCurlToken");
-                    } else if(nextNextName.compareTo("}") == 0) {
+                    } else if(nextNextName.equals("}")) {
                         nextNextToken = rightCurlToken;
                         System.out.println("--------------> rightCurlToken");
-                    } else if(nextNextName.compareTo(";") == 0) {
+                    } else if(nextNextName.equals(";")) {
                         nextNextToken = semicolonToken;
                         System.out.println("--------------> semicolonToken");
                     } else if(nextNextName.equals("/")) {
@@ -126,15 +125,18 @@ public class Scanner {
      */
     private static void skipComment() {
         boolean end = false;
-        System.out.println("DEBUG:\tGot multiline comment!");
+        System.out.println("DEBUG:\tGot /*multiline*/ comment!");
         
         while (!end) {
             if (CharGenerator.curC == '*' && CharGenerator.nextC == '/') {
                 CharGenerator.readNext(); CharGenerator.readNext(); //move to right curC
                 end = true;
             }
+            else if (CharGenerator.curC == (char)-1) {
+                Error.error(nextNextLine,"Found multi line comment without end!");
+                break;
+            }
             else {
-                System.out.print(CharGenerator.curC);
                 CharGenerator.readNext();
             }
         }

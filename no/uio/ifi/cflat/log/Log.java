@@ -72,7 +72,7 @@ public class Log {
     public static void noteSourceLine(int lineNum, String line) {
 	if (! doLogParser && ! doLogScanner) return;
 	if (lineNum > 0)
-	    writeLogLine(lineNum + ":" + line);
+	    writeLogLine("   " + lineNum + ": " + line);
 	//-1 Must be changed in part 0:
     }
 	
@@ -85,12 +85,13 @@ public class Log {
 	if (! doLogScanner) return;
 	//-- Must be changed in part 0:
 	if (Scanner.nextNextToken == nameToken) { // hvis nameToken må vi også sende med navnet på nameToken 
-	    writeLogLine("Scanner:\t" + Scanner.nextNextToken + " " + Scanner.nextNextName);
+	    writeLogLine("Scanner:  " + Scanner.nextNextToken + " " + Scanner.nextNextName);
+	} else if (Scanner.nextNextToken == numberToken) { // hvis numberToken må vi også sende med navnet på tallet (lagt i nextNextName) 
+	    writeLogLine("Scanner:  " + Scanner.nextNextToken + " " + Scanner.nextNextName);
 	} else {
-	    writeLogLine("Scanner:\t" + Scanner.nextNextToken);
+	    writeLogLine("Scanner:  " + Scanner.nextNextToken);
 	}
-	// writeLogLine("Scanner:\t" + Scanner.curName); // gammel linje
-	
+		
     }
 
     public static void noteBinding(String name, int lineNum, int useLineNum) {

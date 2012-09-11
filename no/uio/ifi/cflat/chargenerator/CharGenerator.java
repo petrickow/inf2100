@@ -25,8 +25,10 @@ public class CharGenerator {
         } catch (FileNotFoundException e) {
             Error.error("Cannot read " + Cflat.sourceName + "!");
         }
+	firstTime = false;
         sourceLine = "";  sourcePos = 0;  curC = nextC = ' ';
-        readNext(); readNext();
+	readNext(); 
+	readNext();
     }
 
     public static void finish() {
@@ -55,6 +57,7 @@ public class CharGenerator {
     
     //Les neste char i scourceLine til nextC, om ikke tatt med i readLine(linjeskift/siste tegn), les inn neste om ikke les inn -1...
     static int i = 1;
+    static boolean firstTime;
     
     public static void readNext() {
 
@@ -66,10 +69,17 @@ public class CharGenerator {
         }
         
         // tom linje eller linjen er kommentert eller vi har lest til slutten av linjen
-        if (sourceLine.length() == 0 && sourceLine != null || curC == '#' || sourcePos >= sourceLine.length()) { 
-            commentLine();
-        }
-        else {
+        if (sourceLine.length() == 0 && sourceLine != null || curC == '#' || (sourcePos >= sourceLine.length() && sourcePos == 1)) {
+            commentLine(true);
+        } else if (sourcePos >= sourceLine.length()) {
+	    commentLine(false);
+	} 
+	else {
+	    if (firstTime || sourceLine.length() == 1) {
+		System.out.println("firstTime: " + sourceLine);
+		writeLog();
+		firstTime = false;
+	    }
             nextC = sourceLine.charAt(sourcePos++);
         }
     }
@@ -77,8 +87,9 @@ public class CharGenerator {
     /**
      * Send line number to log og les neste
      */
-    private static void commentLine() {
-        Log.noteSourceLine(sourceFile.getLineNumber(), sourceLine); //logge linjen
+    private static void commentLine(boolean doLog) {
+	if (doLog)
+	    writeLog();
 
         try {
             sourceLine = sourceFile.readLine();         //lese ny linje
@@ -91,13 +102,21 @@ public class CharGenerator {
         } else {
             sourcePos = 0;
             if (sourceLine.length() > 0) {
-                nextC = sourceLine.charAt(sourcePos);
-                return;
+		nextC = sourceLine.charAt(sourcePos);
+		firstTime = true;
+		if (sourceLine.length() == 1) // er kun med for å hindre duplicat av token ved linjer som er 1-tegn lang 
+		    sourcePos++;             // finnes bedre måte å forhindre dette på
+		return;
             }
             else {
-                commentLine();          //rekursivt kall dersom neste linje er tom den også
+                commentLine(true);          //rekursivt kall dersom neste linje er tom den også
                 sourcePos++;            //øke teller ettersom vi allerede har hentet første tegn
             }
         }
     }
+
+    private static void writeLog() {
+	Log.noteSourceLine(sourceFile.getLineNumber(), sourceLine); //logge linjen
+    }
 }
+

@@ -1,8 +1,8 @@
 package no.uio.ifi.cflat.scanner;
 
 /*
- * module Scanner
- */
+* module Scanner
+*/
 
 import no.uio.ifi.cflat.chargenerator.CharGenerator;
 import no.uio.ifi.cflat.error.Error;
@@ -10,8 +10,8 @@ import no.uio.ifi.cflat.log.Log;
 import static no.uio.ifi.cflat.scanner.Token.*;
 
 /*
- * Module for forming characters into tokens.
- */
+* Module for forming characters into tokens.
+*/
 
 public class Scanner {
     public static Token curToken, nextToken, nextNextToken;
@@ -22,7 +22,7 @@ public class Scanner {
     public static void init() {
         //-- Must be changed in part 0:
         //--les inn tre tokens og sjekk første token ettersom readNext vil gå til nextToken
-        //    løkke som går til vi er ferdig?
+        // løkke som går til vi er ferdig?
         curName = nextName = nextNextName = "";
         //readNext(); readNext();
     }
@@ -33,40 +33,43 @@ public class Scanner {
     }
 
     public static void readNext() {
-        curToken = nextToken;  nextToken = nextNextToken;
-        curName = nextName;  nextName = nextNextName;
-        curNum = nextNum;  nextNum = nextNextNum;
-        curLine = nextLine;  nextLine = nextNextLine;
+        curToken = nextToken; nextToken = nextNextToken;
+        curName = nextName; nextName = nextNextName;
+        curNum = nextNum; nextNum = nextNextNum;
+        curLine = nextLine; nextLine = nextNextLine;
 
         nextNextToken = null;
         nextNextName = "";
         while (nextNextToken == null) {
             nextNextLine = CharGenerator.curLineNum(); // Denne skal være her i følge prekoden
-	    	    
+
             if (! CharGenerator.isMoreToRead()) {
                 System.out.println("Last Char");
                 nextNextToken = eofToken;
-            } else { 
+            } else {
                 //-- Must be changed in part 0:
                 //-- Skal bli på rundt 400-500 linjer, vi har mer å lese
 
                 
-                nextNextName = "";                      //vi har en ny nextnext...
+                nextNextName = ""; //vi har en ny nextnext...
 
-                CharGenerator.readNext();               //flyttet denne ut for å unngå dobbel/trippel kode
-                nextNextName += CharGenerator.curC;     //leser første tegn og tester på det
+                CharGenerator.readNext(); //flyttet denne ut for å unngå dobbel/trippel kode
+                nextNextName += CharGenerator.curC; //leser første tegn og tester på det
                 
                 /*OBS! denne whilen gjør den overordnede overflødig, sjekket med grlærer at det er ok*/
-                if (isLetterAZ(CharGenerator.curC)) { //ENTEN int, double eller nameToken, tåler tall i navn 
-                    while (!(isReserved(CharGenerator.nextC)) && CharGenerator.nextC != ' ' && !(isIllegal(CharGenerator.curC))) { 
-                        CharGenerator.readNext();
+                if (isLetterAZ(CharGenerator.curC)) { //ENTEN int, double eller nameToken, tåler tall i navn
+                    while (!(isReserved(CharGenerator.nextC)) && CharGenerator.nextC != ' ' && !(isIllegalInText(CharGenerator.curC))){
+			CharGenerator.readNext();
                         nextNextName += CharGenerator.curC;
                     }
-		    setTextToken(nextNextName);
+                    setTextToken(nextNextName);
 		}
-		else if (isReserved(CharGenerator.curC)) { //ALLE reserverte enkelt-tegn
+                else if (isReserved(CharGenerator.curC)) { //ALLE reserverte enkelt-tegn
                     //System.out.println("IS RESERVED" + CharGenerator.curC);
-                    if (nextNextName.equals("(")) {
+                    
+		    // her har jeg laget en metode som skal erstatte koden under. neste 20 linjene
+		    // som heter isAnotherToken
+		    if (nextNextName.equals("(")) {
                         System.out.println("--------------> leftParToken");
                         nextNextToken = leftParToken;
                     } else if (nextNextName.equals(")")) {
@@ -84,24 +87,35 @@ public class Scanner {
                     } else if(nextNextName.equals("/")) {
                         if (CharGenerator.nextC == '*')
                             skipComment();
-                        else  {
+                        else {
                             nextNextToken = divideToken;
                         }
                     } else if(nextNextName.equals("'")) {
-                        //håndtere verdi inne i ' ' som verdi...
-                        System.out.print("--------------> fnutt --> ");
+                        // håndtere verdi inne i ' ' som verdi...
+                        // Kanskje legge dette inne i en egen metode?
+			System.out.print("--------------> fnutt --> ");
 			int ch = (int) CharGenerator.nextC;
+			CharGenerator.readNext();
+			if((int)CharGenerator.nextC == 39) {
+			    nextNextToken = numberToken;
+			    nextNextName = Integer.toString(ch);
+			    CharGenerator.readNext();
+			} else {
+			    System.out.print("ILLEGAL CHARACTER CONSTANT");
+			    // kalle på ERROR
+			}
 			System.out.println(ch);
-                    } 
-		    else if(isRelOperator()) {
-			// blir satt i metoden
+			
 		    }
-                    
+                    //...osv
                 }
                 else if (CharGenerator.curC == ' ') { //hopp over
                     //TODO midlertidig løsning
                 }
-                else { 
+		else if ((int)CharGenerator.curC == 9) { //hopp over
+			//TODO midlertidig løsning - horizontal tab
+		} 
+                else {
                     Error.error(nextNextLine,"Illegal symbol: '" + CharGenerator.curC + "'!");
                 }
 
@@ -113,14 +127,14 @@ public class Scanner {
     private static boolean isReserved(char c) {
         int ch = (int)c;
         //ASCII values of reserved characters
-        if ((ch >= 33 && ch <= 45) || (ch == 47) || (ch >= 58 && ch <= 62) || (ch >= 91 && ch <=93) || ch == 96 || (ch >= 123 && ch <=125)) {  
+        if ((ch >= 33 && ch <= 45) || (ch == 47) || (ch >= 58 && ch <= 62) || (ch >= 91 && ch <=93) || ch == 96 || (ch >= 123 && ch <=125)) {
             return true;
         }
         else
             return false;
     }
-
-    private static boolean isIllegal(char c) {
+    
+    private static boolean isIllegalInText(char c) {
 	int ch = (int)c;
 	// 
 	return ((ch >= 33 && ch <= 39) ||
@@ -155,43 +169,15 @@ public class Scanner {
 	    nextNextToken = nameToken;
 	}
     }
+    
 
-    private static boolean isRelOperator() {
-	if (CharGenerator.curC == '!') {
-	    if (CharGenerator.nextC == '=') {
-		nextNextToken = notEqualToken;
-		return true;
-	    } 
-	} else if (CharGenerator.curC == '=') {
-	    if (CharGenerator.nextC == '=') {
-		nextNextToken = equalToken;
-		return true;
-	    } 
-	} else if (CharGenerator.curC == '<') {
-	    if (CharGenerator.nextC == '=') {
-		nextNextToken = lessEqualToken;
-		return true;
-	    } else {
-		nextNextToken = lessToken;
-		return true;
-	    }
-	} else if (CharGenerator.curC == '>') {
-	    if (CharGenerator.nextC == '=') {
-		nextNextToken = greaterEqualToken;
-		return true;
-	    } else {
-		nextNextToken = greaterToken;
-		return true;
-	    }	    
-	}
-	return false;
-    }
+
 
 
 
     /**
-     * Om vi har en /* så leser vi til vi finner avsluttningen
-     */
+* Om vi har en /* så leser vi til vi finner avsluttningen
+*/
     private static void skipComment() {
         boolean end = false;
         System.out.println("DEBUG:\tGot /*multiline*/ comment!");
@@ -213,8 +199,8 @@ public class Scanner {
 
     private static boolean isLetterAZ(char c) {
         // -2 Must be changed in part 0:
-        int iv = (int)c;  // iv = isoValue
-        return  ((iv >= 65 && iv <= 90) || (iv >= 97 && iv <=122)); 
+        int iv = (int)c; // iv = isoValue
+        return ((iv >= 65 && iv <= 90) || (iv >= 97 && iv <=122));
     }
 
     public static void check(Token t) {
@@ -228,10 +214,10 @@ public class Scanner {
     }
 
     public static void skip(Token t) {
-        check(t);  readNext();
+        check(t); readNext();
     }
 
     public static void skip(Token t1, Token t2) {
-        check(t1,t2);  readNext();
+        check(t1,t2); readNext();
     }
 }

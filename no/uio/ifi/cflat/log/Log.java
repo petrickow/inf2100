@@ -73,7 +73,7 @@ public class Log {
 	if (! doLogParser && ! doLogScanner) return;
 	if (lineNum > 0)
 	    writeLogLine(lineNum + ":" + line);
-	//-- Must be changed in part 0:
+	//-1 Must be changed in part 0:
     }
 	
     /**

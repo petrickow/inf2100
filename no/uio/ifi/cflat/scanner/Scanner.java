@@ -12,6 +12,7 @@ import static no.uio.ifi.cflat.scanner.Token.*;
 /*
  * Module for forming characters into tokens.
  */
+
 public class Scanner {
     public static Token curToken, nextToken, nextNextToken;
     public static String curName, nextName, nextNextName;
@@ -43,35 +44,35 @@ public class Scanner {
             nextNextLine = CharGenerator.curLineNum(); // Denne skal være her i følge prekoden
 	    	    
             if (! CharGenerator.isMoreToRead()) {
-                System.out.println("FUNNET SISTE TEGN i linje" + CharGenerator.sourceLine);
+                System.out.println("Last Char");
                 nextNextToken = eofToken;
             } else { 
                 //-- Must be changed in part 0:
                 //-- Skal bli på rundt 400-500 linjer, vi har mer å lese
-		
-		CharGenerator.readNext();
-		
-		nextNextName = "";
-                if (isLetterAZ(CharGenerator.curC)) {
-		    nextNextName += CharGenerator.curC;
-		    while (isLetterAZ(CharGenerator.nextC)) {
-			CharGenerator.readNext();
-			nextNextName += CharGenerator.curC;
-		    }
-            System.out.println("===============> " + nextNextName);
-		    if (nextNextName.compareTo("int") == 0) {
+                CharGenerator.readNext();
+                nextNextName = "";
+                
+                nextNextName += CharGenerator.curC;
+                /*Trenger håndtering av whitespaces og andre fylletegn*/
+
+                if (isLetterAZ(CharGenerator.curC)) { //ENTEN int, double eller nameToken, håndter det
+                    while (!(isReserved(CharGenerator.nextC)) || CharGenerator.nextC == ' ') {
+                        CharGenerator.readNext();
+                        nextNextName += CharGenerator.curC;
+                    }
+                    System.out.println("===============> " + nextNextName);
+                    if (nextNextName.compareTo("int") == 0) {
                         System.out.println("-------------->  intToken");
                         nextNextToken = intToken;
                     } else if (nextNextName.compareTo("double") == 0) {
                         System.out.println("--------------> doubleToken");
                         nextNextToken = doubleToken;
                     } else {
-                        System.out.println("--------------> nameToken -> " + nextNextName);
+                        System.out.println("--------------> nameToken -> " + nextNextName); //OBS denne behandler feks 'x' som en nametoken, det må nesten være en int?
                         nextNextToken = nameToken;
                     }
 
-                } else {
-                    nextNextName += CharGenerator.curC;
+                } else if (isReserved(CharGenerator.curC)) { //ALLE reserverte enkelt-tegn
                     if (nextNextName.compareTo("(") == 0) {
                         System.out.println("--------------> leftParToken");
                         nextNextToken = leftParToken;
@@ -79,22 +80,43 @@ public class Scanner {
                         nextNextToken = rightParToken;
                         System.out.println("--------------> rightParToken");
                     } else if(nextNextName.compareTo("{") == 0) {
-			nextNextToken = leftCurlToken;
-			System.out.println("--------------> leftCurlToken");
-		    } else if(nextNextName.compareTo("}") == 0) {
-			nextNextToken = rightCurlToken;
-			System.out.println("--------------> rightCurlToken");
-		    } else if(nextNextName.compareTo(";") == 0) {
-			nextNextToken = semicolonToken;
-			System.out.println("--------------> semicolonToken");
-		    } 
+                        nextNextToken = leftCurlToken;
+                        System.out.println("--------------> leftCurlToken");
+                    } else if(nextNextName.compareTo("}") == 0) {
+                        nextNextToken = rightCurlToken;
+                        System.out.println("--------------> rightCurlToken");
+                    } else if(nextNextName.compareTo(";") == 0) {
+                        nextNextToken = semicolonToken;
+                        System.out.println("--------------> semicolonToken");
+                    } 
                 }
+
                 /*else { //TODO
                     Error.error(nextNextLine,"Illegal symbol: '" + CharGenerator.curC + "'!");
                 }*/
+
+                
             }
         }
-	Log.noteToken();
+        Log.noteToken();
+    }
+    private static boolean isReserved(char c) {
+        int ch = (int)c;
+        //ASCII values of reserved characters
+        if ((ch >= 33 && ch <= 45) || (ch == 47) || (ch >= 91 && ch <=93) || (ch >= 123 && ch <=125)) {  
+            System.out.println(c+" is: " + ch);
+            return true;
+        }
+        else
+            return false;
+    }
+    /**
+     * Om vi har en /* så leser vi til vi finner avsluttningen
+     */
+    private static void skipComment() {
+        
+        CharGenerator.readNext();
+
     }
 
     private static boolean isLetterAZ(char c) {

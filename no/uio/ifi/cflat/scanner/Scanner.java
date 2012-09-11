@@ -68,6 +68,9 @@ public class Scanner {
                     } else if (nextNextName.compareTo("double") == 0) {
                         System.out.println("--------------> doubleToken");
                         nextNextToken = doubleToken;
+                    } else if (nextNextName.equals("for")) {
+                        System.out.println("--------------> forToken");
+                        nextNextToken = forToken;
                     } else {
                         System.out.println("--------------> nameToken -> " + nextNextName); //OBS denne behandler feks 'x' som en nametoken, det må nesten være en verdi??
                         nextNextToken = nameToken;
@@ -96,13 +99,16 @@ public class Scanner {
                         else  {
                             nextNextToken = divideToken;
                         }
+                    } else if(nextNextName.equals("'")) {
+                        //håndtere verdi inne i ' ' som verdi...
+                        System.out.println("--------------> fnutt");
                     }
                     //...osv 
                 }
-                else if (CharGenerator.curC == ' ') {
-                    //TODO
+                else if (CharGenerator.curC == ' ') { //hopp over
+                    //TODO midlertidig løsning
                 }
-                else { //TODO
+                else { 
                     Error.error(nextNextLine,"Illegal symbol: '" + CharGenerator.curC + "'!");
                 }
 

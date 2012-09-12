@@ -204,16 +204,19 @@ public class Scanner {
     private static boolean isRelOperator() {
 	if (CharGenerator.curC == '!') {
 	    if (CharGenerator.nextC == '=') {
+		CharGenerator.readNext();
 		nextNextToken = notEqualToken;
 		return true;
 	    } 
 	} else if (CharGenerator.curC == '=') {
 	    if (CharGenerator.nextC == '=') {
+		CharGenerator.readNext();
 		nextNextToken = equalToken;
 		return true;
 	    } 
 	} else if (CharGenerator.curC == '<') {
 	    if (CharGenerator.nextC == '=') {
+		CharGenerator.readNext();
 		nextNextToken = lessEqualToken;
 		return true;
 	    } else {
@@ -222,6 +225,7 @@ public class Scanner {
 	    }
 	} else if (CharGenerator.curC == '>') {
 	    if (CharGenerator.nextC == '=') {
+		CharGenerator.readNext();
 		nextNextToken = greaterEqualToken;
 		return true;
 	    } else {

@@ -84,6 +84,18 @@ public class Scanner {
                     } else if(nextNextName.equals(";")) {
                         nextNextToken = semicolonToken;
                         System.out.println("--------------> semicolonToken");
+                    } else if(nextNextName.equals("-")) {
+                        nextNextToken = subtractToken;
+                        System.out.println("--------------> subtractToken");
+                    } else if(nextNextName.equals("+")) {
+                        nextNextToken = addToken;
+                        System.out.println("--------------> addToken");
+                    } else if(nextNextName.equals(",")) {
+                        nextNextToken = commaToken;
+                        System.out.println("--------------> commaToken");
+                    } else if(nextNextName.equals("=")) {
+                        nextNextToken = assignToken;
+                        System.out.println("--------------> assignToken");
                     } else if(nextNextName.equals("/")) {
                         if (CharGenerator.nextC == '*')
                             skipComment();

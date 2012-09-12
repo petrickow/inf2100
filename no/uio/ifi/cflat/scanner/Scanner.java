@@ -67,9 +67,19 @@ public class Scanner {
                 else if (isReserved(CharGenerator.curC)) { //ALLE reserverte enkelt-tegn
                     //System.out.println("IS RESERVED" + CharGenerator.curC);
                     
+		    
+
+
+
+		    if (isRelOperator()) {
+			// nextNextToken blir satt i metoden hvis true
+		    }
+		    
+
+
 		    // her har jeg laget en metode som skal erstatte koden under. neste 20 linjene
 		    // som heter isAnotherToken
-		    if (nextNextName.equals("(")) {
+		    else if (nextNextName.equals("(")) {
                         System.out.println("--------------> leftParToken");
                         nextNextToken = leftParToken;
                     } else if (nextNextName.equals(")")) {
@@ -95,7 +105,7 @@ public class Scanner {
                         System.out.println("--------------> commaToken");
                     } else if(nextNextName.equals("=")) {
                         nextNextToken = assignToken;
-                        System.out.println("--------------> assignToken");
+                        System.out.println("--------------> assignToken " + nextNextName);
                     } else if(nextNextName.equals("/")) {
                         if (CharGenerator.nextC == '*')
                             skipComment();
@@ -121,6 +131,11 @@ public class Scanner {
 		    }
                     //...osv
                 }
+		
+		else if (isNumber()) {
+		    // nextNextToken blir satt til numberToken hvis true
+		}
+
                 else if (CharGenerator.curC == ' ') { //hopp over
                     //TODO midlertidig løsning
                 }
@@ -174,22 +189,71 @@ public class Scanner {
 	    nextNextToken = ifToken;
 	} else if (nextNextName.compareTo("else") == 0) {
 	    nextNextToken = elseToken;
-	} else if (nextNextName.compareTo("while") == 0) {
+	} else if (nextNextName.compareTo("while") == 0) { 
 	    nextNextToken = whileToken;
-	}else {
+	} else if (nextNextName.compareTo("return") == 0) { 
+	    nextNextToken = returnToken;
+	} else {
 	    System.out.println("--------------> nameToken -> " + nextNextName);
 	    nextNextToken = nameToken;
 	}
     }
+
+
+
+    private static boolean isRelOperator() {
+	if (CharGenerator.curC == '!') {
+	    if (CharGenerator.nextC == '=') {
+		nextNextToken = notEqualToken;
+		return true;
+	    } 
+	} else if (CharGenerator.curC == '=') {
+	    if (CharGenerator.nextC == '=') {
+		nextNextToken = equalToken;
+		return true;
+	    } 
+	} else if (CharGenerator.curC == '<') {
+	    if (CharGenerator.nextC == '=') {
+		nextNextToken = lessEqualToken;
+		return true;
+	    } else {
+		nextNextToken = lessToken;
+		return true;
+	    }
+	} else if (CharGenerator.curC == '>') {
+	    if (CharGenerator.nextC == '=') {
+		nextNextToken = greaterEqualToken;
+		return true;
+	    } else {
+		nextNextToken = greaterToken;
+		return true;
+	    }	    
+	}
+	return false;
+    }
+
+    private static boolean isNumber() {
+	int ascVal = (int)CharGenerator.curC;
+	int nextAscVal;
+	if (ascVal >= 48 && ascVal <= 57) {
+	    nextAscVal = (int)CharGenerator.nextC;
+	    while (nextAscVal >= 48 && nextAscVal <= 57) {
+		CharGenerator.readNext();
+		nextNextName += CharGenerator.curC;
+		nextAscVal = (int)CharGenerator.nextC;
+	    }
+	    nextNextToken = numberToken;
+	    return true;
+	}
+	return false;
+    }
     
-
-
-
-
-
+    
+   
     /**
-* Om vi har en /* så leser vi til vi finner avsluttningen
-*/
+     * Om vi har en /* så leser vi til vi finner avsluttningen
+     */
+    
     private static void skipComment() {
         boolean end = false;
         System.out.println("DEBUG:\tGot /*multiline*/ comment!");

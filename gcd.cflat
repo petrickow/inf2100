@@ -27,5 +27,3 @@ int main ()
 	putint(gcd(v1,v2)); putchar(LF);
 	exit(0);
 }
-	
-

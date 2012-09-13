@@ -1,8 +1,8 @@
 package no.uio.ifi.cflat.scanner;
 
 /*
-* module Scanner
-*/
+ * module Scanner
+ */
 
 import no.uio.ifi.cflat.chargenerator.CharGenerator;
 import no.uio.ifi.cflat.error.Error;
@@ -10,8 +10,8 @@ import no.uio.ifi.cflat.log.Log;
 import static no.uio.ifi.cflat.scanner.Token.*;
 
 /*
-* Module for forming characters into tokens.
-*/
+ * Module for forming characters into tokens.
+ */
 
 public class Scanner {
     public static Token curToken, nextToken, nextNextToken;
@@ -50,36 +50,36 @@ public class Scanner {
                 //-- Must be changed in part 0:
                 //-- Skal bli på rundt 400-500 linjer, vi har mer å lese
 
-                
+
                 nextNextName = ""; //vi har en ny nextnext...
 
                 CharGenerator.readNext(); //flyttet denne ut for å unngå dobbel/trippel kode
                 nextNextName += CharGenerator.curC; //leser første tegn og tester på det
-                
+
                 /*OBS! denne whilen gjør den overordnede overflødig, sjekket med grlærer at det er ok*/
                 if (isLetterAZ(CharGenerator.curC)) { //ENTEN int, double eller nameToken, tåler tall i navn
                     while (!(isReserved(CharGenerator.nextC)) && CharGenerator.nextC != ' ' && !(isIllegalInText(CharGenerator.curC))){
-			CharGenerator.readNext();
+                        CharGenerator.readNext();
                         nextNextName += CharGenerator.curC;
                     }
                     setTextToken(nextNextName);
-		}
+                }
                 else if (isReserved(CharGenerator.curC)) { //ALLE reserverte enkelt-tegn
                     //System.out.println("IS RESERVED" + CharGenerator.curC);
-                    
-		    
 
 
 
-		    if (isRelOperator()) {
-			// nextNextToken blir satt i metoden hvis true
-		    }
-		    
 
 
-		    // her har jeg laget en metode som skal erstatte koden under. neste 20 linjene
-		    // som heter isAnotherToken
-		    else if (nextNextName.equals("(")) {
+                    if (isRelOperator()) {
+                        // nextNextToken blir satt i metoden hvis true
+                    }
+
+
+
+                    // her har jeg laget en metode som skal erstatte koden under. neste 20 linjene
+                    // som heter isAnotherToken
+                    else if (nextNextName.equals("(")) {
                         System.out.println("--------------> leftParToken");
                         nextNextToken = leftParToken;
                     } else if (nextNextName.equals(")")) {
@@ -115,38 +115,38 @@ public class Scanner {
                     } else if(nextNextName.equals("'")) {
                         // håndtere verdi inne i ' ' som verdi...
                         // Kanskje legge dette inne i en egen metode?
-			System.out.print("--------------> fnutt --> ");
-			int ch = (int) CharGenerator.nextC;
-			CharGenerator.readNext();
-			if((int)CharGenerator.nextC == 39) {
-			    nextNextToken = numberToken;
-			    nextNextName = Integer.toString(ch);
-			    CharGenerator.readNext();
-			} else {
-			    System.out.print("ILLEGAL CHARACTER CONSTANT");
-			    // kalle på ERROR
-			}
-			System.out.println(ch);
-			
-		    }
+                        System.out.print("--------------> fnutt --> ");
+                        int ch = (int) CharGenerator.nextC;
+                        CharGenerator.readNext();
+                        if((int)CharGenerator.nextC == 39) {
+                            nextNextToken = numberToken;
+                            nextNextName = Integer.toString(ch);
+                            CharGenerator.readNext();
+                        } else {
+                            System.out.print("ILLEGAL CHARACTER CONSTANT");
+                            // kalle på ERROR
+                        }
+                        System.out.println(ch);
+
+                    }
                     //...osv
                 }
-		
-		else if (isNumber()) {
-		    // nextNextToken blir satt til numberToken hvis true
-		}
+
+                else if (isNumber()) {
+                    // nextNextToken blir satt til numberToken hvis true
+                }
 
                 else if (CharGenerator.curC == ' ') { //hopp over
                     //TODO midlertidig løsning
                 }
-		else if ((int)CharGenerator.curC == 9) { //hopp over
-			//TODO midlertidig løsning - horizontal tab
-		} 
+                else if ((int)CharGenerator.curC == 9) { //hopp over
+                    //TODO midlertidig løsning - horizontal tab
+                } 
                 else {
                     Error.error(nextNextLine,"Illegal symbol: '" + CharGenerator.curC + "'!");
                 }
 
-                
+
             }
         }
         Log.noteToken();
@@ -160,111 +160,113 @@ public class Scanner {
         else
             return false;
     }
-    
+
     private static boolean isIllegalInText(char c) {
-	int ch = (int)c;
-	// 
-	return ((ch >= 33 && ch <= 39) ||
-		(ch == 46) ||
-		(ch == 58) ||
-		(ch >= 63 && ch <= 64) ||
-		(ch == 92) ||
-		(ch >= 94 && ch <= 96) ||
-		(ch == 124) ||
-		(ch == 126)); 
+        int ch = (int)c;
+        // 
+        return ((ch >= 33 && ch <= 39) ||
+                (ch == 46) ||
+                (ch == 58) ||
+                (ch >= 63 && ch <= 64) ||
+                (ch == 92) ||
+                (ch >= 94 && ch <= 96) ||
+                (ch == 124) ||
+                (ch == 126)); 
     }
 
     private static void setTextToken(String txt) {
-	
-	if (txt.compareTo("int") == 0) {
-	    System.out.println("-------------->  intToken");
-	    nextNextToken = intToken;
-	} else if (txt.compareTo("double") == 0) {
-	    System.out.println("--------------> doubleToken");
-	    nextNextToken = doubleToken;
-	} else if (txt.equals("for")) {
-	    System.out.println("--------------> forToken");
-	    nextNextToken = forToken;
-	} else if (nextNextName.compareTo("if") == 0) {
-	    nextNextToken = ifToken;
-	} else if (nextNextName.compareTo("else") == 0) {
-	    nextNextToken = elseToken;
-	} else if (nextNextName.compareTo("while") == 0) { 
-	    nextNextToken = whileToken;
-	} else if (nextNextName.compareTo("return") == 0) { 
-	    nextNextToken = returnToken;
-	} else {
-	    System.out.println("--------------> nameToken -> " + nextNextName);
-	    nextNextToken = nameToken;
-	}
+
+        if (txt.compareTo("int") == 0) {
+            System.out.println("--------------> intToken");
+            nextNextToken = intToken;
+        } else if (txt.compareTo("double") == 0) {
+            System.out.println("--------------> doubleToken");
+            nextNextToken = doubleToken;
+        } else if (txt.equals("for")) {
+            System.out.println("--------------> forToken");
+            nextNextToken = forToken;
+        } else if (nextNextName.compareTo("if") == 0) {
+            System.out.println("--------------> ifToken");
+            nextNextToken = ifToken;
+        } else if (nextNextName.compareTo("else") == 0) {
+            System.out.println("--------------> elseToken");
+            nextNextToken = elseToken;
+        } else if (nextNextName.compareTo("while") == 0) { 
+            System.out.println("--------------> whileToken");
+            nextNextToken = whileToken;
+        } else if (nextNextName.compareTo("return") == 0) { 
+            System.out.println("--------------> returnToken");
+            nextNextToken = returnToken;
+        } else {
+            System.out.println("--------------> nameToken -> " + nextNextName);
+            nextNextToken = nameToken;
+        }
     }
-
-
-
+    
     private static boolean isRelOperator() {
-	if (CharGenerator.curC == '!') {
-	    if (CharGenerator.nextC == '=') {
-		CharGenerator.readNext();
-		nextNextToken = notEqualToken;
-		return true;
-	    } 
-	} else if (CharGenerator.curC == '=') {
-	    if (CharGenerator.nextC == '=') {
-		CharGenerator.readNext();
-		nextNextToken = equalToken;
-		return true;
-	    } 
-	} else if (CharGenerator.curC == '<') {
-	    if (CharGenerator.nextC == '=') {
-		CharGenerator.readNext();
-		nextNextToken = lessEqualToken;
-		return true;
-	    } else {
-		nextNextToken = lessToken;
-		return true;
-	    }
-	} else if (CharGenerator.curC == '>') {
-	    if (CharGenerator.nextC == '=') {
-		CharGenerator.readNext();
-		nextNextToken = greaterEqualToken;
-		return true;
-	    } else {
-		nextNextToken = greaterToken;
-		return true;
-	    }	    
-	}
-	return false;
+        if (CharGenerator.curC == '!') {
+            if (CharGenerator.nextC == '=') {
+                CharGenerator.readNext();
+                nextNextToken = notEqualToken;
+                return true;
+            } 
+        } else if (CharGenerator.curC == '=') {
+            if (CharGenerator.nextC == '=') {
+                CharGenerator.readNext();
+                nextNextToken = equalToken;
+                return true;
+            } 
+        } else if (CharGenerator.curC == '<') {
+            if (CharGenerator.nextC == '=') {
+                CharGenerator.readNext();
+                nextNextToken = lessEqualToken;
+                return true;
+            } else {
+                nextNextToken = lessToken;
+                return true;
+            }
+        } else if (CharGenerator.curC == '>') {
+            if (CharGenerator.nextC == '=') {
+                CharGenerator.readNext();
+                nextNextToken = greaterEqualToken;
+                return true;
+            } else {
+                nextNextToken = greaterToken;
+                return true;
+            }	    
+        }
+        return false;
     }
 
     private static boolean isNumber() {
-	int ascVal = (int)CharGenerator.curC;
-	int nextAscVal;
-	if (ascVal >= 48 && ascVal <= 57) {
-	    nextAscVal = (int)CharGenerator.nextC;
-	    while (nextAscVal >= 48 && nextAscVal <= 57) {
-		CharGenerator.readNext();
-		nextNextName += CharGenerator.curC;
-		nextAscVal = (int)CharGenerator.nextC;
-	    }
-	    nextNextToken = numberToken;
-	    return true;
-	}
-	return false;
+        int ascVal = (int)CharGenerator.curC;
+        int nextAscVal;
+        if (ascVal >= 48 && ascVal <= 57) {
+            nextAscVal = (int)CharGenerator.nextC;
+            while (nextAscVal >= 48 && nextAscVal <= 57) {
+                CharGenerator.readNext();
+                nextNextName += CharGenerator.curC;
+                nextAscVal = (int)CharGenerator.nextC;
+            }
+            nextNextToken = numberToken;
+            return true;
+        }
+        return false;
     }
-    
-    
-   
+
+
+
     /**
      * Om vi har en /* så leser vi til vi finner avsluttningen
      */
-    
+
     private static void skipComment() {
         boolean end = false;
         System.out.println("DEBUG:\tGot /*multiline*/ comment!");
-        
+
         while (!end) {
             if (CharGenerator.curC == '*' && CharGenerator.nextC == '/') {
-                CharGenerator.readNext(); CharGenerator.readNext(); //move to right curC
+                CharGenerator.readNext();  //move to right curC
                 end = true;
             }
             else if (CharGenerator.curC == (char)-1) {

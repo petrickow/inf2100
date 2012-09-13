@@ -25,10 +25,9 @@ public class CharGenerator {
         } catch (FileNotFoundException e) {
             Error.error("Cannot read " + Cflat.sourceName + "!");
         }
-	firstTime = false;
         sourceLine = "";  sourcePos = 0;  curC = nextC = ' ';
-	readNext(); 
-	readNext();
+        readNext(); 
+        readNext();
     }
 
     public static void finish() {
@@ -51,35 +50,32 @@ public class CharGenerator {
      * @param
      *
      */
+
+     /*Filosofi: TODO delete comment
+        hold funksjonalitet (i dette tilfellet logging) samlet på ett sted/metode.
+        Ikke la mange iftester bestemme om det skal logges eller ikke slik det var
+        med log eller ikke log i nextLine for det av og til ble logget i readNext, blir
+        fort mye forvirring
+        som her så logger vi hver gang vi skifter linje ettersom alt skal inn i loggen
+        */
     public static int curLineNum() {
         return (sourceFile == null ? 0 : sourceFile.getLineNumber());
     }
     
     //Les neste char i scourceLine til nextC, om ikke tatt med i readLine(linjeskift/siste tegn), les inn neste om ikke les inn -1...
-    static int i = 1;
-    static boolean firstTime;
     
     public static void readNext() {
 
         curC = nextC;
 
         if (! isMoreToRead()) {
-            nextC = (char)-1;
+            nextC = (char)-1; //EOF
             return;
         }
-        
         // tom linje eller linjen er kommentert eller vi har lest til slutten av linjen
-        if (sourceLine.length() == 0 && sourceLine != null || curC == '#' || (sourcePos >= sourceLine.length() && sourcePos == 1)) {
-            commentLine(true);
-        } else if (sourcePos >= sourceLine.length()) {
-	    commentLine(false);
-	} 
-	else {
-	    if (firstTime || sourceLine.length() == 1) {
-		System.out.println("firstTime: " + sourceLine);
-		writeLog();
-		firstTime = false;
-	    }
+        if (sourceLine.length() == 0 && sourceLine != null || curC == '#' || (sourcePos >= sourceLine.length())) {
+            nextLine();
+        } else { //vi er i starten/midt i en linje
             nextC = sourceLine.charAt(sourcePos++);
         }
     }
@@ -87,36 +83,28 @@ public class CharGenerator {
     /**
      * Send line number to log og les neste
      */
-    private static void commentLine(boolean doLog) {
-	if (doLog)
-	    writeLog();
+    private static void nextLine() {
+        //tatt vekk logLinemetode, da den ikke trengs å gjenbrukes så lenge vi gjør all logging her, slipper fare for dobbel-log
+        Log.noteSourceLine(sourceFile.getLineNumber(), sourceLine); //for hvert linjeskift, log foregående linje, da er vi sikker på å få med alle
 
         try {
             sourceLine = sourceFile.readLine();         //lese ny linje
+            sourcePos = 0;                              //flyttet hit da pos alltid skal være 0
         }
         catch (IOException e) {
             e.printStackTrace();
         }
         if (sourceLine == null) {                       //dersom null EOF
-            nextC = (char)-1;
+            nextC = (char)-1;                           //sett nextC til EOF
         } else {
-            sourcePos = 0;
-            if (sourceLine.length() > 0) {
-		nextC = sourceLine.charAt(sourcePos);
-		firstTime = true;
-		if (sourceLine.length() == 1) // er kun med for å hindre duplicat av token ved linjer som er 1-tegn lang 
-		    sourcePos++;             // finnes bedre måte å forhindre dette på
-		return;
+            if (sourceLine.length() > 0) {              //neste linje inneholder noe
+                nextC = sourceLine.charAt(sourcePos++); //sett nextC til første tegn i linjen og øk sourcePos
+                return;
             }
-            else {
-                commentLine(true);          //rekursivt kall dersom neste linje er tom den også
-                sourcePos++;            //øke teller ettersom vi allerede har hentet første tegn
+            else {                  //dersom linjen er tom men ikke null
+                nextLine();         //rekursivt kall dersom neste linje er tom den også, sourcePos oppdateres i if-blocken over
             }
         }
-    }
-
-    private static void writeLog() {
-	Log.noteSourceLine(sourceFile.getLineNumber(), sourceLine); //logge linjen
     }
 }
 

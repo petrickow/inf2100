@@ -66,17 +66,9 @@ public class Scanner {
                 }
                 else if (isReserved(CharGenerator.curC)) { //ALLE reserverte enkelt-tegn
                     //System.out.println("IS RESERVED" + CharGenerator.curC);
-
-
-
-
-
                     if (isRelOperator()) {
                         // nextNextToken blir satt i metoden hvis true
                     }
-
-
-
                     // her har jeg laget en metode som skal erstatte koden under. neste 20 linjene
                     // som heter isAnotherToken
                     else if (nextNextName.equals("(")) {
@@ -125,23 +117,20 @@ public class Scanner {
                         } else {
                             System.out.print("ILLEGAL CHARACTER CONSTANT");
                             // kalle på ERROR
+                            Error.error(nextNextLine, "Illegal stuff goin on: '" + CharGenerator.curC + "'!");
                         }
                         System.out.println(ch);
 
                     }
-                    //...osv
                 }
 
                 else if (isNumber()) {
                     // nextNextToken blir satt til numberToken hvis true
                 }
 
-                else if (CharGenerator.curC == ' ') { //hopp over
+                else if (CharGenerator.curC == ' ' || (int)CharGenerator.curC == 9) { //hopp over whitespace og tab
                     //TODO midlertidig løsning
                 }
-                else if ((int)CharGenerator.curC == 9) { //hopp over
-                    //TODO midlertidig løsning - horizontal tab
-                } 
                 else {
                     Error.error(nextNextLine,"Illegal symbol: '" + CharGenerator.curC + "'!");
                 }

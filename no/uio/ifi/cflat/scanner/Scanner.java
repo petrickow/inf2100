@@ -41,7 +41,7 @@ public class Scanner {
         nextNextToken = null;
         nextNextName = "";
         while (nextNextToken == null) {
-            nextNextLine = CharGenerator.curLineNum(); // Denne skal være her i følge prekoden
+            nextNextLine = CharGenerator.curLineNum();
 
             if (! CharGenerator.isMoreToRead()) {
                 System.out.println("Last Char");
@@ -52,94 +52,54 @@ public class Scanner {
 
 
                 nextNextName = ""; //vi har en ny nextnext...
-
-                CharGenerator.readNext(); //flyttet denne ut for å unngå dobbel/trippel kode
+                CharGenerator.readNext();
                 nextNextName += CharGenerator.curC; //leser første tegn og tester på det
 
-                /*OBS! denne whilen gjør den overordnede overflødig, sjekket med grlærer at det er ok*/
                 if (isLetterAZ(CharGenerator.curC)) { //ENTEN int, double eller nameToken, tåler tall i navn
+                    int startLine = CharGenerator.curLineNum();
                     while (!(isReserved(CharGenerator.nextC)) && CharGenerator.nextC != ' ' && !(isIllegalInText(CharGenerator.curC))){
                         CharGenerator.readNext();
-                        nextNextName += CharGenerator.curC;
+                        if (CharGenerator.curLineNum() == startLine)
+                            nextNextName += CharGenerator.curC;
+                        else
+                            Error.error(nextNextLine,"Token without valid ending!");
                     }
                     setTextToken(nextNextName);
+                    break;
+                    // nextNextToken blir satt i metoden hvis true
                 }
                 else if (isReserved(CharGenerator.curC)) { //ALLE reserverte enkelt-tegn
-                    //System.out.println("IS RESERVED" + CharGenerator.curC);
                     if (isRelOperator()) {
                         // nextNextToken blir satt i metoden hvis true
+                        break;
                     }
                     // her har jeg laget en metode som skal erstatte koden under. neste 20 linjene
-                    // som heter isAnotherToken
-                    else if (nextNextName.equals("(")) {
-                        System.out.println("--------------> leftParToken");
-                        nextNextToken = leftParToken;
-                    } else if (nextNextName.equals(")")) {
-                        nextNextToken = rightParToken;
-                        System.out.println("--------------> rightParToken");
-                    } else if(nextNextName.equals("{")) {
-                        nextNextToken = leftCurlToken;
-                        System.out.println("--------------> leftCurlToken");
-                    } else if(nextNextName.equals("}")) {
-                        nextNextToken = rightCurlToken;
-                        System.out.println("--------------> rightCurlToken");
-                    } else if(nextNextName.equals(";")) {
-                        nextNextToken = semicolonToken;
-                        System.out.println("--------------> semicolonToken");
-                    } else if(nextNextName.equals("-")) {
-                        nextNextToken = subtractToken;
-                        System.out.println("--------------> subtractToken");
-                    } else if(nextNextName.equals("+")) {
-                        nextNextToken = addToken;
-                        System.out.println("--------------> addToken");
-                    } else if(nextNextName.equals(",")) {
-                        nextNextToken = commaToken;
-                        System.out.println("--------------> commaToken");
-                    } else if(nextNextName.equals("=")) {
-                        nextNextToken = assignToken;
-                        System.out.println("--------------> assignToken " + nextNextName);
-                    } else if(nextNextName.equals("/")) {
-                        if (CharGenerator.nextC == '*')
-                            skipComment();
-                        else {
-                            nextNextToken = divideToken;
-                        }
-                    } else if(nextNextName.equals("'")) {
-                        // håndtere verdi inne i ' ' som verdi...
-                        // Kanskje legge dette inne i en egen metode?
-                        System.out.print("--------------> fnutt --> ");
-                        int ch = (int) CharGenerator.nextC;
-                        CharGenerator.readNext();
-                        if((int)CharGenerator.nextC == 39) {
-                            nextNextToken = numberToken;
-                            nextNextName = Integer.toString(ch);
-                            CharGenerator.readNext();
-                        } else {
-                            System.out.print("ILLEGAL CHARACTER CONSTANT");
-                            // kalle på ERROR
-                            Error.error(nextNextLine, "Illegal stuff goin on: '" + CharGenerator.curC + "'!");
-                        }
-                        System.out.println(ch);
+                    // som heter isAnotherToken... finnes det ikke en fellesnevner for de tokens?
 
+                    else if (isAnotherToken()) {
+                        break;
+                        // nextNextToken blir satt i metoden hvis true
                     }
                 }
-
                 else if (isNumber()) {
+                    break;
                     // nextNextToken blir satt til numberToken hvis true
-                }
-
+                } 
                 else if (CharGenerator.curC == ' ' || (int)CharGenerator.curC == 9) { //hopp over whitespace og tab
                     //TODO midlertidig løsning
                 }
                 else {
                     Error.error(nextNextLine,"Illegal symbol: '" + CharGenerator.curC + "'!");
                 }
-
-
             }
         }
         Log.noteToken();
     }
+    /**
+     * Check if a character is one of c flats reserved characters
+     * @param   char c the char from source code
+     * @return  true if reserved
+     */
     private static boolean isReserved(char c) {
         int ch = (int)c;
         //ASCII values of reserved characters
@@ -149,7 +109,11 @@ public class Scanner {
         else
             return false;
     }
-
+    /**
+     * Makes sure all the chars in a text string i valid characters
+     * @param char c    a character in a string
+     * @return          returns true if character is illegal
+     */
     private static boolean isIllegalInText(char c) {
         int ch = (int)c;
         // 
@@ -162,7 +126,75 @@ public class Scanner {
                 (ch == 124) ||
                 (ch == 126)); 
     }
+    /**
+     * Checks scanners nextNextName to see if it is one of the following tokens...
+     * (, ), {, }, ;, -, +, ,, =, ', / and in the last case checks if it is a comment. If so
+     * the method will scan for the ending of comment and log the commented lines. Will
+     * send error if end does not exist. It will also read the value of x if incased in 'x'.
+     * Error will be given if the value is invalid.
+     */
+    private static boolean isAnotherToken() {
+        
+        if (nextNextName.equals("(")) {
+            System.out.println("--------------> leftParToken");
+            nextNextToken = leftParToken;
+        } else if (nextNextName.equals(")")) {
+            nextNextToken = rightParToken;
+            System.out.println("--------------> rightParToken");
+        } else if(nextNextName.equals("{")) {
+            nextNextToken = leftCurlToken;
+            System.out.println("--------------> leftCurlToken");
+        } else if(nextNextName.equals("}")) {
+            nextNextToken = rightCurlToken;
+            System.out.println("--------------> rightCurlToken");
+        } else if(nextNextName.equals(";")) {
+            nextNextToken = semicolonToken;
+            System.out.println("--------------> semicolonToken");
+        } else if(nextNextName.equals("-")) {
+            nextNextToken = subtractToken;
+            System.out.println("--------------> subtractToken");
+        } else if(nextNextName.equals("+")) {
+            nextNextToken = addToken;
+            System.out.println("--------------> addToken");
+        } else if(nextNextName.equals(",")) {
+            nextNextToken = commaToken;
+            System.out.println("--------------> commaToken");
+        } else if(nextNextName.equals("=")) {
+            nextNextToken = assignToken;
+            System.out.println("--------------> assignToken " + nextNextName);
+        } else if(nextNextName.equals("/")) {
+            if (CharGenerator.nextC == '*')
+                skipComment();
+            else {
+                nextNextToken = divideToken;
+            }
+            //Denne bryter litt med overordnet design... TODO
+            //Skal compilatoren håndtere \n \t osv som verdier?
+        } else if(nextNextName.equals("'")) {
+            // håndtere verdi inne i ' ' som verdi...
+            // Kanskje legge dette inne i en egen metode?
+            System.out.print("--------------> fnutt --> ");
+            
+            CharGenerator.readNext();
+            int ch = (int) CharGenerator.curC;
+            if((int)CharGenerator.nextC == 39) {
+                nextNextToken = numberToken;
+                nextNextName = Integer.toString(ch);
+                CharGenerator.readNext();
+            } else {
+                System.out.print("ILLEGAL CHARACTER CONSTANT");
+                Error.error(nextNextLine, "Illegal stuff goin on: '" + CharGenerator.curC + "'!");
+                return false;
+            }
+            System.out.println(ch);
+        }
+        return true;
+    }
 
+    /** 
+     * Interprete a textstring and assign the right token
+     * @param String txt    The textstring containing the identifier for nextNextToken
+     */
     private static void setTextToken(String txt) {
 
         if (txt.compareTo("int") == 0) {
@@ -192,6 +224,9 @@ public class Scanner {
         }
     }
     
+    /**
+     * Assigns relation tokens their right value by checking nextC
+     */
     private static boolean isRelOperator() {
         if (CharGenerator.curC == '!') {
             if (CharGenerator.nextC == '=') {
@@ -226,7 +261,11 @@ public class Scanner {
         }
         return false;
     }
-
+    /**
+     * Method to check and read a whole number. 
+     * @ return   true if it is a complete number without any illegal chars,
+     * nextNextToken set to numbertoken with name containing the text representation of the number
+     */
     private static boolean isNumber() {
         int ascVal = (int)CharGenerator.curC;
         int nextAscVal;
@@ -246,20 +285,21 @@ public class Scanner {
 
 
     /**
-     * Om vi har en /* så leser vi til vi finner avsluttningen
+     * When we find /* we read to the end of comment.
+     * Error given when we reach the end of the file without closing comment
      */
 
     private static void skipComment() {
         boolean end = false;
         System.out.println("DEBUG:\tGot /*multiline*/ comment!");
-
+        int startLine = CharGenerator.curLineNum();
         while (!end) {
             if (CharGenerator.curC == '*' && CharGenerator.nextC == '/') {
                 CharGenerator.readNext();  //move to right curC
                 end = true;
             }
             else if (CharGenerator.curC == (char)-1) {
-                Error.error(nextNextLine,"Found multi line comment without end!");
+                Error.error(nextNextLine,"Found multi line comment in line "+startLine+ " with no end in sight!");
                 break;
             }
             else {

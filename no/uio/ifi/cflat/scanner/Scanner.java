@@ -57,36 +57,31 @@ public class Scanner {
 
                 if (isLetterAZ(CharGenerator.curC)) { //ENTEN int, double eller nameToken, tåler tall i navn
                     int startLine = CharGenerator.curLineNum();
+                            //at char ikke er andre token       //at char ikke er whitespace    //at char er AZ09_
                     while (!(isReserved(CharGenerator.nextC)) && CharGenerator.nextC != ' ' && !(isIllegalInText(CharGenerator.curC))){
+                        //Test for å se at name som vi leser har alle sine chars fra samme linje
                         CharGenerator.readNext();
-                        if (CharGenerator.curLineNum() == startLine)
-                            nextNextName += CharGenerator.curC;
-                        else
-                            Error.error(nextNextLine,"Token without valid ending!");
+                        nextNextName += CharGenerator.curC;
+                        if (CharGenerator.curLineNum() != startLine) { //nextC er på neste linje
+                            break;
+                        }
                     }
                     setTextToken(nextNextName);
-                    break;
                     // nextNextToken blir satt i metoden hvis true
                 }
                 else if (isReserved(CharGenerator.curC)) { //ALLE reserverte enkelt-tegn
                     if (isRelOperator()) {
                         // nextNextToken blir satt i metoden hvis true
-                        break;
                     }
-                    // her har jeg laget en metode som skal erstatte koden under. neste 20 linjene
-                    // som heter isAnotherToken... finnes det ikke en fellesnevner for de tokens?
-
                     else if (isAnotherToken()) {
-                        break;
                         // nextNextToken blir satt i metoden hvis true
                     }
                 }
                 else if (isNumber()) {
-                    break;
                     // nextNextToken blir satt til numberToken hvis true
                 } 
                 else if (CharGenerator.curC == ' ' || (int)CharGenerator.curC == 9) { //hopp over whitespace og tab
-                    //TODO midlertidig løsning
+                    //
                 }
                 else {
                     Error.error(nextNextLine,"Illegal symbol: '" + CharGenerator.curC + "'!");

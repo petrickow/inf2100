@@ -19,12 +19,14 @@ public class Scanner {
     public static int curNum, nextNum, nextNextNum;
     public static int curLine, nextLine, nextNextLine;
 
+    public static boolean printDebug = false;
+
     public static void init() {
         //-- Must be changed in part 0:
         //--les inn tre tokens og sjekk første token ettersom readNext vil gå til nextToken
         // løkke som går til vi er ferdig?
         curName = nextName = nextNextName = "";
-        //readNext(); readNext();
+        readNext(); readNext(); readNext();
     }
 
 
@@ -33,7 +35,7 @@ public class Scanner {
     }
 
     public static void readNext() {
-        curToken = nextToken; nextToken = nextNextToken;
+	curToken = nextToken; nextToken = nextNextToken;
         curName = nextName; nextName = nextNextName;
         curNum = nextNum; nextNum = nextNextNum;
         curLine = nextLine; nextLine = nextNextLine;
@@ -44,7 +46,7 @@ public class Scanner {
             nextNextLine = CharGenerator.curLineNum();
 
             if (! CharGenerator.isMoreToRead()) {
-                System.out.println("Last Char");
+                if (printDebug)System.out.println("Last Char");
                 nextNextToken = eofToken;
             } else {
                 //-- Must be changed in part 0:
@@ -131,32 +133,32 @@ public class Scanner {
     private static boolean isAnotherToken() {
         
         if (nextNextName.equals("(")) {
-            System.out.println("--------------> leftParToken");
+            if (printDebug)System.out.println("--------------> leftParToken");
             nextNextToken = leftParToken;
         } else if (nextNextName.equals(")")) {
             nextNextToken = rightParToken;
-            System.out.println("--------------> rightParToken");
+            if (printDebug)System.out.println("--------------> rightParToken");
         } else if(nextNextName.equals("{")) {
             nextNextToken = leftCurlToken;
-            System.out.println("--------------> leftCurlToken");
+            if (printDebug)System.out.println("--------------> leftCurlToken");
         } else if(nextNextName.equals("}")) {
             nextNextToken = rightCurlToken;
-            System.out.println("--------------> rightCurlToken");
+            if (printDebug)System.out.println("--------------> rightCurlToken");
         } else if(nextNextName.equals(";")) {
             nextNextToken = semicolonToken;
-            System.out.println("--------------> semicolonToken");
+            if (printDebug)System.out.println("--------------> semicolonToken");
         } else if(nextNextName.equals("-")) {
             nextNextToken = subtractToken;
-            System.out.println("--------------> subtractToken");
+            if (printDebug)System.out.println("--------------> subtractToken");
         } else if(nextNextName.equals("+")) {
             nextNextToken = addToken;
-            System.out.println("--------------> addToken");
+            if (printDebug)System.out.println("--------------> addToken");
         } else if(nextNextName.equals(",")) {
             nextNextToken = commaToken;
-            System.out.println("--------------> commaToken");
+            if (printDebug)System.out.println("--------------> commaToken");
         } else if(nextNextName.equals("=")) {
             nextNextToken = assignToken;
-            System.out.println("--------------> assignToken " + nextNextName);
+            if (printDebug)System.out.println("--------------> assignToken " + nextNextName);
         } else if(nextNextName.equals("/")) {
             if (CharGenerator.nextC == '*')
                 skipComment();
@@ -168,7 +170,7 @@ public class Scanner {
         } else if(nextNextName.equals("'")) {
             // håndtere verdi inne i ' ' som verdi...
             // Kanskje legge dette inne i en egen metode?
-            System.out.print("--------------> fnutt --> ");
+            if (printDebug)System.out.print("--------------> fnutt --> ");
             
             CharGenerator.readNext();
             int ch = (int) CharGenerator.curC;
@@ -181,7 +183,7 @@ public class Scanner {
                 Error.error(nextNextLine, "Illegal stuff goin on: '" + CharGenerator.curC + "'!");
                 return false;
             }
-            System.out.println(ch);
+            if (printDebug)System.out.println(ch);
         }
         return true;
     }
@@ -193,28 +195,28 @@ public class Scanner {
     private static void setTextToken(String txt) {
 
         if (txt.compareTo("int") == 0) {
-            System.out.println("--------------> intToken");
+            if (printDebug)System.out.println("--------------> intToken");
             nextNextToken = intToken;
         } else if (txt.compareTo("double") == 0) {
-            System.out.println("--------------> doubleToken");
+            if (printDebug)System.out.println("--------------> doubleToken");
             nextNextToken = doubleToken;
         } else if (txt.equals("for")) {
-            System.out.println("--------------> forToken");
+            if (printDebug)System.out.println("--------------> forToken");
             nextNextToken = forToken;
         } else if (nextNextName.compareTo("if") == 0) {
-            System.out.println("--------------> ifToken");
+            if (printDebug)System.out.println("--------------> ifToken");
             nextNextToken = ifToken;
         } else if (nextNextName.compareTo("else") == 0) {
-            System.out.println("--------------> elseToken");
+            if (printDebug)System.out.println("--------------> elseToken");
             nextNextToken = elseToken;
         } else if (nextNextName.compareTo("while") == 0) { 
-            System.out.println("--------------> whileToken");
+            if (printDebug)System.out.println("--------------> whileToken");
             nextNextToken = whileToken;
         } else if (nextNextName.compareTo("return") == 0) { 
-            System.out.println("--------------> returnToken");
+            if (printDebug)System.out.println("--------------> returnToken");
             nextNextToken = returnToken;
         } else {
-            System.out.println("--------------> nameToken -> " + nextNextName);
+            if (printDebug)System.out.println("--------------> nameToken -> " + nextNextName);
             nextNextToken = nameToken;
         }
     }
@@ -286,7 +288,7 @@ public class Scanner {
 
     private static void skipComment() {
         boolean end = false;
-        System.out.println("DEBUG:\tGot /*multiline*/ comment!");
+        if (printDebug)System.out.println("DEBUG:\tGot /*multiline*/ comment!");
         int startLine = CharGenerator.curLineNum();
         while (!end) {
             if (CharGenerator.curC == '*' && CharGenerator.nextC == '/') {

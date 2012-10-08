@@ -19,6 +19,8 @@ public class Log {
 	
     private static String logName, curTreeLine = "";
     private static int nLogLines = 0, parseLevel = 0, treeLevel = 0;
+
+    private static int indent = 3;
 	
     public static void init() {
 	logName = Cflat.sourceBaseName + ".log";
@@ -54,12 +56,20 @@ public class Log {
 	if (! doLogParser) return;
 
 	//-- Must be changed in part 1:
+	// må legge inn meg innrykk på en penere måte (programmeringsmessig)
+	String spaceN = new String(new char[indent]).replace('\0', ' ');
+	writeLogLine("Parser:" + spaceN + symbol);
+	increaseIndent();
     }
 
     public static void leaveParser(String symbol) {
 	if (! doLogParser) return;
         
 	//-- Must be changed in part 1:
+	// må legge inn meg innrykk på en penere måte (programmeringsmessig)
+	decreaseIndent();
+	String spaceN = new String(new char[indent]).replace('\0', ' ');
+	writeLogLine("Parser:" + spaceN + symbol);
     }
 
     /**
@@ -123,4 +133,15 @@ public class Log {
     public static void outdentTree() {
 	//-- Must be changed in part 1:
     }
+
+   
+    private static void increaseIndent() {
+	indent += 3;
+    }
+    
+    private static void decreaseIndent() {
+	indent -= 3;
+    }
+
+
 }

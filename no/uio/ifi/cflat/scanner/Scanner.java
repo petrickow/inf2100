@@ -138,6 +138,12 @@ public class Scanner {
         } else if (nextNextName.equals(")")) {
             nextNextToken = rightParToken;
             if (printDebug)System.out.println("--------------> rightParToken");
+        } else if (nextNextName.equals("[")) {
+            nextNextToken = leftBracketToken;
+            if (printDebug)System.out.println("--------------> leftBracketToken");
+        } else if (nextNextName.equals("]")) {
+            nextNextToken = rightBracketToken;
+            if (printDebug)System.out.println("--------------> rightBracketToken");
         } else if(nextNextName.equals("{")) {
             nextNextToken = leftCurlToken;
             if (printDebug)System.out.println("--------------> leftCurlToken");
@@ -165,11 +171,7 @@ public class Scanner {
             else {
                 nextNextToken = divideToken;
             }
-            //Denne bryter litt med overordnet design... TODO
-            //Skal compilatoren håndtere \n \t osv som verdier?
         } else if(nextNextName.equals("'")) {
-            // håndtere verdi inne i ' ' som verdi...
-            // Kanskje legge dette inne i en egen metode?
             if (printDebug)System.out.print("--------------> fnutt --> ");
             
             CharGenerator.readNext();

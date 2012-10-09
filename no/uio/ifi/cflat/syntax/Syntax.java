@@ -584,7 +584,7 @@ class FuncDecl extends Declaration {
 
 class FuncBody extends SyntaxUnit {
 
-    DeclList declList = new DeclList();
+    //  DeclList declList = new DeclList();
     StatmList stmlist = new StatmList();
 
 
@@ -658,8 +658,7 @@ class StatmList extends SyntaxUnit {
 
             Log.leaveParser("</statement>");
             // leser neste token så loopen ikke går evig
-            Scanner.readNext();
-        }
+	}
         Log.leaveParser("</statm list>");
     }
 
@@ -947,6 +946,8 @@ class ExprList extends SyntaxUnit {
                 lastExpr.nextExpr = lastExpr = new Expression(); //put in list
                 lastExpr.parse();
             }
+	    // TODO -- må også ta høyde for at det kan være flere expressions her med komma imellom
+	    Scanner.readNext();
         }
         
         Log.leaveParser("</expr list>");
@@ -1001,7 +1002,8 @@ class Expression extends Operand {
  */
 class Term extends SyntaxUnit {
     //-- Must be changed in part 1+2:
-
+    Factor factor = new Factor();
+    
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
     }
@@ -1013,7 +1015,11 @@ class Term extends SyntaxUnit {
     @Override void parse() {
         //1- Must be changed in part 1:
         Log.enterParser("<term>");
-        //HER ER VI NÅ!!!
+        System.out.println("I <term> " + Scanner.curToken + " " + Scanner.nextToken + " " + Scanner.nextNextToken);
+	
+	// TODO -- lese inn [factor] og [term opr] i while-loop
+	factor.parse();
+
         Log.leaveParser("</term>");
     }
 
@@ -1021,6 +1027,41 @@ class Term extends SyntaxUnit {
         //-- Must be changed in part 1+2:
     }
 }
+
+
+// egenopprettet klasse
+
+class Factor extends SyntaxUnit {
+    //-- Must be changed in part 1+2:
+    Operand operand;
+    
+    @Override void check(DeclList curDecls) {
+        //-- Must be changed in part 2:
+    }
+
+    @Override void genCode(FuncDecl curFunc) {
+        //-- Must be changed in part 2:
+    }
+
+    @Override void parse() {
+        //1- Must be changed in part 1:
+        Log.enterParser("<operand>");
+	// lese inn [operand] og [factor opr] i while-loop
+	
+	operand = Operand.makeNewOperand();
+	operand.parse();
+
+        Log.leaveParser("</operand>");
+    }
+
+    @Override void printTree() {
+        //-- Must be changed in part 1+2:
+    }
+}
+
+
+
+
 
 //-- Must be changed in part 1+2:
 
@@ -1103,15 +1144,39 @@ abstract class Operand extends SyntaxUnit {
     Operand nextOperand = null;
     Type valType;
 
+    // egenopprettet metode
+    static Operand makeNewOperand() {
+		
+        if (Scanner.curToken == numberToken) {
+            //1- Must be changed in part 1:
+            return new Number();
+        } else if (Scanner.curToken == nameToken && Scanner.nextToken == leftParToken) {
+            //1- Must be changed in part 1:
+            return new FunctionCall();
+        } else if (Scanner.curToken == nameToken) {
+            //1- Must be changed in part 1:
+            return new Variable();
+        } else if (Scanner.curToken == ifToken) {
+            //return new IfStatm();    // Må også ha med operandtypen ( expression )
+	    return null;
+	} else {
+            Error.expected("A statement");
+        }
+        return null;  // Just to keep the Java compiler happy. :-)
+    }
+
+
+
     // egenopprettet metode.  
-    @Override void parse() {
+    /*@Override void parse() {
         //-- Must be changed in part 1:
         Log.enterParser("<operand>");
         // finne ut hvilken type operand
         nextOperand = new Number(); // midlertidig
         nextOperand.parse();
         Log.leaveParser("</operand>");
-    }
+	}
+    */
 
 }
 

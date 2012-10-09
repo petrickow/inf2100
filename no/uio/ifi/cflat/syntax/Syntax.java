@@ -228,8 +228,10 @@ class ParamDeclList extends DeclList {
 
     @Override void parse() {
         //-- Must be changed in part 1:
-        Log.enterParser("<param decl>");
-        Log.leaveParser("</param decl>");
+        // Log.enterParser("<param decl>");
+        // Scanner.skip(intToken, doubleToken);
+	// Scanner.skip(nameToken);
+	// Log.leaveParser("</param decl>");
     }
 }
 
@@ -497,11 +499,12 @@ class ParamDecl extends VarDecl {
     }
 
     @Override void parse() {
-        Log.enterParser("<param decl>");
-
-        //-- Must be changed in part 1:
-
-        Log.leaveParser("</param decl>");
+	//1- Must be changed in part 1:
+	Log.enterParser("<param decl>");
+        Scanner.skip(intToken, doubleToken);
+	Scanner.skip(nameToken);
+	Log.leaveParser("</param decl>");
+        
     }
 }
 
@@ -515,7 +518,7 @@ class FuncDecl extends Declaration {
 
     // egne
     FuncBody fb = new FuncBody();
-
+    ParamDecl paramDecl;
 
     FuncDecl(String n) {
         // Used for user functions:
@@ -565,12 +568,14 @@ class FuncDecl extends Declaration {
         Scanner.skip(leftParToken);
 
         while (Token.isTypeName(Scanner.curToken)) {
-            // TODO - gå igjennom alle parameterene 
-            System.out.println("***arguments***");
-        }
+	    paramDecl = new ParamDecl(Scanner.curName);
+	    paramDecl.parse();
+            if (Scanner.curToken == commaToken) {
+		Scanner.skip(commaToken);
+	    }	    
+	}
         Scanner.skip(rightParToken);
-        System.out.println("done parsing first part of func decl");	
-        fb.parse();
+	fb.parse();
 
         Log.leaveParser("</func decl>");
 
@@ -603,8 +608,7 @@ class FuncBody extends SyntaxUnit {
 
         Scanner.skip(leftCurlToken);
 
-        // TODO ---- sjekke for x antall [var decl]
-        while (Token.isTypeName(Scanner.curToken)) {
+	while (Token.isTypeName(Scanner.curToken)) {
             // TODO - gå igjennom alle parameterene i declList
             System.out.println("***variables***");
         }

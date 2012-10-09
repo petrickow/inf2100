@@ -27,32 +27,32 @@ public class Syntax {
     static Program program;
 
     public static void init() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 
     public static void finish() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 
     public static void checkProgram() {
-	program.check(library);
+        program.check(library);
     }
 
     public static void genCode() {
-	program.genCode(null);
+        program.genCode(null);
     }
 
     public static void parseProgram() {
-	program = new Program();
-	program.parse();
+        program = new Program();
+        program.parse();
     }
 
     public static void printProgram() {
-	program.printTree();
+        program.printTree();
     }
 
     static void error(SyntaxUnit use, String message) {
-	Error.error(use.lineNum, message);
+        Error.error(use.lineNum, message);
     }
 }
 
@@ -65,7 +65,7 @@ abstract class SyntaxUnit {
     int lineNum;
 
     SyntaxUnit() {
-	lineNum = Scanner.curLine;
+        lineNum = Scanner.curLine;
     }
 
     abstract void check(DeclList curDecls);
@@ -80,32 +80,32 @@ abstract class SyntaxUnit {
  */
 class Program extends SyntaxUnit {
     DeclList progDecls = new GlobalDeclList();
-	
-    @Override void check(DeclList curDecls) {
-	progDecls.check(curDecls);
 
-	if (! Cflat.noLink) {
-	    // Check that 'main' has been declared properly:
-	    //-- Must be changed in part 2:
-	}
+    @Override void check(DeclList curDecls) {
+        progDecls.check(curDecls);
+
+        if (! Cflat.noLink) {
+            // Check that 'main' has been declared properly:
+            //-- Must be changed in part 2:
+        }
     }
-		
+
     @Override void genCode(FuncDecl curFunc) {
-	progDecls.genCode(null);
+        progDecls.genCode(null);
     }
 
     @Override void parse() {
-	Log.enterParser("<program>");
+        Log.enterParser("<program>");
 
-	progDecls.parse();
-	if (Scanner.curToken != eofToken)
-	    Error.expected("A decalaration");
+        progDecls.parse();
+        if (Scanner.curToken != eofToken)
+            Error.expected("A decalaration");
 
-	Log.leaveParser("</program>");
+        Log.leaveParser("</program>");
     }
 
     @Override void printTree() {
-	progDecls.printTree();
+        progDecls.printTree();
     }
 }
 
@@ -120,52 +120,52 @@ abstract class DeclList extends SyntaxUnit {
     DeclList outerScope;
 
     DeclList () {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 
     @Override void check(DeclList curDecls) {
-	outerScope = curDecls;
+        outerScope = curDecls;
 
-	Declaration dx = firstDecl;
-	while (dx != null) {
-	    dx.check(this);  dx = dx.nextDecl;
-	}
+        Declaration dx = firstDecl;
+        while (dx != null) {
+            dx.check(this);  dx = dx.nextDecl;
+        }
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 
     void addDecl(Declaration d) {
-	//1- Must be changed in part 1:
-	
-	if (firstDecl == null) {
-	    firstDecl = d;
-	} else {
-	    Declaration temp = firstDecl;
-	    while (temp.nextDecl != null) {
-		temp = temp.nextDecl;
-		System.out.println("addDecl løkke");
-	    }
-	    temp.nextDecl = d;
-	}
-	
-	
+        //1- Must be changed in part 1:
+
+        if (firstDecl == null) {
+            firstDecl = d;
+        } else {
+            Declaration temp = firstDecl;
+            while (temp.nextDecl != null) {
+                temp = temp.nextDecl;
+                System.out.println("addDecl løkke");
+            }
+            temp.nextDecl = d;
+        }
+
+
     }
 
     int dataSize() {
-	Declaration dx = firstDecl;
-	int res = 0;
+        Declaration dx = firstDecl;
+        int res = 0;
 
-	while (dx != null) {
-	    res += dx.declSize();  dx = dx.nextDecl;
-	}
-	return res;
+        while (dx != null) {
+            res += dx.declSize();  dx = dx.nextDecl;
+        }
+        return res;
     }
 
     Declaration findDecl(String name, SyntaxUnit usedIn) {
-	//-- Must be changed in part 2:
-	return null;
+        //-- Must be changed in part 2:
+        return null;
     }
 }
 
@@ -176,28 +176,28 @@ abstract class DeclList extends SyntaxUnit {
  */
 class GlobalDeclList extends DeclList {
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	
-	while (Token.isTypeName(Scanner.curToken)) {
-	    if (Scanner.nextToken == nameToken) {
-		if (Scanner.nextNextToken == leftParToken) {
-		    FuncDecl fd = new FuncDecl(Scanner.nextName);
-		    fd.parse();
-		    addDecl(fd);
-		} else if (Scanner.nextNextToken == leftBracketToken) {
-		    GlobalArrayDecl gad = new GlobalArrayDecl(Scanner.nextName);
-		    gad.parse();
-		    addDecl(gad);
-		} else {
-		    //-- Must be changed in part 1:
-		}
-	    } else {
-		Error.expected("A declaration");
-	    }
-	}
+
+        while (Token.isTypeName(Scanner.curToken)) {
+            if (Scanner.nextToken == nameToken) {
+                if (Scanner.nextNextToken == leftParToken) {
+                    FuncDecl fd = new FuncDecl(Scanner.nextName);
+                    fd.parse();
+                    addDecl(fd);
+                } else if (Scanner.nextNextToken == leftBracketToken) {
+                    GlobalArrayDecl gad = new GlobalArrayDecl(Scanner.nextName);
+                    gad.parse();
+                    addDecl(gad);
+                } else {
+                    //-- Must be changed in part 1:
+                }
+            } else {
+                Error.expected("A declaration");
+            }
+        }
     }
 }
 
@@ -208,11 +208,11 @@ class GlobalDeclList extends DeclList {
  */
 class LocalDeclList extends DeclList {
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 }
 
@@ -223,13 +223,13 @@ class LocalDeclList extends DeclList {
  */
 class ParamDeclList extends DeclList {
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	//-- Must be changed in part 1:
-	Log.enterParser("<param decl>");
-	Log.leaveParser("</param decl>");
+        //-- Must be changed in part 1:
+        Log.enterParser("<param decl>");
+        Log.leaveParser("</param decl>");
     }
 }
 
@@ -245,7 +245,7 @@ abstract class Declaration extends SyntaxUnit {
     Declaration nextDecl = null;
 
     Declaration(String n) {
-	name = n;
+        name = n;
     }
 
     abstract int declSize();
@@ -301,20 +301,20 @@ abstract class Declaration extends SyntaxUnit {
  */
 abstract class VarDecl extends Declaration {
     VarDecl(String n) {
-	super(n);
+        super(n);
     }
 
     @Override int declSize() {
-	return type.size();
+        return type.size();
     }
 
     @Override void checkWhetherFunction(int nParamsUsed, SyntaxUnit use) {
-	Syntax.error(use, name + " is a variable and no function!");
+        Syntax.error(use, name + " is a variable and no function!");
     }
-	
+
     @Override void printTree() {
-	Log.wTree(type.typeName() + " " + name);
-	Log.wTreeLn(";");
+        Log.wTree(type.typeName() + " " + name);
+        Log.wTreeLn(";");
     }
 
     //-- Must be changed in part 1+2:
@@ -326,38 +326,38 @@ abstract class VarDecl extends Declaration {
  */
 class GlobalArrayDecl extends VarDecl {
     GlobalArrayDecl(String n) {
-	super(n);
-	assemblerName = (Cflat.underscoredGlobals() ? "_" : "") + n;
+        super(n);
+        assemblerName = (Cflat.underscoredGlobals() ? "_" : "") + n;
     }
 
     @Override void check(DeclList curDecls) {
-	visible = true;
-	if (((ArrayType)type).nElems < 0)
-	    Syntax.error(this, "Arrays cannot have negative size!");
+        visible = true;
+        if (((ArrayType)type).nElems < 0)
+            Syntax.error(this, "Arrays cannot have negative size!");
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
-	/* OK */
+        /* OK */
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
-	Syntax.error(use, name + " is an array and no simple variable!");
+        Syntax.error(use, name + " is an array and no simple variable!");
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	Log.enterParser("<var decl>");
+        Log.enterParser("<var decl>");
 
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
 
-	Log.leaveParser("</var decl>");
+        Log.leaveParser("</var decl>");
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 }
 
@@ -367,32 +367,32 @@ class GlobalArrayDecl extends VarDecl {
  */
 class GlobalSimpleVarDecl extends VarDecl {
     GlobalSimpleVarDecl(String n) {
-	super(n);
-	assemblerName = (Cflat.underscoredGlobals() ? "_" : "") + n;
+        super(n);
+        assemblerName = (Cflat.underscoredGlobals() ? "_" : "") + n;
     }
 
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
-	/* OK */
+        /* OK */
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	Log.enterParser("<var decl>");
+        Log.enterParser("<var decl>");
 
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
 
-	Log.leaveParser("</var decl>");
+        Log.leaveParser("</var decl>");
     }
 }
 
@@ -402,35 +402,35 @@ class GlobalSimpleVarDecl extends VarDecl {
  */
 class LocalArrayDecl extends VarDecl {
     LocalArrayDecl(String n) {
-	super(n); 
+        super(n); 
     }
 
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	Log.enterParser("<var decl>");
+        Log.enterParser("<var decl>");
 
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
 
-	Log.leaveParser("</var decl>");
+        Log.leaveParser("</var decl>");
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 
 }
@@ -441,31 +441,31 @@ class LocalArrayDecl extends VarDecl {
  */
 class LocalSimpleVarDecl extends VarDecl {
     LocalSimpleVarDecl(String n) {
-	super(n); 
+        super(n); 
     }
 
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	Log.enterParser("<var decl>");
+        Log.enterParser("<var decl>");
 
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
 
-	Log.leaveParser("</var decl>");
+        Log.leaveParser("</var decl>");
     }
 }
 
@@ -477,31 +477,31 @@ class ParamDecl extends VarDecl {
     int paramNum = 0;
 
     ParamDecl(String n) {
-	super(n);
+        super(n);
     }
 
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	Log.enterParser("<param decl>");
+        Log.enterParser("<param decl>");
 
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
 
-	Log.leaveParser("</param decl>");
+        Log.leaveParser("</param decl>");
     }
 }
 
@@ -510,112 +510,113 @@ class ParamDecl extends VarDecl {
  * A <func decl>
  */
 class FuncDecl extends Declaration {
-        
+
     //-- Must be changed in part 1+2:
-    
+
     // egne
     FuncBody fb = new FuncBody();
 
 
     FuncDecl(String n) {
-	// Used for user functions:
+        // Used for user functions:
 
-	super(n);
-	assemblerName = (Cflat.underscoredGlobals() ? "_" : "") + n;
-	//-- Must be changed in part 1:
+        super(n);
+        assemblerName = (Cflat.underscoredGlobals() ? "_" : "") + n;
+        //-- Must be changed in part 1:
     }
 
     @Override int declSize() {
-	return 0;
+        return 0;
     }
 
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void checkWhetherFunction(int nParamsUsed, SyntaxUnit use) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
-	
+
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	Code.genInstr("", ".globl", assemblerName, "");
-	Code.genInstr(assemblerName, "pushl", "%ebp", "Start function "+name);
-	Code.genInstr("", "movl", "%esp,%ebp", "");
-	//-- Must be changed in part 2:
+        Code.genInstr("", ".globl", assemblerName, "");
+        Code.genInstr(assemblerName, "pushl", "%ebp", "Start function "+name);
+        Code.genInstr("", "movl", "%esp,%ebp", "");
+        //-- Must be changed in part 2:
     }
 
-    
+
 
     @Override void parse() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
 
-	Log.enterParser("<func decl>");
-	System.out.println(Scanner.curToken + " " + Scanner.nextToken + " " + Scanner.nextNextToken);
-	
-	Scanner.skip(intToken, doubleToken);
-	Scanner.skip(nameToken);
-	Scanner.skip(leftParToken);
-	
-	while (Token.isTypeName(Scanner.curToken)) {
-	    // TODO - gå igjennom alle parameterene 
-	    System.out.println("***arguments***");
-	}
-	Scanner.skip(rightParToken);
-	System.out.println("done parsing first part of func decl");	
-	fb.parse();
-	
-	Log.leaveParser("</func decl>");
-	
+        Log.enterParser("<func decl>");
+        System.out.println(Scanner.curToken + " " + Scanner.nextToken + " " + Scanner.nextNextToken);
+
+        Scanner.skip(intToken, doubleToken);
+        Scanner.skip(nameToken);
+        Scanner.skip(leftParToken);
+
+        while (Token.isTypeName(Scanner.curToken)) {
+            // TODO - gå igjennom alle parameterene 
+            System.out.println("***arguments***");
+        }
+        Scanner.skip(rightParToken);
+        System.out.println("done parsing first part of func decl");	
+        fb.parse();
+
+        Log.leaveParser("</func decl>");
+
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 }
 
 
 class FuncBody extends SyntaxUnit {
 
-    
+    DeclList declList = new DeclList();
     StatmList stmlist = new StatmList();
 
-        
+
 
     @Override void check(DeclList currBody) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
-    
+
     @Override void genCode(FuncDecl currBody) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	//-- Must be changed in part 1:
-	Log.enterParser("<func body>");
-	
-	Scanner.skip(leftCurlToken);
-	
-	// TODO ---- sjekke for x antall [var decl]
-	while (Token.isTypeName(Scanner.curToken)) {
-	    // TODO - gå igjennom alle parameterene 
-	    System.out.println("***variables***");
-	}
-	stmlist.parse();
-	
-	Scanner.skip(rightCurlToken);
-	Log.leaveParser("</func body>");
+        //-- Must be changed in part 1:
+        Log.enterParser("<func body>");
+
+        Scanner.skip(leftCurlToken);
+
+        // TODO ---- sjekke for x antall [var decl]
+        while (Token.isTypeName(Scanner.curToken)) {
+            // TODO - gå igjennom alle parameterene i declList
+            System.out.println("***variables***");
+        }
+        //declList.parse();
+        stmlist.parse();
+
+        Scanner.skip(rightCurlToken);
+        Log.leaveParser("</func body>");
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 }
 
@@ -631,40 +632,39 @@ class StatmList extends SyntaxUnit {
     Statement firstStatm = null;
 
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	Log.enterParser("<statm list>");
+        Log.enterParser("<statm list>");
 
-	Statement lastStatm = null;
-	while (Scanner.curToken != rightCurlToken) {
-	    Log.enterParser("<statement>");
-	    //-1 Must be changed in part 1:
-	    Statement s = Statement.makeNewStatement();
-	    Scanner.skip(nameToken);
-	    Scanner.skip(leftParToken);
-	    s.parse();
-	    
-	    if (lastStatm == null) {
-		firstStatm = lastStatm = s;
-	    } else {
-		lastStatm.nextStatm = lastStatm = s;
-	    }
-	    
-	    Log.leaveParser("</statement>");
-	    // leser neste token så loopen ikke går evig
-	    Scanner.readNext();
-	}
-	Log.leaveParser("</statm list>");
+        Statement lastStatm = null;
+        while (Scanner.curToken != rightCurlToken) {
+            Log.enterParser("<statement>");
+            //-1 Must be changed in part 1:
+            Statement statement = Statement.makeNewStatement();
+
+            statement.parse();
+
+            if (lastStatm == null) {
+                firstStatm = lastStatm = statement;
+            } else {
+                lastStatm.nextStatm = lastStatm = statement;
+            }
+
+            Log.leaveParser("</statement>");
+            // leser neste token så loopen ikke går evig
+            Scanner.readNext();
+        }
+        Log.leaveParser("</statm list>");
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 }
 
@@ -676,29 +676,29 @@ abstract class Statement extends SyntaxUnit {
     Statement nextStatm = null;
 
     static Statement makeNewStatement() {
-	if (Scanner.curToken==nameToken && 
-	    Scanner.nextToken==leftParToken) {
-	    //1- Must be changed in part 1:
-	    return new CallStatm();
-	} else if (Scanner.curToken == nameToken) {
-	    //1- Must be changed in part 1:
-	    return new AssignStatm();
-	} else if (Scanner.curToken == forToken) {
-	    //1- Must be changed in part 1:
-	    return new ForStatm();
-	} else if (Scanner.curToken == ifToken) {
-	    return new IfStatm();
-	} else if (Scanner.curToken == returnToken) {
-	    //1- Must be changed in part 1:
-	    return new ReturnStatm();
-	} else if (Scanner.curToken == whileToken) {
-	    return new WhileStatm();
-	} else if (Scanner.curToken == semicolonToken) {
-	    return new EmptyStatm();
-	} else {
-	    Error.expected("A statement");
-	}
-	return null;  // Just to keep the Java compiler happy. :-)
+        if (Scanner.curToken==nameToken && 
+                Scanner.nextToken==leftParToken) {
+            //1- Must be changed in part 1:
+            return new CallStatm();
+        } else if (Scanner.curToken == nameToken) {
+            //1- Must be changed in part 1:
+            return new AssignStatm();
+        } else if (Scanner.curToken == forToken) {
+            //1- Must be changed in part 1:
+            return new ForStatm();
+        } else if (Scanner.curToken == ifToken) {
+            return new IfStatm();
+        } else if (Scanner.curToken == returnToken) {
+            //1- Must be changed in part 1:
+            return new ReturnStatm();
+        } else if (Scanner.curToken == whileToken) {
+            return new WhileStatm();
+        } else if (Scanner.curToken == semicolonToken) {
+            return new EmptyStatm();
+        } else {
+            Error.expected("A statement");
+        }
+        return null;  // Just to keep the Java compiler happy. :-)
     }
 }
 
@@ -712,26 +712,26 @@ class EmptyStatm extends Statement {
     //-- Must be changed in part 1+2:
 
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	//1- Must be changed in part 1:
-	Log.enterParser("<empty statm>");
-	Scanner.skip(semicolonToken);
-	Log.leaveParser("</empty statm>");
+        //1- Must be changed in part 1:
+        Log.enterParser("<empty statm>");
+        Scanner.skip(semicolonToken);
+        Log.leaveParser("</empty statm>");
 
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 }
-	
+
 
 /*
  * A <for-statm>.
@@ -743,19 +743,19 @@ class ForStatm extends Statement {
     //-- Must be changed in part 1+2:
 
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 }
 
@@ -767,19 +767,19 @@ class AssignStatm extends Statement {
     //-- Must be changed in part 1+2:
 
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 }
 
@@ -794,19 +794,19 @@ class IfStatm extends Statement {
     //-- Must be changed in part 1+2:
 
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 }
 
@@ -821,19 +821,19 @@ class ReturnStatm extends Statement {
     //-- Must be changed in part 1+2:
 
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 }
 
@@ -848,42 +848,42 @@ class WhileStatm extends Statement {
     StatmList body = new StatmList();
 
     @Override void check(DeclList curDecls) {
-	test.check(curDecls);
-	body.check(curDecls);
+        test.check(curDecls);
+        body.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	String testLabel = Code.getLocalLabel(), 
-	       endLabel  = Code.getLocalLabel();
+        String testLabel = Code.getLocalLabel(), 
+               endLabel  = Code.getLocalLabel();
 
-	Code.genInstr(testLabel, "", "", "Start while-statement");
-	test.genCode(curFunc);
-	test.valType.genJumpIfZero(endLabel);
-	body.genCode(curFunc);
-	Code.genInstr("", "jmp", testLabel, "");
-	Code.genInstr(endLabel, "", "", "End while-statement");
+        Code.genInstr(testLabel, "", "", "Start while-statement");
+        test.genCode(curFunc);
+        test.valType.genJumpIfZero(endLabel);
+        body.genCode(curFunc);
+        Code.genInstr("", "jmp", testLabel, "");
+        Code.genInstr(endLabel, "", "", "End while-statement");
     }
 
     @Override void parse() {
-	Log.enterParser("<while-statm>");
+        Log.enterParser("<while-statm>");
 
-	Scanner.readNext();
-	Scanner.skip(leftParToken);
-	test.parse();
-	Scanner.skip(rightParToken);
-	Scanner.skip(leftCurlToken);
-	body.parse();
-	Scanner.skip(rightCurlToken);
+        Scanner.readNext();
+        Scanner.skip(leftParToken);
+        test.parse();
+        Scanner.skip(rightParToken);
+        Scanner.skip(leftCurlToken);
+        body.parse();
+        Scanner.skip(rightCurlToken);
 
-	Log.leaveParser("</while-statm>");
+        Log.leaveParser("</while-statm>");
     }
 
     @Override void printTree() {
-	Log.wTree("while (");  test.printTree();  Log.wTreeLn(") {");
-	Log.indentTree();
-	body.printTree();
-	Log.outdentTree();
-	Log.wTreeLn("}");
+        Log.wTree("while (");  test.printTree();  Log.wTreeLn(") {");
+        Log.indentTree();
+        body.printTree();
+        Log.outdentTree();
+        Log.wTreeLn("}");
     }
 }
 
@@ -891,25 +891,26 @@ class WhileStatm extends Statement {
 class CallStatm extends Statement {
     //1- Must be changed in part 1+2:
     FunctionCall fc = new FunctionCall();
-    
+
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	//1- Must be changed in part 1:
-	Log.enterParser("<call-statm>");
-	fc.parse();
-	Scanner.skip(semicolonToken);
-	Log.leaveParser("</call-statm>");
+        //1- Must be changed in part 1:
+        Log.enterParser("<call-statm>");
+        
+        fc.parse();
+        Scanner.skip(semicolonToken);
+        Log.leaveParser("</call-statm>");
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 }
 
@@ -925,27 +926,34 @@ class ExprList extends SyntaxUnit {
     Expression firstExpr = null;
 
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	Expression lastExpr = null;
+        Expression lastExpr = null;
 
-	Log.enterParser("<expr list>");
+        Log.enterParser("<expr list>");
 
-	//1- Must be changed in part 1:
-	firstExpr = new Expression();
-	firstExpr.parse();
-
-	Log.leaveParser("</expr list>");
+        //1- Must be changed in part 1:
+        while (Scanner.curToken != rightParToken) {
+            if (firstExpr == null) {
+                firstExpr = lastExpr = new Expression();
+                firstExpr.parse();
+            } else {
+                lastExpr.nextExpr = lastExpr = new Expression(); //put in list
+                lastExpr.parse();
+            }
+        }
+        
+        Log.leaveParser("</expr list>");
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
     //-- Must be changed in part 1:
 }
@@ -961,29 +969,29 @@ class Expression extends Operand {
     boolean innerExpr = false;
 
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	Log.enterParser("<expression>");
+        Log.enterParser("<expression>");
 
-	firstTerm.parse();
-	if (Token.isRelOperator(Scanner.curToken)) {
-	    relOp = new RelOperator(); 
-	    relOp.parse();
-	    secondTerm = new Term();
-	    secondTerm.parse();
-	}
+        firstTerm.parse();
+        if (Token.isRelOperator(Scanner.curToken)) {
+            relOp = new RelOperator(); 
+            relOp.parse();
+            secondTerm = new Term();
+            secondTerm.parse();
+        }
 
-	Log.leaveParser("</expression>");
+        Log.leaveParser("</expression>");
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 }
 
@@ -995,21 +1003,22 @@ class Term extends SyntaxUnit {
     //-- Must be changed in part 1+2:
 
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	//1- Must be changed in part 1:
-	Log.enterParser("<term>");
-	Log.leaveParser("</term>");
+        //1- Must be changed in part 1:
+        Log.enterParser("<term>");
+        //HER ER VI NÅ!!!
+        Log.leaveParser("</term>");
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1+2:
+        //-- Must be changed in part 1+2:
     }
 }
 
@@ -1036,53 +1045,53 @@ abstract class Operator extends SyntaxUnit {
 
 class RelOperator extends Operator {
     @Override void genCode(FuncDecl curFunc) {
-	if (opType == Types.doubleType) {
-	    Code.genInstr("", "fldl", "(%esp)", "");
-	    Code.genInstr("", "addl", "$8,%esp", "");
-	    Code.genInstr("", "fsubp", "", "");
-	    Code.genInstr("", "fstps", Code.tmpLabel, "");
-	    Code.genInstr("", "cmpl", "$0,"+Code.tmpLabel, "");
-	} else {
-	    Code.genInstr("", "popl", "%ecx", "");
-	    Code.genInstr("", "cmpl", "%eax,%ecx", "");
-	}
-	Code.genInstr("", "movl", "$0,%eax", "");
-	switch (opToken) {
-	case equalToken:        
-	    Code.genInstr("", "sete", "%al", "Test ==");  break;
-	case notEqualToken:
-	    Code.genInstr("", "setne", "%al", "Test !=");  break;
-	case lessToken:
-	    Code.genInstr("", "setl", "%al", "Test <");  break;
-	case lessEqualToken:
-	    Code.genInstr("", "setle", "%al", "Test <=");  break;
-	case greaterToken:
-	    Code.genInstr("", "setg", "%al", "Test >");  break;
-	case greaterEqualToken:
-	    Code.genInstr("", "setge", "%al", "Test >=");  break;
-	}
+        if (opType == Types.doubleType) {
+            Code.genInstr("", "fldl", "(%esp)", "");
+            Code.genInstr("", "addl", "$8,%esp", "");
+            Code.genInstr("", "fsubp", "", "");
+            Code.genInstr("", "fstps", Code.tmpLabel, "");
+            Code.genInstr("", "cmpl", "$0,"+Code.tmpLabel, "");
+        } else {
+            Code.genInstr("", "popl", "%ecx", "");
+            Code.genInstr("", "cmpl", "%eax,%ecx", "");
+        }
+        Code.genInstr("", "movl", "$0,%eax", "");
+        switch (opToken) {
+            case equalToken:        
+                Code.genInstr("", "sete", "%al", "Test ==");  break;
+            case notEqualToken:
+                Code.genInstr("", "setne", "%al", "Test !=");  break;
+            case lessToken:
+                Code.genInstr("", "setl", "%al", "Test <");  break;
+            case lessEqualToken:
+                Code.genInstr("", "setle", "%al", "Test <=");  break;
+            case greaterToken:
+                Code.genInstr("", "setg", "%al", "Test >");  break;
+            case greaterEqualToken:
+                Code.genInstr("", "setge", "%al", "Test >=");  break;
+        }
     }
 
     @Override void parse() {
-	Log.enterParser("<rel operator>");
+        Log.enterParser("<rel operator>");
 
-	opToken = Scanner.curToken;
-	Scanner.readNext();
+        opToken = Scanner.curToken;
+        Scanner.readNext();
 
-	Log.leaveParser("</rel operator>");
+        Log.leaveParser("</rel operator>");
     }
 
     @Override void printTree() {
-	String op = "?";
-	switch (opToken) {
-	case equalToken:        op = "==";  break;
-	case notEqualToken:     op = "!=";  break;
-	case lessToken:         op = "<";   break;
-	case lessEqualToken:    op = "<=";  break;
-	case greaterToken:      op = ">";   break;
-	case greaterEqualToken: op = ">=";  break;
-	}
-	Log.wTree(" " + op + " ");
+        String op = "?";
+        switch (opToken) {
+            case equalToken:        op = "==";  break;
+            case notEqualToken:     op = "!=";  break;
+            case lessToken:         op = "<";   break;
+            case lessEqualToken:    op = "<=";  break;
+            case greaterToken:      op = ">";   break;
+            case greaterEqualToken: op = ">=";  break;
+        }
+        Log.wTree(" " + op + " ");
     }
 }
 
@@ -1096,12 +1105,12 @@ abstract class Operand extends SyntaxUnit {
 
     // egenopprettet metode.  
     @Override void parse() {
-	//-- Must be changed in part 1:
-	Log.enterParser("<operand>");
-	// finne ut hvilken type operand
-	nextOperand = new Number(); // midlertidig
-	nextOperand.parse();
-	Log.leaveParser("</operand>");
+        //-- Must be changed in part 1:
+        Log.enterParser("<operand>");
+        // finne ut hvilken type operand
+        nextOperand = new Number(); // midlertidig
+        nextOperand.parse();
+        Log.leaveParser("</operand>");
     }
 
 }
@@ -1115,23 +1124,25 @@ class FunctionCall extends Operand {
     ExprList el = new ExprList();
 
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	//1- Must be changed in part 1:
-	Log.enterParser("<function call>");
-	System.out.println(Scanner.curToken);
-	el.parse();
-	Log.leaveParser("</function call>");
+        //1- Must be changed in part 1:
+        Log.enterParser("<function call>");
+        Scanner.skip(nameToken);
+        Scanner.skip(leftParToken);
+        el.parse();
+        Scanner.skip(rightParToken);
+        Log.leaveParser("</function call>");
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
     //-- Must be changed in part 1+2:
 }
@@ -1143,22 +1154,22 @@ class FunctionCall extends Operand {
 class Number extends Operand {
     int numVal;
 
-   @Override void check(DeclList curDecls) {
-       //-- Must be changed in part 2:
+    @Override void check(DeclList curDecls) {
+        //-- Must be changed in part 2:
     }
-	
+
     @Override void genCode(FuncDecl curFunc) {
-	Code.genInstr("", "movl", "$"+numVal+",%eax", ""+numVal); 
+        Code.genInstr("", "movl", "$"+numVal+",%eax", ""+numVal); 
     }
 
     @Override void parse() {
-	//1- Must be changed in part 1:
-	Log.enterParser("<number>");
-	Log.leaveParser("</number>");
+        //1- Must be changed in part 1:
+        Log.enterParser("<number>");
+        Log.leaveParser("</number>");
     }
 
-     @Override void printTree() {
-	Log.wTree("" + numVal);
+    @Override void printTree() {
+        Log.wTree("" + numVal);
     }
 }
 
@@ -1173,29 +1184,29 @@ class Variable extends Operand {
     Expression index = null;
 
     @Override void check(DeclList curDecls) {
-	Declaration d = curDecls.findDecl(varName,this);
-	if (index == null) {
-	    d.checkWhetherSimpleVar(this);
-	    valType = d.type;
-	} else {
-	    d.checkWhetherArray(this);
-	    index.check(curDecls);
-	    index.valType.checkType(lineNum, Types.intType, "Array index");
-	    valType = ((ArrayType)d.type).elemType;
-	}
-	declRef = (VarDecl)d;
+        Declaration d = curDecls.findDecl(varName,this);
+        if (index == null) {
+            d.checkWhetherSimpleVar(this);
+            valType = d.type;
+        } else {
+            d.checkWhetherArray(this);
+            index.check(curDecls);
+            index.valType.checkType(lineNum, Types.intType, "Array index");
+            valType = ((ArrayType)d.type).elemType;
+        }
+        declRef = (VarDecl)d;
     }
 
     @Override void genCode(FuncDecl curFunc) {
-	//-- Must be changed in part 2:
+        //-- Must be changed in part 2:
     }
 
     @Override void parse() {
-	Log.enterParser("<variable>");
-	//-- Must be changed in part 1:
+        Log.enterParser("<variable>");
+        //-- Must be changed in part 1:
     }
 
     @Override void printTree() {
-	//-- Must be changed in part 1:
+        //-- Must be changed in part 1:
     }
 }

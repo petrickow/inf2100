@@ -149,8 +149,6 @@ abstract class DeclList extends SyntaxUnit {
 	    }
 	    temp.nextDecl = d;
 	}
-	// Usikker på om det er riktig å legge til den her
-	Scanner.readNext();
 	
 	
     }
@@ -515,10 +513,10 @@ class FuncDecl extends Declaration {
         
     //-- Must be changed in part 1+2:
     
-    // Variable vi selv har satt opp
+    // egne
+    FuncBody fb = new FuncBody();
 
-    StatmList body = new StatmList();
-    
+
     FuncDecl(String n) {
 	// Used for user functions:
 
@@ -560,26 +558,20 @@ class FuncDecl extends Declaration {
 	//-- Must be changed in part 1:
 
 	Log.enterParser("<func decl>");
-	Scanner.readNext();
+	System.out.println(Scanner.curToken + " " + Scanner.nextToken + " " + Scanner.nextNextToken);
+	
+	Scanner.skip(intToken, doubleToken);
 	Scanner.skip(nameToken);
 	Scanner.skip(leftParToken);
 	
-	
 	while (Token.isTypeName(Scanner.curToken)) {
 	    // TODO - gå igjennom alle parameterene 
+	    System.out.println("***arguments***");
 	}
 	Scanner.skip(rightParToken);
-
-
-	// Egen klasse for func body ?? 
-	Log.enterParser("<func body>");
-	Scanner.skip(leftCurlToken);
+	System.out.println("done parsing first part of func decl");	
+	fb.parse();
 	
-	body.parse(); // parse videre inn i statmList
-	
-	Scanner.skip(rightCurlToken);
-	Log.leaveParser("</func body>");
-
 	Log.leaveParser("</func decl>");
 	
     }
@@ -588,6 +580,46 @@ class FuncDecl extends Declaration {
 	//-- Must be changed in part 1:
     }
 }
+
+
+class FuncBody extends SyntaxUnit {
+
+    
+    StatmList stmlist = new StatmList();
+
+        
+
+    @Override void check(DeclList currBody) {
+	//-- Must be changed in part 2:
+    }
+    
+    @Override void genCode(FuncDecl currBody) {
+	//-- Must be changed in part 2:
+    }
+
+    @Override void parse() {
+	//-- Must be changed in part 1:
+	Log.enterParser("<func body>");
+	
+	Scanner.skip(leftCurlToken);
+	
+	// TODO ---- sjekke for x antall [var decl]
+	while (Token.isTypeName(Scanner.curToken)) {
+	    // TODO - gå igjennom alle parameterene 
+	    System.out.println("***variables***");
+	}
+	stmlist.parse();
+	
+	Scanner.skip(rightCurlToken);
+	Log.leaveParser("</func body>");
+    }
+
+    @Override void printTree() {
+	//-- Must be changed in part 1:
+    }
+}
+
+
 
 
 /*
@@ -612,9 +644,9 @@ class StatmList extends SyntaxUnit {
 	Statement lastStatm = null;
 	while (Scanner.curToken != rightCurlToken) {
 	    Log.enterParser("<statement>");
-	    //-- Must be changed in part 1:
+	    //-1 Must be changed in part 1:
 	    Statement s = Statement.makeNewStatement();
-	    Scanner.readNext();
+	    Scanner.skip(nameToken);
 	    Scanner.skip(leftParToken);
 	    s.parse();
 	    
@@ -625,12 +657,9 @@ class StatmList extends SyntaxUnit {
 	    }
 	    
 	    Log.leaveParser("</statement>");
+	    // leser neste token så loopen ikke går evig
 	    Scanner.readNext();
-	    if (Scanner.curToken == rightParToken) {
-		Scanner.skip(rightParToken);
-	    }
 	}
-	Scanner.skip(semicolonToken);
 	Log.leaveParser("</statm list>");
     }
 
@@ -1094,8 +1123,9 @@ class FunctionCall extends Operand {
     }
 
     @Override void parse() {
-	//-- Must be changed in part 1:
+	//1- Must be changed in part 1:
 	Log.enterParser("<function call>");
+	System.out.println(Scanner.curToken);
 	el.parse();
 	Log.leaveParser("</function call>");
     }

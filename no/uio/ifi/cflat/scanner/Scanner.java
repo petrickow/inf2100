@@ -312,7 +312,7 @@ public class Scanner {
     }
 
     public static void check(Token t) {
-        if (curToken != t)
+        if (curToken != t) 
             Error.expected("A " + t);
     }
 
@@ -322,6 +322,7 @@ public class Scanner {
     }
 
     public static void skip(Token t) {
+	System.out.println(t + " " + curName);
         check(t); readNext();
     }
 

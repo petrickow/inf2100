@@ -19,6 +19,9 @@ import no.uio.ifi.cflat.types.*;
  * checks it;
  * generates executable code. 
  */
+
+
+
 public class Syntax {
     static DeclList library;
     static Program program;
@@ -96,7 +99,7 @@ class Program extends SyntaxUnit {
 
 	progDecls.parse();
 	if (Scanner.curToken != eofToken)
-	    Error.expected("A declaration");
+	    Error.expected("A decalaration");
 
 	Log.leaveParser("</program>");
     }
@@ -134,9 +137,8 @@ abstract class DeclList extends SyntaxUnit {
     }
 
     void addDecl(Declaration d) {
-	//-- Must be changed in part 1:
+	//1- Must be changed in part 1:
 	
-	System.out.println("----> " + d);
 	if (firstDecl == null) {
 	    firstDecl = d;
 	} else {
@@ -147,8 +149,9 @@ abstract class DeclList extends SyntaxUnit {
 	    }
 	    temp.nextDecl = d;
 	}
-	// Usikker på om denne skal være her
+	// Usikker på om det er riktig å legge til den her
 	Scanner.readNext();
+	
 	
     }
 
@@ -183,17 +186,14 @@ class GlobalDeclList extends DeclList {
 	while (Token.isTypeName(Scanner.curToken)) {
 	    if (Scanner.nextToken == nameToken) {
 		if (Scanner.nextNextToken == leftParToken) {
-		    // System.out.println("Løkke1");
 		    FuncDecl fd = new FuncDecl(Scanner.nextName);
 		    fd.parse();
 		    addDecl(fd);
 		} else if (Scanner.nextNextToken == leftBracketToken) {
-		    System.out.println("Løkke2");
 		    GlobalArrayDecl gad = new GlobalArrayDecl(Scanner.nextName);
 		    gad.parse();
 		    addDecl(gad);
 		} else {
-		    System.out.println("Løkke3");
 		    //-- Must be changed in part 1:
 		}
 	    } else {
@@ -577,6 +577,7 @@ class FuncDecl extends Declaration {
 	
 	body.parse(); // parse videre inn i statmList
 	
+	Scanner.skip(rightCurlToken);
 	Log.leaveParser("</func body>");
 
 	Log.leaveParser("</func decl>");
@@ -612,7 +613,6 @@ class StatmList extends SyntaxUnit {
 	while (Scanner.curToken != rightCurlToken) {
 	    Log.enterParser("<statement>");
 	    //-- Must be changed in part 1:
-	    System.out.println("--------> " + Scanner.curToken);
 	    Statement s = Statement.makeNewStatement();
 	    Scanner.readNext();
 	    Scanner.skip(leftParToken);
@@ -625,12 +625,12 @@ class StatmList extends SyntaxUnit {
 	    }
 	    
 	    Log.leaveParser("</statement>");
-	    System.out.println(" ===== > " + Scanner.curToken);
 	    Scanner.readNext();
-	    if (Scanner.curToken == rightParToken) break;
-	    System.out.println(" E==== > " + Scanner.curToken);
+	    if (Scanner.curToken == rightParToken) {
+		Scanner.skip(rightParToken);
+	    }
 	}
-
+	Scanner.skip(semicolonToken);
 	Log.leaveParser("</statm list>");
     }
 
@@ -875,6 +875,7 @@ class CallStatm extends Statement {
 	//1- Must be changed in part 1:
 	Log.enterParser("<call-statm>");
 	fc.parse();
+	Scanner.skip(semicolonToken);
 	Log.leaveParser("</call-statm>");
     }
 
@@ -1071,7 +1072,7 @@ abstract class Operand extends SyntaxUnit {
 	// finne ut hvilken type operand
 	nextOperand = new Number(); // midlertidig
 	nextOperand.parse();
-	Log.leaveParser("</function call>");
+	Log.leaveParser("</operand>");
     }
 
 }

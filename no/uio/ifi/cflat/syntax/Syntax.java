@@ -424,11 +424,16 @@ class LocalArrayDecl extends VarDecl {
     }
 
     @Override void parse() {
-        Log.enterParser("<var decl>");
-
-        //-- Must be changed in part 1:
-
-        Log.leaveParser("</var decl>");
+        //1- Must be changed in part 1:
+	Log.enterParser("<var decl>");
+	System.out.println("<varDecl> " + Scanner.curToken + " " + Scanner.nextToken + " " + Scanner.nextNextToken);
+	Scanner.skip(intToken, doubleToken);
+	Scanner.skip(nameToken);
+	Scanner.skip(leftBracketToken);
+	Scanner.skip(numberToken);
+	Scanner.skip(rightBracketToken);
+	Scanner.skip(semicolonToken);
+	Log.leaveParser("</var decl>");
     }
 
     @Override void printTree() {
@@ -463,11 +468,12 @@ class LocalSimpleVarDecl extends VarDecl {
     }
 
     @Override void parse() {
-        Log.enterParser("<var decl>");
-
-        //-- Must be changed in part 1:
-
-        Log.leaveParser("</var decl>");
+        //1- Must be changed in part 1:
+	Log.enterParser("<var decl>");
+	Scanner.skip(intToken, doubleToken);
+	Scanner.skip(nameToken);
+	Scanner.skip(semicolonToken);
+	Log.leaveParser("</var decl>");
     }
 }
 
@@ -591,9 +597,10 @@ class FuncBody extends SyntaxUnit {
 
     //  DeclList declList = new DeclList();
     StatmList stmlist = new StatmList();
+    
 
-
-
+    LocalDeclList localDeclList = new LocalDeclList(); // LocalSimpleVarDecl eller LocalArrayVarDecl
+    
     @Override void check(DeclList currBody) {
         //-- Must be changed in part 2:
     }
@@ -610,7 +617,17 @@ class FuncBody extends SyntaxUnit {
 
 	while (Token.isTypeName(Scanner.curToken)) {
             // TODO - gå igjennom alle parameterene i declList
-            System.out.println("***variables***");
+            // sjekke om den er "simple-" eller "arrarVarDecl"
+	    System.out.println("<FuncBody> " + Scanner.curToken + " " + Scanner.nextToken + " " + Scanner.nextNextToken);
+	    if (Scanner.nextNextToken == semicolonToken) {
+		LocalSimpleVarDecl v = new LocalSimpleVarDecl(Scanner.nextName);
+		v.parse();
+		localDeclList.addDecl(v); 
+	    } else {
+		LocalArrayDecl v = new LocalArrayDecl(Scanner.nextName);
+		v.parse();
+		localDeclList.addDecl(v); 
+	    }
         }
         //declList.parse();
         stmlist.parse();

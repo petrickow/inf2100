@@ -322,8 +322,7 @@ public class Scanner {
     }
 
     public static void skip(Token t) {
-	System.out.println(t + " " + curName);
-        check(t); readNext();
+	check(t); readNext();
     }
 
     public static void skip(Token t1, Token t2) {

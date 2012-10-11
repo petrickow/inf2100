@@ -1,8 +1,8 @@
 package no.uio.ifi.cflat.syntax;
 
 /*
- * module Syntax
- */
+* module Syntax
+*/
 
 import no.uio.ifi.cflat.cflat.Cflat;
 import no.uio.ifi.cflat.code.Code;
@@ -14,11 +14,11 @@ import static no.uio.ifi.cflat.scanner.Token.*;
 import no.uio.ifi.cflat.types.*;
 
 /*
- * Creates a syntax tree by parsing; 
- * prints the parse tree (if requested);
- * checks it;
- * generates executable code. 
- */
+* Creates a syntax tree by parsing;
+* prints the parse tree (if requested);
+* checks it;
+* generates executable code.
+*/
 
 
 
@@ -58,9 +58,9 @@ public class Syntax {
 
 
 /*
- * Master class for all syntactic units.
- * (This class is not mentioned in the syntax diagrams.)
- */
+* Master class for all syntactic units.
+* (This class is not mentioned in the syntax diagrams.)
+*/
 abstract class SyntaxUnit {
     int lineNum;
 
@@ -76,8 +76,8 @@ abstract class SyntaxUnit {
 
 
 /*
- * A <program>
- */
+* A <program>
+*/
 class Program extends SyntaxUnit {
     DeclList progDecls = new GlobalDeclList();
 
@@ -111,9 +111,9 @@ class Program extends SyntaxUnit {
 
 
 /*
- * A declaration list.
- * (This class is not mentioned in the syntax diagrams.)
- */
+* A declaration list.
+* (This class is not mentioned in the syntax diagrams.)
+*/
 
 abstract class DeclList extends SyntaxUnit {
     Declaration firstDecl = null;
@@ -128,7 +128,7 @@ abstract class DeclList extends SyntaxUnit {
 
         Declaration dx = firstDecl;
         while (dx != null) {
-            dx.check(this);  dx = dx.nextDecl;
+            dx.check(this); dx = dx.nextDecl;
         }
     }
 
@@ -158,7 +158,7 @@ abstract class DeclList extends SyntaxUnit {
         int res = 0;
 
         while (dx != null) {
-            res += dx.declSize();  dx = dx.nextDecl;
+            res += dx.declSize(); dx = dx.nextDecl;
         }
         return res;
     }
@@ -171,9 +171,9 @@ abstract class DeclList extends SyntaxUnit {
 
 
 /*
- * A list of global declarations. 
- * (This class is not mentioned in the syntax diagrams.)
- */
+* A list of global declarations.
+* (This class is not mentioned in the syntax diagrams.)
+*/
 class GlobalDeclList extends DeclList {
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
@@ -203,9 +203,9 @@ class GlobalDeclList extends DeclList {
 
 
 /*
- * A list of local declarations. 
- * (This class is not mentioned in the syntax diagrams.)
- */
+* A list of local declarations.
+* (This class is not mentioned in the syntax diagrams.)
+*/
 class LocalDeclList extends DeclList {
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
@@ -218,9 +218,9 @@ class LocalDeclList extends DeclList {
 
 
 /*
- * A list of parameter declarations. 
- * (This class is not mentioned in the syntax diagrams.)
- */
+* A list of parameter declarations.
+* (This class is not mentioned in the syntax diagrams.)
+*/
 class ParamDeclList extends DeclList {
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
@@ -230,16 +230,16 @@ class ParamDeclList extends DeclList {
         //-- Must be changed in part 1:
         // Log.enterParser("<param decl>");
         // Scanner.skip(intToken, doubleToken);
-	// Scanner.skip(nameToken);
-	// Log.leaveParser("</param decl>");
+// Scanner.skip(nameToken);
+// Log.leaveParser("</param decl>");
     }
 }
 
 
 /*
- * Any kind of declaration.
- * (This class is not mentioned in the syntax diagrams.)
- */
+* Any kind of declaration.
+* (This class is not mentioned in the syntax diagrams.)
+*/
 abstract class Declaration extends SyntaxUnit {
     String name, assemblerName;
     Type type;
@@ -253,54 +253,54 @@ abstract class Declaration extends SyntaxUnit {
     abstract int declSize();
 
     /**
-     * checkWhetherArray: Utility method to check whether this Declaration is
-     * really an array. The compiler must check that a name is used properly;
-     * for instance, using an array name a in "a()" or in "x=a;" is illegal.
-     * This is handled in the following way:
-     * <ul>
-     * <li> When a name a is found in a setting which implies that should be an
-     *      array (i.e., in a construct like "a["), the parser will first 
-     *      search for a's declaration d.
-     * <li> The parser will call d.checkWhetherArray(this).
-     * <li> Every sub-class of Declaration will implement a checkWhetherArray.
-     *      If the declaration is indeed an array, checkWhetherArray will do
-     *      nothing, but if it is not, the method will give an error message.
-     * </ul>
-     * Examples
-     * <dl>
-     *  <dt>GlobalArrayDecl.checkWhetherArray(...)</dt>
-     *  <dd>will do nothing, as everything is all right.</dd>
-     *  <dt>FuncDecl.checkWhetherArray(...)</dt>
-     *  <dd>will give an error message.</dd>
-     * </dl>
-     */
+* checkWhetherArray: Utility method to check whether this Declaration is
+* really an array. The compiler must check that a name is used properly;
+* for instance, using an array name a in "a()" or in "x=a;" is illegal.
+* This is handled in the following way:
+* <ul>
+* <li> When a name a is found in a setting which implies that should be an
+* array (i.e., in a construct like "a["), the parser will first
+* search for a's declaration d.
+* <li> The parser will call d.checkWhetherArray(this).
+* <li> Every sub-class of Declaration will implement a checkWhetherArray.
+* If the declaration is indeed an array, checkWhetherArray will do
+* nothing, but if it is not, the method will give an error message.
+* </ul>
+* Examples
+* <dl>
+* <dt>GlobalArrayDecl.checkWhetherArray(...)</dt>
+* <dd>will do nothing, as everything is all right.</dd>
+* <dt>FuncDecl.checkWhetherArray(...)</dt>
+* <dd>will give an error message.</dd>
+* </dl>
+*/
     abstract void checkWhetherArray(SyntaxUnit use);
 
     /**
-     * checkWhetherFunction: Utility method to check whether this Declaration
-     * is really a function.
-     * 
-     * @param nParamsUsed Number of parameters used in the actual call.
-     *                    (The method will give an error message if the
-     *                    function was used with too many or too few parameters.)
-     * @param use From where is the check performed?
-     * @see   checkWhetherArray
-     */
+* checkWhetherFunction: Utility method to check whether this Declaration
+* is really a function.
+*
+* @param nParamsUsed Number of parameters used in the actual call.
+* (The method will give an error message if the
+* function was used with too many or too few parameters.)
+* @param use From where is the check performed?
+* @see checkWhetherArray
+*/
     abstract void checkWhetherFunction(int nParamsUsed, SyntaxUnit use);
 
     /**
-     * checkWhetherSimpleVar: Utility method to check whether this
-     * Declaration is really a simple variable.
-     *
-     * @see   checkWhetherArray
-     */
+* checkWhetherSimpleVar: Utility method to check whether this
+* Declaration is really a simple variable.
+*
+* @see checkWhetherArray
+*/
     abstract void checkWhetherSimpleVar(SyntaxUnit use);
 }
 
 
 /*
- * A <var decl>
- */
+* A <var decl>
+*/
 abstract class VarDecl extends Declaration {
     VarDecl(String n) {
         super(n);
@@ -324,8 +324,8 @@ abstract class VarDecl extends Declaration {
 
 
 /*
- * A global array declaration
- */
+* A global array declaration
+*/
 class GlobalArrayDecl extends VarDecl {
     GlobalArrayDecl(String n) {
         super(n);
@@ -365,8 +365,8 @@ class GlobalArrayDecl extends VarDecl {
 
 
 /*
- * A global simple variable declaration
- */
+* A global simple variable declaration
+*/
 class GlobalSimpleVarDecl extends VarDecl {
     GlobalSimpleVarDecl(String n) {
         super(n);
@@ -400,11 +400,11 @@ class GlobalSimpleVarDecl extends VarDecl {
 
 
 /*
- * A local array declaration
- */
+* A local array declaration
+*/
 class LocalArrayDecl extends VarDecl {
     LocalArrayDecl(String n) {
-        super(n); 
+        super(n);
     }
 
     @Override void check(DeclList curDecls) {
@@ -424,11 +424,16 @@ class LocalArrayDecl extends VarDecl {
     }
 
     @Override void parse() {
-        Log.enterParser("<var decl>");
-
-        //-- Must be changed in part 1:
-
-        Log.leaveParser("</var decl>");
+        //1- Must be changed in part 1:
+Log.enterParser("<var decl>");
+System.out.println("<varDecl> " + Scanner.curToken + " " + Scanner.nextToken + " " + Scanner.nextNextToken);
+Scanner.skip(intToken, doubleToken);
+Scanner.skip(nameToken);
+Scanner.skip(leftBracketToken);
+Scanner.skip(numberToken);
+Scanner.skip(rightBracketToken);
+Scanner.skip(semicolonToken);
+Log.leaveParser("</var decl>");
     }
 
     @Override void printTree() {
@@ -439,11 +444,11 @@ class LocalArrayDecl extends VarDecl {
 
 
 /*
- * A local simple variable declaration
- */
+* A local simple variable declaration
+*/
 class LocalSimpleVarDecl extends VarDecl {
     LocalSimpleVarDecl(String n) {
-        super(n); 
+        super(n);
     }
 
     @Override void check(DeclList curDecls) {
@@ -463,18 +468,19 @@ class LocalSimpleVarDecl extends VarDecl {
     }
 
     @Override void parse() {
-        Log.enterParser("<var decl>");
-
-        //-- Must be changed in part 1:
-
-        Log.leaveParser("</var decl>");
+        //1- Must be changed in part 1:
+Log.enterParser("<var decl>");
+Scanner.skip(intToken, doubleToken);
+Scanner.skip(nameToken);
+Scanner.skip(semicolonToken);
+Log.leaveParser("</var decl>");
     }
 }
 
 
 /*
- * A <param decl>
- */
+* A <param decl>
+*/
 class ParamDecl extends VarDecl {
     int paramNum = 0;
 
@@ -499,19 +505,19 @@ class ParamDecl extends VarDecl {
     }
 
     @Override void parse() {
-	//1- Must be changed in part 1:
-	Log.enterParser("<param decl>");
+//1- Must be changed in part 1:
+Log.enterParser("<param decl>");
         Scanner.skip(intToken, doubleToken);
-	Scanner.skip(nameToken);
-	Log.leaveParser("</param decl>");
+Scanner.skip(nameToken);
+Log.leaveParser("</param decl>");
         
     }
 }
 
 
 /*
- * A <func decl>
- */
+* A <func decl>
+*/
 class FuncDecl extends Declaration {
 
     //-- Must be changed in part 1+2:
@@ -568,14 +574,14 @@ class FuncDecl extends Declaration {
         Scanner.skip(leftParToken);
 
         while (Token.isTypeName(Scanner.curToken)) {
-	    paramDecl = new ParamDecl(Scanner.curName);
-	    paramDecl.parse();
+paramDecl = new ParamDecl(Scanner.curName);
+paramDecl.parse();
             if (Scanner.curToken == commaToken) {
-		Scanner.skip(commaToken);
-	    }	    
-	}
+Scanner.skip(commaToken);
+}
+}
         Scanner.skip(rightParToken);
-	fb.parse();
+fb.parse();
 
         Log.leaveParser("</func decl>");
 
@@ -589,11 +595,12 @@ class FuncDecl extends Declaration {
 
 class FuncBody extends SyntaxUnit {
 
-    //  DeclList declList = new DeclList();
+    // DeclList declList = new DeclList();
     StatmList stmlist = new StatmList();
+    
 
-
-
+    LocalDeclList localDeclList = new LocalDeclList(); // LocalSimpleVarDecl eller LocalArrayVarDecl
+    
     @Override void check(DeclList currBody) {
         //-- Must be changed in part 2:
     }
@@ -608,9 +615,19 @@ class FuncBody extends SyntaxUnit {
 
         Scanner.skip(leftCurlToken);
 
-	while (Token.isTypeName(Scanner.curToken)) {
+while (Token.isTypeName(Scanner.curToken)) {
             // TODO - gå igjennom alle parameterene i declList
-            System.out.println("***variables***");
+            // sjekke om den er "simple-" eller "arrarVarDecl"
+System.out.println("<FuncBody> " + Scanner.curToken + " " + Scanner.nextToken + " " + Scanner.nextNextToken);
+if (Scanner.nextNextToken == semicolonToken) {
+LocalSimpleVarDecl v = new LocalSimpleVarDecl(Scanner.nextName);
+v.parse();
+localDeclList.addDecl(v);
+} else {
+LocalArrayDecl v = new LocalArrayDecl(Scanner.nextName);
+v.parse();
+localDeclList.addDecl(v);
+}
         }
         //declList.parse();
         stmlist.parse();
@@ -628,8 +645,8 @@ class FuncBody extends SyntaxUnit {
 
 
 /*
- * A <statm list>.
- */
+* A <statm list>.
+*/
 class StatmList extends SyntaxUnit {
     //-- Must be changed in part 1:
 
@@ -662,7 +679,7 @@ class StatmList extends SyntaxUnit {
 
             Log.leaveParser("</statement>");
             // leser neste token så loopen ikke går evig
-	}
+}
         Log.leaveParser("</statm list>");
     }
 
@@ -673,13 +690,13 @@ class StatmList extends SyntaxUnit {
 
 
 /*
- * A <statement>.
- */
+* A <statement>.
+*/
 abstract class Statement extends SyntaxUnit {
     Statement nextStatm = null;
 
     static Statement makeNewStatement() {
-        if (Scanner.curToken==nameToken && 
+        if (Scanner.curToken==nameToken &&
                 Scanner.nextToken==leftParToken) {
             //1- Must be changed in part 1:
             return new CallStatm();
@@ -701,7 +718,7 @@ abstract class Statement extends SyntaxUnit {
         } else {
             Error.expected("A statement");
         }
-        return null;  // Just to keep the Java compiler happy. :-)
+        return null; // Just to keep the Java compiler happy. :-)
     }
 }
 
@@ -709,8 +726,8 @@ abstract class Statement extends SyntaxUnit {
 
 
 /*
- * An <empty statm>.
- */
+* An <empty statm>.
+*/
 class EmptyStatm extends Statement {
     //-- Must be changed in part 1+2:
 
@@ -737,8 +754,8 @@ class EmptyStatm extends Statement {
 
 
 /*
- * A <for-statm>.
- */
+* A <for-statm>.
+*/
 //-- Must be changed in part 1+2:
 // Klasse vi har opprettet selv
 
@@ -791,8 +808,8 @@ class AssignStatm extends Statement {
 
 
 /*
- * An <if-statm>.
- */
+* An <if-statm>.
+*/
 class IfStatm extends Statement {
     //-- Must be changed in part 1+2:
 
@@ -815,8 +832,8 @@ class IfStatm extends Statement {
 
 
 /*
- * A <return-statm>.
- */
+* A <return-statm>.
+*/
 //-- Must be changed in part 1+2:
 // klasse vi har laget selv
 
@@ -844,8 +861,8 @@ class ReturnStatm extends Statement {
 
 
 /*
- * A <while-statm>.
- */
+* A <while-statm>.
+*/
 class WhileStatm extends Statement {
     Expression test = new Expression();
     StatmList body = new StatmList();
@@ -856,8 +873,8 @@ class WhileStatm extends Statement {
     }
 
     @Override void genCode(FuncDecl curFunc) {
-        String testLabel = Code.getLocalLabel(), 
-               endLabel  = Code.getLocalLabel();
+        String testLabel = Code.getLocalLabel(),
+               endLabel = Code.getLocalLabel();
 
         Code.genInstr(testLabel, "", "", "Start while-statement");
         test.genCode(curFunc);
@@ -882,7 +899,7 @@ class WhileStatm extends Statement {
     }
 
     @Override void printTree() {
-        Log.wTree("while (");  test.printTree();  Log.wTreeLn(") {");
+        Log.wTree("while ("); test.printTree(); Log.wTreeLn(") {");
         Log.indentTree();
         body.printTree();
         Log.outdentTree();
@@ -922,8 +939,8 @@ class CallStatm extends Statement {
 
 
 /*
- * An <expression list>.
- */
+* An <expression list>.
+*/
 
 class ExprList extends SyntaxUnit {
     Expression firstExpr = null;
@@ -950,8 +967,8 @@ class ExprList extends SyntaxUnit {
                 lastExpr.nextExpr = lastExpr = new Expression(); //put in list
                 lastExpr.parse();
             }
-	    // TODO -- må også ta høyde for at det kan være flere expressions her med komma imellom
-	    Scanner.readNext();
+// TODO -- må også ta høyde for at det kan være flere expressions her med komma imellom
+Scanner.readNext();
         }
         
         Log.leaveParser("</expr list>");
@@ -965,8 +982,8 @@ class ExprList extends SyntaxUnit {
 
 
 /*
- * An <expression>
- */
+* An <expression>
+*/
 class Expression extends Operand {
     Expression nextExpr = null;
     Term firstTerm = new Term(), secondTerm = null;
@@ -986,7 +1003,7 @@ class Expression extends Operand {
 
         firstTerm.parse();
         if (Token.isRelOperator(Scanner.curToken)) {
-            relOp = new RelOperator(); 
+            relOp = new RelOperator();
             relOp.parse();
             secondTerm = new Term();
             secondTerm.parse();
@@ -1002,8 +1019,8 @@ class Expression extends Operand {
 
 
 /*
- * A <term>
- */
+* A <term>
+*/
 class Term extends SyntaxUnit {
     //-- Must be changed in part 1+2:
     Factor factor = new Factor();
@@ -1020,9 +1037,9 @@ class Term extends SyntaxUnit {
         //1- Must be changed in part 1:
         Log.enterParser("<term>");
         System.out.println("I <term> " + Scanner.curToken + " " + Scanner.nextToken + " " + Scanner.nextNextToken);
-	
-	// TODO -- lese inn [factor] og [term opr] i while-loop
-	factor.parse();
+
+// TODO -- lese inn [factor] og [term opr] i while-loop
+factor.parse();
 
         Log.leaveParser("</term>");
     }
@@ -1050,10 +1067,10 @@ class Factor extends SyntaxUnit {
     @Override void parse() {
         //1- Must be changed in part 1:
         Log.enterParser("<operand>");
-	// lese inn [operand] og [factor opr] i while-loop
-	
-	operand = Operand.makeNewOperand();
-	operand.parse();
+// lese inn [operand] og [factor opr] i while-loop
+
+operand = Operand.makeNewOperand();
+operand.parse();
 
         Log.leaveParser("</operand>");
     }
@@ -1070,8 +1087,8 @@ class Factor extends SyntaxUnit {
 //-- Must be changed in part 1+2:
 
 /*
- * An <operator>
- */
+* An <operator>
+*/
 abstract class Operator extends SyntaxUnit {
     Operator nextOp = null;
     Type opType;
@@ -1085,8 +1102,8 @@ abstract class Operator extends SyntaxUnit {
 
 
 /*
- * A relational operator (==, !=, <, <=, > or >=).
- */
+* A relational operator (==, !=, <, <=, > or >=).
+*/
 
 class RelOperator extends Operator {
     @Override void genCode(FuncDecl curFunc) {
@@ -1102,18 +1119,18 @@ class RelOperator extends Operator {
         }
         Code.genInstr("", "movl", "$0,%eax", "");
         switch (opToken) {
-            case equalToken:        
-                Code.genInstr("", "sete", "%al", "Test ==");  break;
+            case equalToken:
+                Code.genInstr("", "sete", "%al", "Test =="); break;
             case notEqualToken:
-                Code.genInstr("", "setne", "%al", "Test !=");  break;
+                Code.genInstr("", "setne", "%al", "Test !="); break;
             case lessToken:
-                Code.genInstr("", "setl", "%al", "Test <");  break;
+                Code.genInstr("", "setl", "%al", "Test <"); break;
             case lessEqualToken:
-                Code.genInstr("", "setle", "%al", "Test <=");  break;
+                Code.genInstr("", "setle", "%al", "Test <="); break;
             case greaterToken:
-                Code.genInstr("", "setg", "%al", "Test >");  break;
+                Code.genInstr("", "setg", "%al", "Test >"); break;
             case greaterEqualToken:
-                Code.genInstr("", "setge", "%al", "Test >=");  break;
+                Code.genInstr("", "setge", "%al", "Test >="); break;
         }
     }
 
@@ -1129,12 +1146,12 @@ class RelOperator extends Operator {
     @Override void printTree() {
         String op = "?";
         switch (opToken) {
-            case equalToken:        op = "==";  break;
-            case notEqualToken:     op = "!=";  break;
-            case lessToken:         op = "<";   break;
-            case lessEqualToken:    op = "<=";  break;
-            case greaterToken:      op = ">";   break;
-            case greaterEqualToken: op = ">=";  break;
+            case equalToken: op = "=="; break;
+            case notEqualToken: op = "!="; break;
+            case lessToken: op = "<"; break;
+            case lessEqualToken: op = "<="; break;
+            case greaterToken: op = ">"; break;
+            case greaterEqualToken: op = ">="; break;
         }
         Log.wTree(" " + op + " ");
     }
@@ -1142,15 +1159,15 @@ class RelOperator extends Operator {
 
 
 /*
- * An <operand>
- */
+* An <operand>
+*/
 abstract class Operand extends SyntaxUnit {
     Operand nextOperand = null;
     Type valType;
 
     // egenopprettet metode
     static Operand makeNewOperand() {
-		
+
         if (Scanner.curToken == numberToken) {
             //1- Must be changed in part 1:
             return new Number();
@@ -1161,33 +1178,33 @@ abstract class Operand extends SyntaxUnit {
             //1- Must be changed in part 1:
             return new Variable();
         } else if (Scanner.curToken == ifToken) {
-            //return new IfStatm();    // Må også ha med operandtypen ( expression )
-	    return null;
-	} else {
+            //return new IfStatm(); // Må også ha med operandtypen ( expression )
+return null;
+} else {
             Error.expected("A statement");
         }
-        return null;  // Just to keep the Java compiler happy. :-)
+        return null; // Just to keep the Java compiler happy. :-)
     }
 
 
 
-    // egenopprettet metode.  
+    // egenopprettet metode.
     /*@Override void parse() {
-        //-- Must be changed in part 1:
-        Log.enterParser("<operand>");
-        // finne ut hvilken type operand
-        nextOperand = new Number(); // midlertidig
-        nextOperand.parse();
-        Log.leaveParser("</operand>");
-	}
-    */
+//-- Must be changed in part 1:
+Log.enterParser("<operand>");
+// finne ut hvilken type operand
+nextOperand = new Number(); // midlertidig
+nextOperand.parse();
+Log.leaveParser("</operand>");
+}
+*/
 
 }
 
 
 /*
- * A <function call>.
- */
+* A <function call>.
+*/
 class FunctionCall extends Operand {
     //-- Must be changed in part 1+2:
     ExprList el = new ExprList();
@@ -1218,8 +1235,8 @@ class FunctionCall extends Operand {
 
 
 /*
- * A <number>.
- */
+* A <number>.
+*/
 class Number extends Operand {
     int numVal;
 
@@ -1228,7 +1245,7 @@ class Number extends Operand {
     }
 
     @Override void genCode(FuncDecl curFunc) {
-        Code.genInstr("", "movl", "$"+numVal+",%eax", ""+numVal); 
+        Code.genInstr("", "movl", "$"+numVal+",%eax", ""+numVal);
     }
 
     @Override void parse() {
@@ -1244,8 +1261,8 @@ class Number extends Operand {
 
 
 /*
- * A <variable>.
- */
+* A <variable>.
+*/
 
 class Variable extends Operand {
     String varName;

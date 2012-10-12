@@ -437,7 +437,6 @@ class LocalArrayDecl extends VarDecl {
     @Override void parse() {
         //1- Must be changed in part 1:
 	Log.enterParser("<var decl>");
-	System.out.println("<varDecl> " + Scanner.curToken + " " + Scanner.nextToken + " " + Scanner.nextNextToken);
 	Scanner.skip(intToken, doubleToken);
 	Scanner.skip(nameToken);
 	Scanner.skip(leftBracketToken);
@@ -624,12 +623,11 @@ class FuncBody extends SyntaxUnit {
         Log.enterParser("<func body>");
 
         Scanner.skip(leftCurlToken);
-	System.out.println("<Fun123cBody> " + Scanner.curToken + " " + Scanner.nextToken + " " + Scanner.nextNextToken);
 	
 	while (Token.isTypeName(Scanner.curToken)) {
             // TODO - gå igjennom alle parameterene i declList
             // sjekke om den er "simple-" eller "arrarVarDecl"
-	    System.out.println("<FuncBody> " + Scanner.curToken + " " + Scanner.nextToken + " " + Scanner.nextNextToken);
+	    
 	    if (Scanner.nextNextToken == semicolonToken) {
 		LocalSimpleVarDecl v = new LocalSimpleVarDecl(Scanner.nextName);
 		v.parse();
@@ -771,7 +769,9 @@ class EmptyStatm extends Statement {
 // Klasse vi har opprettet selv
 
 class ForStatm extends Statement {
-    //-- Must be changed in part 1+2:
+    //1- Must be changed in part 1+2:
+    ForControl forControl = new ForControl();
+    StatmList statmList = new StatmList();
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
@@ -782,7 +782,52 @@ class ForStatm extends Statement {
     }
 
     @Override void parse() {
+        //1- Must be changed in part 1:
+	Log.enterParser("<for-statm>");
+	Scanner.skip(forToken);	
+	Scanner.skip(leftParToken);
+	forControl.parse();
+	Scanner.skip(rightParToken);
+	Scanner.skip(leftCurlToken);
+	statmList.parse();
+	Scanner.skip(rightCurlToken);
+	Log.leaveParser("</for-statm>");
+    }
+
+    @Override void printTree() {
         //-- Must be changed in part 1:
+    }
+}
+
+/*
+* A <ForControl>.
+*/
+//-- Must be changed in part 1+2:
+// Klasse vi har opprettet selv
+
+class ForControl extends SyntaxUnit {
+    //1- Must be changed in part 1+2:
+    Assignment assignment = new Assignment();
+    Expression expression = new Expression();
+
+    @Override void check(DeclList curDecls) {
+        //-- Must be changed in part 2:
+    }
+
+    @Override void genCode(FuncDecl curFunc) {
+        //-- Must be changed in part 2:
+    }
+
+    @Override void parse() {
+        //1- Must be changed in part 1:
+
+	assignment.parse();
+	Scanner.skip(semicolonToken);
+	expression.parse();
+	Scanner.skip(semicolonToken);
+	assignment.parse();
+
+
     }
 
     @Override void printTree() {
@@ -1048,10 +1093,10 @@ class Expression extends Operand {
 
     @Override void parse() {
         Log.enterParser("<expression>");
-
-        firstTerm.parse();
+	
+	firstTerm.parse();
         if (Token.isRelOperator(Scanner.curToken)) {
-            relOp = new RelOperator();
+	    relOp = new RelOperator();
             relOp.parse();
             secondTerm = new Term();
             secondTerm.parse();
@@ -1085,9 +1130,14 @@ class Term extends SyntaxUnit {
         //1- Must be changed in part 1:
         Log.enterParser("<term>");
         
-	// TODO -- lese inn [factor] og [term opr] i while-loop
 	factor.parse();
-
+	while (Token.isTermOperator(Scanner.curToken)) {
+	    Scanner.skip(addToken, subtractToken);
+	    factor.parse();
+	}
+	
+	
+	
         Log.leaveParser("</term>");
     }
 
@@ -1188,9 +1238,12 @@ class RelOperator extends Operator {
 
     @Override void parse() {
         Log.enterParser("<rel operator>");
-
-        opToken = Scanner.curToken;
-        Scanner.readNext();
+	
+        if (Token.isRelOperator(Scanner.curToken)) {
+	    Scanner.readNext();
+	} else {
+	    Error.expected("A rel operator");
+	}
 
         Log.leaveParser("</rel operator>");
     }
@@ -1290,7 +1343,6 @@ class Number extends Operand {
     @Override void parse() {
         //1- Must be changed in part 1:
         Log.enterParser("<number>");
-        System.out.println("<number> " + Scanner.curToken);
 	Scanner.skip(numberToken);
 	Log.leaveParser("</number>");
     }

@@ -2,7 +2,12 @@
 # -------------
 # A minimal Cb program!
 
-int main() 
+int main (int a, int b) 
 {
-    putchar('x');    
+  int c;
+  double d;
+  int e[5];
+  double de[5];
+  
+  putchar('x');   
 }

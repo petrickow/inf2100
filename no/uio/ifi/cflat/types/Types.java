@@ -14,27 +14,39 @@ import static no.uio.ifi.cflat.scanner.Token.*;
  */
 
 public class Types {
-    public static BasicType doubleType, intType;
+    public static BasicType doubleType, intType;//TODO arrayType, where?
 
     public static void init() {
-	doubleType = new BasicType() {
-		@Override public int size() {
-		    return 8;
-		}
+        doubleType = new BasicType() {
+            @Override public int size() {
+                return 8;
+            }
 
-		@Override public String typeName() {
-		    return "double";
-		}
+            @Override public String typeName() {
+                return "double";
+            }
 
-		@Override public void genJumpIfZero(String jumpLabel) {
-		    Code.genInstr("", "fstps", Code.tmpLabel, "");
-		    Code.genInstr("", "cmpl", "$0,"+Code.tmpLabel, "");
-		    Code.genInstr("", "je", jumpLabel, "");
-		}
-	    };
-	//-- Must be changed in part 2:
+            @Override public void genJumpIfZero(String jumpLabel) {
+                Code.genInstr("", "fstps", Code.tmpLabel, "");
+                Code.genInstr("", "cmpl", "$0,"+Code.tmpLabel, "");
+                Code.genInstr("", "je", jumpLabel, "");
+            }
+        };
+    
+        //-- Must be changed in part 2:
+        intType = new BasicType() {
+            @Override public int size() {
+                return 4;
+            }
+
+            @Override public String typeName() {
+                return "int";
+            }
+            @Override public void genJumpIfZero(String jumpLabe) {
+                //TODO
+            }
+        };
     }
-
     public static void finish() {
 	//-- Must be changed in part 2:
     }

@@ -1,13 +1,12 @@
 # Program 'mini'
 # -------------
 # A minimal Cb program!
+int d;
+double f;
 
 int main (int a, int b) 
 {
-  int c;
-  double d;
-  int e[5];
-  double de[5];
-  
-  putchar('x');   
+  int x;
+  d = 4;
+  putchar('x');
 }

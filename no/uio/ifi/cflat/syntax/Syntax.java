@@ -134,9 +134,18 @@ abstract class DeclList extends SyntaxUnit {
 
     @Override void printTree() {
         Declaration dx = firstDecl;
-        
+        System.out.println();
         while (dx != null) {
-            System.out.println(dx.name);
+            //TODO, logwtree
+            if (FuncDecl.class.isInstance(dx)) {
+                System.out.println("FUNC-DELC");
+                dx.printTree();
+            }
+            else {
+                System.out.println("VAR-DECL");
+                dx.printTree();
+                //System.out.println("printtree: " + dx.type.typeName());
+            }
             dx = dx.nextDecl;
         }
         
@@ -155,8 +164,6 @@ abstract class DeclList extends SyntaxUnit {
             }
             temp.nextDecl = d;
         }
-
-
     }
 
     int dataSize() {
@@ -191,8 +198,6 @@ class GlobalDeclList extends DeclList {
             if (Scanner.nextToken == nameToken) {
                 if (Scanner.nextNextToken == leftParToken) {
                     FuncDecl fd = new FuncDecl(Scanner.nextName);
-                    fd.type = Types.getType(Scanner.curToken); //TODO!
-                    System.out.println(Types.getType(Scanner.curToken) + " should yield " + Scanner.curToken);
                     fd.parse();
                     addDecl(fd);
                 } else if (Scanner.nextNextToken == leftBracketToken) {
@@ -219,12 +224,26 @@ class GlobalDeclList extends DeclList {
  * (This class is not mentioned in the syntax diagrams.)
  */
 class LocalDeclList extends DeclList {
+    
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
     }
 
-    @Override void parse() {
+    @Override void parse() { //TODO
         //-- Must be changed in part 1:
+        while (Token.isTypeName(Scanner.curToken)) { //så lenge den er typeName
+            // sjekke om den er "simple-" eller "arrarVarDecl"
+            if (Scanner.nextNextToken == semicolonToken) {
+                LocalSimpleVarDecl v = new LocalSimpleVarDecl(Scanner.nextName);
+                v.parse();
+                addDecl(v);
+            } else {
+                LocalArrayDecl v = new LocalArrayDecl(Scanner.nextName);
+                v.parse();
+                addDecl(v);
+            }
+        }
+
     }
 }
 
@@ -240,10 +259,20 @@ class ParamDeclList extends DeclList {
 
     @Override void parse() {
         //-- Must be changed in part 1:
-        // Log.enterParser("<param decl>");
-        // Scanner.skip(intToken, doubleToken);
-        // Scanner.skip(nameToken);
-        // Log.leaveParser("</param decl>");
+        
+        Log.enterParser("<param decl>");
+        while (Scanner.curToken != rightParToken) {
+            //crate the param
+            Declaration d = new ParamDecl(Scanner.nextName);
+            
+            d.parse();
+            addDecl(d);
+
+            if (Scanner.curToken != rightParToken)
+                Scanner.skip(commaToken);
+        }
+
+        Log.leaveParser("</param decl>");
     }
 }
 
@@ -339,6 +368,7 @@ abstract class VarDecl extends Declaration {
  * A global array declaration
  */
 class GlobalArrayDecl extends VarDecl {
+    int nElements; //TODO tmp solution
     GlobalArrayDecl(String n) {
         super(n);
         assemblerName = (Cflat.underscoredGlobals() ? "_" : "") + n;
@@ -366,10 +396,16 @@ class GlobalArrayDecl extends VarDecl {
         Log.enterParser("<var decl>");
 
         //1- Must be changed in part 1:
+        type = Types.getType(Scanner.curToken);
         Scanner.skip(intToken, doubleToken);
+        
+        name = Scanner.curName;
         Scanner.skip(nameToken);
         Scanner.skip(leftBracketToken);
+
+        nElements = Integer.parseInt(Scanner.curName);
         Scanner.skip(numberToken);
+        
         Scanner.skip(rightBracketToken);
         Scanner.skip(semicolonToken);
 
@@ -377,7 +413,7 @@ class GlobalArrayDecl extends VarDecl {
     }
 
     @Override void printTree() {
-        //-- Must be changed in part 1:
+        //-- Must be changed in part 1: //TODO
 
     }
 }
@@ -411,7 +447,9 @@ class GlobalSimpleVarDecl extends VarDecl {
     @Override void parse() {
         //1- Must be changed in part 1:
         Log.enterParser("<var decl>");
+        type = Types.getType(Scanner.curToken);
         Scanner.skip(intToken, doubleToken);
+        name = Scanner.curName;
         Scanner.skip(nameToken);
         Scanner.skip(semicolonToken);
         Log.leaveParser("</var decl>");
@@ -423,6 +461,8 @@ class GlobalSimpleVarDecl extends VarDecl {
  * A local array declaration
  */
 class LocalArrayDecl extends VarDecl {
+    int nElements; //Skal ligge i type? TODO tmp solution eller et NumberObjekt?
+    Number nEl; 
     LocalArrayDecl(String n) {
         super(n);
     }
@@ -446,9 +486,14 @@ class LocalArrayDecl extends VarDecl {
     @Override void parse() {
         //1- Must be changed in part 1:
         Log.enterParser("<var decl>");
+        type = Types.getType(Scanner.curToken);
         Scanner.skip(intToken, doubleToken);
+
+        name = Scanner.curName;
         Scanner.skip(nameToken);
         Scanner.skip(leftBracketToken);
+        //bytt ut med number?
+        nElements = Integer.parseInt(Scanner.curName);
         Scanner.skip(numberToken);
         Scanner.skip(rightBracketToken);
         Scanner.skip(semicolonToken);
@@ -489,7 +534,9 @@ class LocalSimpleVarDecl extends VarDecl {
     @Override void parse() {
         //1- Must be changed in part 1:
         Log.enterParser("<var decl>");
+        type = Types.getType(Scanner.curToken);
         Scanner.skip(intToken, doubleToken);
+        name = Scanner.curName;
         Scanner.skip(nameToken);
         Scanner.skip(semicolonToken);	
         Log.leaveParser("</var decl>");
@@ -526,10 +573,11 @@ class ParamDecl extends VarDecl {
     @Override void parse() {
         //1- Must be changed in part 1:
         Log.enterParser("<param decl>");
+        type = Types.getType(Scanner.curToken);    
         Scanner.skip(intToken, doubleToken);
+        name = Scanner.curName;
         Scanner.skip(nameToken);
         Log.leaveParser("</param decl>");
-
     }
 }
 
@@ -543,7 +591,7 @@ class FuncDecl extends Declaration {
 
     // egne
     FuncBody fb = new FuncBody();
-    ParamDecl paramDecl;
+    ParamDeclList paramDecl;
 
     FuncDecl(String n) {
         // Used for user functions:
@@ -586,17 +634,16 @@ class FuncDecl extends Declaration {
 
         Log.enterParser("<func decl>");
 
+        type = Types.getType(Scanner.curToken); 
         Scanner.skip(intToken, doubleToken);
+        name = Scanner.nextName;
         Scanner.skip(nameToken);
         Scanner.skip(leftParToken);
 
-        while (Token.isTypeName(Scanner.curToken)) {
-            paramDecl = new ParamDecl(Scanner.curName);
-            paramDecl.parse();
-            if (Scanner.curToken == commaToken) {
-                Scanner.skip(commaToken);
-            }
-        }
+        paramDecl = new ParamDeclList();
+        paramDecl.parse();
+        
+        
         Scanner.skip(rightParToken);
         fb.parse();
 
@@ -605,17 +652,34 @@ class FuncDecl extends Declaration {
     }
 
     @Override void printTree() {
-        //-- Must be changed in part 1:
+        //2- Must be changed in part 1:
+        //System.out.println("printTree in FuncDecl");
+        Log.wTree(type.typeName() + " " + name);
+        Declaration pd = paramDecl.firstDecl;
+        while (pd != null) {
+            Log.wTree(pd.type.typeName() + " " + pd.name);
+            if (pd.nextDecl != null) {
+                Log.wTree(", ");
+                pd = pd.nextDecl;
+            }
+            else
+                break;
+        }
+        Log.wTreeLn(")");
+        
+        Log.wTreeLn("{");
+        Log.indentTree();
+        fb.printTree();
+        Log.outdentTree();
+        Log.wTreeLn("}");
     }
 }
 
 
 class FuncBody extends SyntaxUnit {
 
-    // DeclList declList = new DeclList();
+    //DeclList declList = new DeclList();
     StatmList stmlist = new StatmList();
-
-
     LocalDeclList localDeclList = new LocalDeclList(); // LocalSimpleVarDecl eller LocalArrayVarDecl
 
     @Override void check(DeclList currBody) {
@@ -627,27 +691,14 @@ class FuncBody extends SyntaxUnit {
     }
 
     @Override void parse() {
-        //-- Must be changed in part 1:
+        //1- Must be changed in part 1:
         Log.enterParser("<func body>");
 
         Scanner.skip(leftCurlToken);
 
-        while (Token.isTypeName(Scanner.curToken)) {
-            // TODO - gå igjennom alle parameterene i declList
-            // sjekke om den er "simple-" eller "arrarVarDecl"
+        localDeclList.parse();  //parsere lokale variabler i sin klasse!
 
-            if (Scanner.nextNextToken == semicolonToken) {
-                LocalSimpleVarDecl v = new LocalSimpleVarDecl(Scanner.nextName);
-                v.parse();
-                localDeclList.addDecl(v);
-            } else {
-                LocalArrayDecl v = new LocalArrayDecl(Scanner.nextName);
-                v.parse();
-                localDeclList.addDecl(v);
-            }
-        }
-
-        stmlist.parse();
+        stmlist.parse(); //TODO HER ER JEG KOMMET
 
         Scanner.skip(rightCurlToken);
         Log.leaveParser("</func body>");
@@ -655,9 +706,18 @@ class FuncBody extends SyntaxUnit {
 
     @Override void printTree() {
         //-- Must be changed in part 1:
+        Declaration localDecl = localDeclList.firstDecl;
+        while (localDecl != null) {
+            Log.wTreeLn(localDecl.type.typeName() + " " + localDecl.name + ";");
+            localDecl = localDecl.nextDecl;
+        }
+        Statement st = stmlist.firstStatm;
+        while (st != null) {
+            st.printTree();
+            st = st.nextStatm;
+        }
     }
 }
-
 
 
 
@@ -687,7 +747,7 @@ class StatmList extends SyntaxUnit {
             Statement statement = Statement.makeNewStatement();
 
             statement.parse();
-
+            
             if (lastStatm == null) {
                 firstStatm = lastStatm = statement;
             } else {
@@ -702,6 +762,7 @@ class StatmList extends SyntaxUnit {
 
     @Override void printTree() {
         //-- Must be changed in part 1:
+System.out.println(this.getClass());
     }
 }
 
@@ -737,6 +798,8 @@ abstract class Statement extends SyntaxUnit {
         }
         return null; // Just to keep the Java compiler happy. :-)
     }
+
+    
 }
 
 
@@ -766,6 +829,7 @@ class EmptyStatm extends Statement {
 
     @Override void printTree() {
         //-- Must be changed in part 1:
+System.out.println(this.getClass());
     }
 }
 
@@ -804,6 +868,7 @@ class ForStatm extends Statement {
 
     @Override void printTree() {
         //-- Must be changed in part 1:
+System.out.println(this.getClass());
     }
 }
 
@@ -840,6 +905,7 @@ class ForControl extends SyntaxUnit {
 
     @Override void printTree() {
         //-- Must be changed in part 1:
+System.out.println(this.getClass());
     }
 }
 
@@ -871,6 +937,7 @@ class AssignStatm extends Statement {
 
     @Override void printTree() {
         //-- Must be changed in part 1:
+System.out.println(this.getClass());
     }
 }
 
@@ -902,6 +969,7 @@ class Assignment extends SyntaxUnit {
 
     @Override void printTree() {
         //-- Must be changed in part 1:
+System.out.println(this.getClass());
     }
 }
 
@@ -945,6 +1013,7 @@ class IfStatm extends Statement {
 
     @Override void printTree() {
         //-- Must be changed in part 1:
+System.out.println(this.getClass());
     }
 }
 
@@ -975,6 +1044,7 @@ class ElsePart extends SyntaxUnit {
 
     @Override void printTree() {
         //-- Must be changed in part 1:
+System.out.println(this.getClass());
     }
 }
 
@@ -1009,6 +1079,7 @@ class ReturnStatm extends Statement {
 
     @Override void printTree() {
         //-- Must be changed in part 1:
+System.out.println(this.getClass());
     }
 }
 
@@ -1409,6 +1480,7 @@ class Number extends Operand {
     @Override void parse() {
         //1- Must be changed in part 1:
         Log.enterParser("<number>");
+        numVal = Integer.parseInt(Scanner.curName); //???TODO???
         Scanner.skip(numberToken);
         Log.leaveParser("</number>");
     }

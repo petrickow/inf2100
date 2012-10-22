@@ -56,7 +56,7 @@ public class Log {
         if (! doLogParser) return;
 
         //-- Must be changed in part 1:
-        // må legge inn meg innrykk på en penere måte (programmeringsmessig)
+        // m legge inn meg innrykk p en penere mte (programmeringsmessig)
         String spaceN = new String(new char[indent]).replace('\0', ' ');
         writeLogLine("Parser:" + spaceN + symbol);
         increaseIndent();
@@ -66,7 +66,7 @@ public class Log {
         if (! doLogParser) return;
 
         //-- Must be changed in part 1:
-        // må legge inn meg innrykk på en penere måte (programmeringsmessig)
+        // m legge inn meg innrykk p en penere mte (programmeringsmessig)
         decreaseIndent();
         String spaceN = new String(new char[indent]).replace('\0', ' ');
         writeLogLine("Parser:" + spaceN + symbol);
@@ -94,9 +94,9 @@ public class Log {
     public static void noteToken() {
         if (! doLogScanner) return;
         //-- Must be changed in part 0:
-        if (Scanner.nextNextToken == nameToken) { // hvis nameToken må vi også sende med navnet på nameToken 
+        if (Scanner.nextNextToken == nameToken) { // hvis nameToken m vi ogs sende med navnet p nameToken 
             writeLogLine("Scanner:  " + Scanner.nextNextToken + " " + Scanner.nextNextName);
-        } else if (Scanner.nextNextToken == numberToken) { // hvis numberToken må vi også sende med navnet på tallet (lagt i nextNextName) 
+        } else if (Scanner.nextNextToken == numberToken) { // hvis numberToken m vi ogs sende med navnet p tallet (lagt i nextNextName) 
             writeLogLine("Scanner:  " + Scanner.nextNextToken + " " + Scanner.nextNextName);
         } else {
             writeLogLine("Scanner:  " + Scanner.nextNextToken);

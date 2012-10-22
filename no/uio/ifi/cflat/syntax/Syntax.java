@@ -231,7 +231,7 @@ class LocalDeclList extends DeclList {
 
     @Override void parse() { //TODO
         //-- Must be changed in part 1:
-        while (Token.isTypeName(Scanner.curToken)) { //så lenge den er typeName
+        while (Token.isTypeName(Scanner.curToken)) { //s lenge den er typeName
             // sjekke om den er "simple-" eller "arrarVarDecl"
             if (Scanner.nextNextToken == semicolonToken) {
                 LocalSimpleVarDecl v = new LocalSimpleVarDecl(Scanner.nextName);
@@ -755,7 +755,7 @@ class StatmList extends SyntaxUnit {
             }
 
             Log.leaveParser("</statement>");
-            // leser neste token så loopen ikke går evig
+            // leser neste token s loopen ikke gr evig
         }
         Log.leaveParser("</statm list>");
     }
@@ -1192,7 +1192,7 @@ class ExprList extends SyntaxUnit {
                 lastExpr.nextExpr = lastExpr = new Expression(); //put in list
                 lastExpr.parse();
             }
-            // TODO -- må også ta høyde for at det kan være flere expressions her med komma imellom
+            // TODO -- m ogs ta hyde for at det kan vre flere expressions her med komma imellom
             if (Scanner.curToken == commaToken) {
                 Scanner.skip(commaToken);
             }
@@ -1304,7 +1304,7 @@ class Factor extends SyntaxUnit {
         // lese inn [operand] og [factor opr] i while-loop
 
 
-        // Skal kanskje ikke ligge her, men fant ikke noe annet logisk sted å putte den
+        // Skal kanskje ikke ligge her, men fant ikke noe annet logisk sted  putte den
         // siden klassen operand er abstract
         Log.enterParser("<operand>");
         operand = Operand.makeNewOperand();
@@ -1420,7 +1420,7 @@ abstract class Operand extends SyntaxUnit {
             //1- Must be changed in part 1:
             return new Variable();
         } else if (Scanner.curToken == ifToken) {
-            //return new IfStatm(); // Må også ha med operandtypen ( expression )
+            //return new IfStatm(); // M ogs ha med operandtypen ( expression )
             return null;
         } else {
             Error.expected("A operand");

@@ -52,11 +52,11 @@ public class CharGenerator {
      */
 
      /*Filosofi: TODO delete comment
-        hold funksjonalitet (i dette tilfellet logging) samlet på ett sted/metode.
+        hold funksjonalitet (i dette tilfellet logging) samlet p ett sted/metode.
         Ikke la mange iftester bestemme om det skal logges eller ikke slik det var
         med log eller ikke log i nextLine for det av og til ble logget i readNext, blir
         fort mye forvirring
-        som her så logger vi hver gang vi skifter linje ettersom alt skal inn i loggen
+        som her s logger vi hver gang vi skifter linje ettersom alt skal inn i loggen
         */
     public static int curLineNum() {
         return (sourceFile == null ? 0 : sourceFile.getLineNumber());
@@ -84,12 +84,12 @@ public class CharGenerator {
      * Send line number to log og les neste
      */
     private static void nextLine() {
-        //tatt vekk logLinemetode, da den ikke trengs å gjenbrukes så lenge vi gjør all logging her, slipper fare for dobbel-log
-        Log.noteSourceLine(sourceFile.getLineNumber(), sourceLine); //for hvert linjeskift, log foregående linje, da er vi sikker på å få med alle
+        //tatt vekk logLinemetode, da den ikke trengs  gjenbrukes s lenge vi gjr all logging her, slipper fare for dobbel-log
+        Log.noteSourceLine(sourceFile.getLineNumber(), sourceLine); //for hvert linjeskift, log foregende linje, da er vi sikker p  f med alle
 
         try {
             sourceLine = sourceFile.readLine();         //lese ny linje
-            sourcePos = 0;                              //flyttet hit da pos alltid skal være 0
+            sourcePos = 0;                              //flyttet hit da pos alltid skal vre 0
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -98,11 +98,11 @@ public class CharGenerator {
             nextC = (char)-1;                           //sett nextC til EOF
         } else {
             if (sourceLine.length() > 0) {              //neste linje inneholder noe
-                nextC = sourceLine.charAt(sourcePos++); //sett nextC til første tegn i linjen og øk sourcePos
+                nextC = sourceLine.charAt(sourcePos++); //sett nextC til frste tegn i linjen og inc sourcePos
                 return;
             }
             else {                  //dersom linjen er tom men ikke null
-                nextLine();         //rekursivt kall dersom neste linje er tom den også, sourcePos oppdateres i if-blocken over
+                nextLine();         //rekursivt kall dersom neste linje er tom den ogs, sourcePos oppdateres i if-blocken over
             }
         }
     }

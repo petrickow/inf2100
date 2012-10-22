@@ -23,8 +23,8 @@ public class Scanner {
 
     public static void init() {
         //-- Must be changed in part 0:
-        //--les inn tre tokens og sjekk første token ettersom readNext vil gå til nextToken
-        // løkke som går til vi er ferdig?
+        //--les inn tre tokens og sjekk frste token ettersom readNext vil g til nextToken
+        // lkke som gr til vi er ferdig?
         curName = nextName = nextNextName = "";
         readNext(); readNext(); readNext();
     }
@@ -50,21 +50,21 @@ public class Scanner {
                 nextNextToken = eofToken;
             } else {
                 //-- Must be changed in part 0:
-                //-- Skal bli på rundt 400-500 linjer, vi har mer å lese
+                //-- Skal bli p rundt 400-500 linjer, vi har mer aa lese
 
 
                 nextNextName = ""; //vi har en ny nextnext...
                 CharGenerator.readNext();
-                nextNextName += CharGenerator.curC; //leser første tegn og tester på det
+                nextNextName += CharGenerator.curC; //leser frste tegn og tester p det
 
-                if (isLetterAZ(CharGenerator.curC)) { //ENTEN int, double eller nameToken, tåler tall i navn
+                if (isLetterAZ(CharGenerator.curC)) { //ENTEN int, double eller nameToken, tler tall i navn
                     int startLine = CharGenerator.curLineNum();
                             //at char ikke er andre token       //at char ikke er whitespace    //at char er AZ09_
                     while (!(isReserved(CharGenerator.nextC)) && CharGenerator.nextC != ' ' && !(isIllegalInText(CharGenerator.curC))){
-                        //Test for å se at name som vi leser har alle sine chars fra samme linje
+                        //Test for  se at name som vi leser har alle sine chars fra samme linje
                         CharGenerator.readNext();
                         nextNextName += CharGenerator.curC;
-                        if (CharGenerator.curLineNum() != startLine) { //nextC er på neste linje
+                        if (CharGenerator.curLineNum() != startLine) { //nextC er p neste linje
                             break;
                         }
                     }

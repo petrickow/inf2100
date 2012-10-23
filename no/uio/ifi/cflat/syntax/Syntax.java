@@ -134,18 +134,16 @@ abstract class DeclList extends SyntaxUnit {
 
     @Override void printTree() {
         Declaration dx = firstDecl;
-        System.out.println();
-        while (dx != null) {
+	while (dx != null) {
             //TODO, logwtree
             if (FuncDecl.class.isInstance(dx)) {
-                System.out.println("FUNC-DELC");
+                //System.out.println("FUNC-DELC");
                 dx.printTree();
             }
             else {
-                System.out.println("VAR-DECL");
+                //System.out.println("VAR-DECL");
                 dx.printTree();
-                //System.out.println("printtree: " + dx.type.typeName());
-            }
+	    }
             dx = dx.nextDecl;
         }
 
@@ -921,9 +919,9 @@ class ForControl extends SyntaxUnit {
     @Override void printTree() {
         //1- Must be changed in part 1:
         assignment1.printTree();
-        Log.wTree("; ");
+        Log.wTree(";  ");
         expression.printTree();
-        Log.wTree("; ");
+        Log.wTree(";  ");
         assignment2.printTree();
     }
 }
@@ -1035,7 +1033,15 @@ class IfStatm extends Statement {
 
     @Override void printTree() {
         //-- Must be changed in part 1:
-        System.out.println(this.getClass());
+	Log.wTree("if ("); 
+	expression.printTree(); 
+	Log.wTreeLn(") {");
+        Log.indentTree();
+        statmList.printTree();
+        Log.outdentTree();
+        Log.wTreeLn("}");
+	
+
     }
 }
 
@@ -1066,7 +1072,8 @@ class ElsePart extends SyntaxUnit {
 
     @Override void printTree() {
         //-- Must be changed in part 1:
-        System.out.println(this.getClass());
+        // TODO
+	System.out.println(this.getClass());
     }
 }
 
@@ -1100,8 +1107,10 @@ class ReturnStatm extends Statement {
     }
 
     @Override void printTree() {
-        //-- Must be changed in part 1:
-        System.out.println(this.getClass());
+        //1- Must be changed in part 1:
+	Log.wTree("return ");
+	expression.printTree();
+	Log.wTreeLn(";");
     }
 }
 
@@ -1293,7 +1302,7 @@ class Term extends SyntaxUnit {
     Factor firstFactor = new Factor();
 
     Term nextTerm = null;
-    Operator firstTermOp = new Operator(); //kan flyttes...
+    TermOperator firstTermOp = null; 
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
@@ -1302,36 +1311,48 @@ class Term extends SyntaxUnit {
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
     }
-//Trenger while lokke saa vi faar satt inn alle faktorer og operander, prover forst med enkle a+b a-b, saa a*b a/b
+
+    //Trenger while lokke saa vi faar satt inn alle faktorer og operander, prover forst med enkle a+b a-b, saa a*b a/b
     @Override void parse() {
         //1- Must be changed in part 1:
         Log.enterParser("<term>");
         
         firstFactor.parse();
-        Factor tempFactor = firstFactor;
-        Operator tempTermOp = firstTermOp;
-        while (Scanner.curToken != semicolonToken) { //annen test?
-            if (Token.isTermOperator(Scanner.curToken)) { //a+b+c+d && a-b
-                tempTermOp.parse();
-                tempFactor.nextFactor = new Factor();
-                tempFactor.nextFactor.parse();
-                
-                tempTermOp.next = new Operator();
-                tempTermOp = tempTermOp.next;
-                tempFactor = tempFactor.nextFactor;
-            }
-        }
+        
+	if (Token.isTermOperator(Scanner.curToken)) { 
+	    firstTermOp = new TermOperator();           // lager firstTerm kun naar vi har en termOp,
+	}
+		
+	Factor tempFactor = firstFactor;
+	TermOperator tempTermOp = firstTermOp;
+
+	while (Token.isTermOperator(Scanner.curToken)) { 
+	    tempTermOp.parse();
+	    tempFactor.nextFactor = new Factor();
+	    tempFactor.nextFactor.parse();
+	    
+	                
+	    tempTermOp.nextTermOp = new TermOperator();
+	    tempTermOp = tempTermOp.nextTermOp;
+	    tempFactor = tempFactor.nextFactor;
+	    
+	}
         Log.leaveParser("</term>");
     }
 
     @Override void printTree() {
         //1- Must be changed in part 1+2:
-        Factor f = firstFactor;
-        while (curTerm != null) {
-            f.printTree();
-            Log.wTree(" " + termOp + " "); //TODO, byttet fra string til Operator... printTreemetode i termOp
-            f = f.nextFactor(); 
-        }
+        Factor tempFactor = firstFactor;
+        TermOperator tempTermOp = firstTermOp;
+
+	while (tempFactor != null) {
+            tempFactor.printTree();
+	    if (tempTermOp != null) {
+		tempTermOp.printTree();
+		tempTermOp = tempTermOp.nextTermOp;
+	    }
+	    tempFactor = tempFactor.nextFactor; 
+	}
 
     }
 }
@@ -1393,18 +1414,26 @@ abstract class Operator extends SyntaxUnit {
 
 
 class TermOperator extends Operator {
-    @Override void genCode(FuncDec curFunc) {
+    TermOperator nextTermOp = null;
+    @Override void genCode(FuncDecl curFunc) {
         //TODO
     }
     @Override void parse() {
         Log.enterParser("<term operator>");
-        
-        opToken = Scanner.curToken;
+	opToken = Scanner.curToken;
         Scanner.skip(addToken, subtractToken);
         Log.leaveParser("</term operator>");
     }
-    void printTree() {
-
+    
+    @Override void printTree() {
+	String op = "?";
+        if (opToken != null) { // TODO midlertidg losning, denne printTree blir kalt selv om opToken == null.
+	    switch (opToken) {
+	    case addToken: op = "+"; break;
+	    case subtractToken: op = "-"; break;
+	    }
+	    Log.wTree(" " + op + " ");
+	}
     }
 }
 /*
@@ -1446,9 +1475,7 @@ class RelOperator extends Operator {
         if (Token.isRelOperator(Scanner.curToken)) {
             opToken = Scanner.curToken;
             Scanner.readNext();
-
-
-        } else {
+	} else {
             Error.expected("A rel operator");
         }
 

@@ -7,6 +7,19 @@ double f;
 int main (int a, int b) 
 {
   int x;
-  d = 4;
-  putchar('x');
+  ;
+  x = 2;
+  putchar('x', 'y');
+  for (x = 0; x < 10; x = x+1) {
+      d = 2;  
+  }
+  if (x < 3) {
+     d = 4 + 2 - 8;
+  } else {
+    x = 1;
+  } 
+  while (d < 10) {
+    d = 6;
+  }
+  return x;
 }

@@ -119,7 +119,8 @@ public class Scanner {
                 (ch == 58) ||
                 (ch >= 63 && ch <= 64) ||
                 (ch == 92) ||
-                (ch >= 94 && ch <= 96) ||
+                (ch == 94) ||
+		(ch == 96) ||
                 (ch == 124) ||
                 (ch == 126)); 
     }
@@ -138,7 +139,10 @@ public class Scanner {
         } else if (nextNextName.equals(")")) {
             nextNextToken = rightParToken;
             if (printDebug)System.out.println("--------------> rightParToken");
-        } else if (nextNextName.equals("[")) {
+        } else if (nextNextName.equals("*")) {
+            nextNextToken = multiplyToken;
+            if (printDebug)System.out.println("--------------> multiplyToken");
+        }else if (nextNextName.equals("[")) {
             nextNextToken = leftBracketToken;
             if (printDebug)System.out.println("--------------> leftBracketToken");
         } else if (nextNextName.equals("]")) {

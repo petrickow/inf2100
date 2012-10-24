@@ -359,8 +359,6 @@ abstract class VarDecl extends Declaration {
         Log.wTree(type.typeName() + " " + name);
         Log.wTreeLn(";");
     }
-
-    //-- Must be changed in part 1+2:
 }
 
 
@@ -381,7 +379,7 @@ class GlobalArrayDecl extends VarDecl {
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
-        /* OK */
+        /* OK TODO*/
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
@@ -395,7 +393,7 @@ class GlobalArrayDecl extends VarDecl {
     @Override void parse() {
         Log.enterParser("<var decl>");
 
-        //1- Must be changed in part 1:
+        //2- Must be changed in part 1:
         type = Types.getType(Scanner.curToken);
         Scanner.skip(intToken, doubleToken);
 
@@ -654,6 +652,7 @@ class FuncDecl extends Declaration {
     @Override void printTree() {
         //2- Must be changed in part 1:
         //System.out.println("printTree in FuncDecl");
+        Log.wTreeLn("");
         Log.wTree(type.typeName() + " " + name + " (");
         Declaration pd = paramDecl.firstDecl;
         while (pd != null) {
@@ -671,7 +670,6 @@ class FuncDecl extends Declaration {
         fb.printTree();
         Log.outdentTree();
         Log.wTreeLn("}");   
-        Log.wTreeLn("");
     }
 }
 

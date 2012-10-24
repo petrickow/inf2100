@@ -199,14 +199,13 @@ class GlobalDeclList extends DeclList {
                     fd.parse();
                     addDecl(fd);
                 } else if (Scanner.nextNextToken == leftBracketToken) {
-                    GlobalArrayDecl gad = new GlobalArrayDecl(Scanner.nextName);
+		    GlobalArrayDecl gad = new GlobalArrayDecl(Scanner.nextName);
                     gad.parse();
                     addDecl(gad);
                 } else {
                     //1- Must be changed in part 1:
-                    // her kommer globale var deklarasjoner
-                    GlobalSimpleVarDecl gsv = new GlobalSimpleVarDecl(Scanner.nextName);
-                    gsv.parse();
+		    GlobalSimpleVarDecl gsv = new GlobalSimpleVarDecl(Scanner.nextName);
+		    gsv.parse();
                     addDecl(gsv);
                 }
             } else {
@@ -233,11 +232,11 @@ class LocalDeclList extends DeclList {
             // sjekke om den er "simple-" eller "arrarVarDecl"
             if (Scanner.nextNextToken == semicolonToken) {
                 LocalSimpleVarDecl v = new LocalSimpleVarDecl(Scanner.nextName);
-                v.parse();
+		v.parse();
                 addDecl(v);
             } else {
                 LocalArrayDecl v = new LocalArrayDecl(Scanner.nextName);
-                v.parse();
+		v.parse();
                 addDecl(v);
             }
         }
@@ -258,11 +257,8 @@ class ParamDeclList extends DeclList {
     @Override void parse() {
         //-- Must be changed in part 1:
 
-        //Log.enterParser("<param decl>");
-        // skal ikke skrive til logg her, fordi vi skriver til ligg under paramDecl.parse()
-        while (Scanner.curToken != rightParToken) {
-            //crate the param
-            Declaration d = new ParamDecl(Scanner.nextName);
+	while (Scanner.curToken != rightParToken) {
+	    Declaration d = new ParamDecl(Scanner.nextName);
 
             d.parse();
             addDecl(d);
@@ -271,8 +267,6 @@ class ParamDeclList extends DeclList {
                 Scanner.skip(commaToken);
 
         }
-        //Log.leaveParser("</param decl>");
-
     }
 }
 
@@ -411,8 +405,8 @@ class GlobalArrayDecl extends VarDecl {
     }
 
     @Override void printTree() {
-        //-- Must be changed in part 1: //TODO
-
+        //1- Must be changed in part 1:
+	Log.wTreeLn(type.typeName() + " " + name + "[" + nElements + "];");
     }
 }
 
@@ -460,7 +454,7 @@ class GlobalSimpleVarDecl extends VarDecl {
  */
 class LocalArrayDecl extends VarDecl {
     int nElements; //Skal ligge i type? TODO tmp solution eller et NumberObjekt?
-    Number nEl; 
+    
     LocalArrayDecl(String n) {
         super(n);
     }
@@ -490,16 +484,18 @@ class LocalArrayDecl extends VarDecl {
         name = Scanner.curName;
         Scanner.skip(nameToken);
         Scanner.skip(leftBracketToken);
-        //bytt ut med number?
-        nElements = Integer.parseInt(Scanner.curName);
+
+	nElements = Integer.parseInt(Scanner.curName);
         Scanner.skip(numberToken);
+
         Scanner.skip(rightBracketToken);
         Scanner.skip(semicolonToken);
         Log.leaveParser("</var decl>");
     }
 
     @Override void printTree() {
-        //-- Must be changed in part 1:
+        //1- Must be changed in part 1:
+	Log.wTreeLn(type.typeName() + " " + name + "[" + nElements + "];");
     }
 
 }
@@ -539,6 +535,12 @@ class LocalSimpleVarDecl extends VarDecl {
         Scanner.skip(semicolonToken);	
         Log.leaveParser("</var decl>");
     }
+
+    @Override void printTree() {
+        //1- Must be changed in part 1:
+	Log.wTreeLn(type.typeName() + " " + name + ";");
+    }
+
 }
 
 
@@ -704,7 +706,8 @@ class FuncBody extends SyntaxUnit {
         //-- Must be changed in part 1:
         Declaration localDecl = localDeclList.firstDecl;
         while (localDecl != null) {
-            Log.wTreeLn(localDecl.type.typeName() + " " + localDecl.name + ";");
+            localDecl.printTree();
+	    //Log.wTreeLn(localDecl.type.typeName() + " " + localDecl.name + ";");
             localDecl = localDecl.nextDecl;
         }
         Statement st = stmlist.firstStatm;

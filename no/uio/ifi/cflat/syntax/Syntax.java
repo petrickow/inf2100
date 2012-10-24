@@ -1239,7 +1239,6 @@ class ExprList extends SyntaxUnit {
             }
         }
     }
-
 }
 
 
@@ -1251,6 +1250,14 @@ class Expression extends Operand {
     Term firstTerm = new Term(), secondTerm = null;
     Operator relOp = null;
     boolean innerExpr = false;
+    
+    Expression () {
+        //Empty constructor just to make the Java compiler happy :)
+    }
+    
+    Expression (boolean innerExpr) {
+        this.innerExpr = innerExpr;
+    }
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
@@ -1262,18 +1269,25 @@ class Expression extends Operand {
 
     @Override void parse() {
         Log.enterParser("<expression>");
+        if (innerExpr)
+            Scanner.skip(leftParToken);
         firstTerm.parse();
+
         if (Token.isRelOperator(Scanner.curToken)) {
             relOp = new RelOperator();
             relOp.parse();
             secondTerm = new Term();
             secondTerm.parse();
         }
+        if (innerExpr)
+            Scanner.skip(rightParToken);
         Log.leaveParser("</expression>");
     }
 
     @Override void printTree() {
         //1- Must be changed in part 1:
+        if (innerExpr)
+            Log.wTree("(");
         firstTerm.printTree();
         if (relOp != null) {
             relOp.printTree();
@@ -1281,8 +1295,8 @@ class Expression extends Operand {
         if (secondTerm != null) {
             secondTerm.printTree();
         }
-
-
+        if (innerExpr)
+            Log.wTree(")");
     }
 }
 
@@ -1323,7 +1337,6 @@ class Term extends SyntaxUnit {
             tempTermOp.parse();
             tempFactor.nextFactor = new Factor();
             tempFactor.nextFactor.parse();
-
 
             tempTermOp.nextTermOp = new TermOperator();
             tempTermOp = tempTermOp.nextTermOp;
@@ -1372,6 +1385,7 @@ class Factor extends SyntaxUnit {
 
         // lese inn [operand] og [factor opr] i while-loop
         Log.enterParser("<operand>");
+        
         operand = Operand.makeNewOperand();
         operand.parse();
         Log.leaveParser("</operand>");
@@ -1499,7 +1513,6 @@ abstract class Operand extends SyntaxUnit {
 
     // egenopprettet metode
     static Operand makeNewOperand() {
-        //Expression???? TODO
         if (Scanner.curToken == numberToken) {
             //1- Must be changed in part 1:
             return new Number();
@@ -1511,13 +1524,14 @@ abstract class Operand extends SyntaxUnit {
             return new Variable();
         } else if (Scanner.curToken == ifToken) {
             //return new IfStatm(); // M ogs ha med operandtypen ( expression )
-            return null;
+            return null;//TODO
+        } else if (Scanner.curToken == leftParToken) {
+            return new Expression(true);
         } else {
             Error.expected("A operand");
         }
         return null; // Just to keep the Java compiler happy. :-)
     }
-
 }
 
 
@@ -1554,7 +1568,6 @@ class FunctionCall extends Operand {
         exprList.printTree();
         Log.wTree(")");
     }
-
 }
 
 

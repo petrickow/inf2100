@@ -35,7 +35,8 @@ public class Scanner {
     }
 
     public static void readNext() {
-	curToken = nextToken; nextToken = nextNextToken;
+        
+        curToken = nextToken; nextToken = nextNextToken;
         curName = nextName; nextName = nextNextName;
         curNum = nextNum; nextNum = nextNextNum;
         curLine = nextLine; nextLine = nextNextLine;
@@ -52,18 +53,16 @@ public class Scanner {
                 //-- Must be changed in part 0:
                 //-- Skal bli p rundt 400-500 linjer, vi har mer aa lese
 
-
-                nextNextName = ""; //vi har en ny nextnext...
-                CharGenerator.readNext();
+                nextNextName = ""; //new nextNextName
                 nextNextName += CharGenerator.curC; //leser frste tegn og tester p det
-
                 if (isLetterAZ(CharGenerator.curC)) { //ENTEN int, double eller nameToken, tler tall i navn
+                    CharGenerator.readNext();
                     int startLine = CharGenerator.curLineNum();
                             //at char ikke er andre token       //at char ikke er whitespace    //at char er AZ09_
-                    while (!(isReserved(CharGenerator.nextC)) && CharGenerator.nextC != ' ' && !(isIllegalInText(CharGenerator.curC))){
+                    while (!(isReserved(CharGenerator.curC)) && CharGenerator.curC != ' ' && !(isIllegalInText(CharGenerator.curC))){
                         //Test for  se at name som vi leser har alle sine chars fra samme linje
-                        CharGenerator.readNext();
                         nextNextName += CharGenerator.curC;
+                        CharGenerator.readNext();
                         if (CharGenerator.curLineNum() != startLine) { //nextC er p neste linje
                             break;
                         }
@@ -73,17 +72,19 @@ public class Scanner {
                 }
                 else if (isReserved(CharGenerator.curC)) { //ALLE reserverte enkelt-tegn
                     if (isRelOperator()) {
-                        // nextNextToken blir satt i metoden hvis true
+                        CharGenerator.readNext(); 
                     }
                     else if (isAnotherToken()) {
+                        CharGenerator.readNext(); 
                         // nextNextToken blir satt i metoden hvis true
                     }
                 }
                 else if (isNumber()) {
+                    CharGenerator.readNext(); 
                     // nextNextToken blir satt til numberToken hvis true
                 } 
                 else if (CharGenerator.curC == ' ' || (int)CharGenerator.curC == 9) { //hopp over whitespace og tab
-                    //
+                    CharGenerator.readNext();
                 }
                 else {
                     Error.error(nextNextLine,"Illegal symbol: '" + CharGenerator.curC + "'!");
@@ -298,7 +299,7 @@ public class Scanner {
         int startLine = CharGenerator.curLineNum();
         while (!end) {
             if (CharGenerator.curC == '*' && CharGenerator.nextC == '/') {
-                CharGenerator.readNext();  //move to right curC
+                CharGenerator.readNext();  //move to right curC TODO 2 steps?
                 end = true;
             }
             else if (CharGenerator.curC == (char)-1) {

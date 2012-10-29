@@ -191,9 +191,10 @@ class GlobalDeclList extends DeclList {
     }
 
     @Override void parse() {
-
         while (Token.isTypeName(Scanner.curToken)) {
+            
             if (Scanner.nextToken == nameToken) {
+                
                 if (Scanner.nextNextToken == leftParToken) {
                     FuncDecl fd = new FuncDecl(Scanner.nextName);
                     fd.parse();
@@ -204,8 +205,9 @@ class GlobalDeclList extends DeclList {
                     addDecl(gad);
                 } else {
                     //1- Must be changed in part 1:
-		    GlobalSimpleVarDecl gsv = new GlobalSimpleVarDecl(Scanner.nextName);
-		    gsv.parse();
+                    
+                    GlobalSimpleVarDecl gsv = new GlobalSimpleVarDecl(Scanner.nextName);
+                    gsv.parse();
                     addDecl(gsv);
                 }
             } else {

@@ -13,6 +13,7 @@ import no.uio.ifi.cflat.log.Log;
  * Module for reading single characters.
  */
 public class CharGenerator {
+    
     public static char curC, nextC;
 
     private static LineNumberReader sourceFile = null;
@@ -42,7 +43,7 @@ public class CharGenerator {
     
     public static boolean isMoreToRead() {
         //-2 Must be changed in part 0:
-        return (nextC != (char)-1);
+        return (curC != (char)-1);
     }
 
     /**
@@ -65,20 +66,20 @@ public class CharGenerator {
     //Les neste char i scourceLine til nextC, om ikke tatt med i readLine(linjeskift/siste tegn), les inn neste om ikke les inn -1...
     
     public static void readNext() {
-
         curC = nextC;
 
         if (! isMoreToRead()) {
             nextC = (char)-1; //EOF
             return;
         }
+ 
         // tom linje eller linjen er kommentert eller vi har lest til slutten av linjen
         if (sourceLine.length() == 0 && sourceLine != null || curC == '#' || (sourcePos >= sourceLine.length())) {
             nextLine();
         } else { //vi er i starten/midt i en linje
             nextC = sourceLine.charAt(sourcePos++);
         }
-    }
+   }
 
     /**
      * Send line number to log og les neste

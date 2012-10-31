@@ -1587,9 +1587,6 @@ abstract class Operand extends SyntaxUnit {
         } else if (Scanner.curToken == nameToken) {
             //1- Must be changed in part 1:
             return new Variable();
-        } else if (Scanner.curToken == ifToken) {
-            //return new IfStatm(); // M ogs ha med operandtypen ( expression )
-            return null;//TODO
         } else if (Scanner.curToken == leftParToken) {
             return new Expression(true);
         } else {

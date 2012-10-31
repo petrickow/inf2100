@@ -87,7 +87,8 @@ class Program extends SyntaxUnit {
         if (! Cflat.noLink) {
             // Check that 'main' has been declared properly:
             //-- Must be changed in part 2:
-        }
+	    //System.out.println("Heeeeeer -> line 90");
+	}
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -186,8 +187,22 @@ abstract class DeclList extends SyntaxUnit {
  * (This class is not mentioned in the syntax diagrams.)
  */
 class GlobalDeclList extends DeclList {
+    
+    FuncDecl fd = null;                // flyttet hit i del 2 pga maa vaere tilgjengelige for genCode
+    GlobalArrayDecl gad = null;
+    GlobalSimpleVarDecl gsv = null;
+    
     @Override void genCode(FuncDecl curFunc) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+	if (gsv != null) {
+	    gsv.genCode(null);
+	}
+	if (fd != null) {
+	    fd.genCode(null);
+	} 
+	if (gad != null) {
+	    gad.genCode(null);
+	}
     }
 
     @Override void parse() {
@@ -196,17 +211,17 @@ class GlobalDeclList extends DeclList {
             if (Scanner.nextToken == nameToken) {
                 
                 if (Scanner.nextNextToken == leftParToken) {
-                    FuncDecl fd = new FuncDecl(Scanner.nextName);
+                    fd = new FuncDecl(Scanner.nextName);
                     fd.parse();
                     addDecl(fd);
                 } else if (Scanner.nextNextToken == leftBracketToken) {
-		    GlobalArrayDecl gad = new GlobalArrayDecl(Scanner.nextName);
+		    gad = new GlobalArrayDecl(Scanner.nextName);
                     gad.parse();
                     addDecl(gad);
                 } else {
                     //1- Must be changed in part 1:
                     
-                    GlobalSimpleVarDecl gsv = new GlobalSimpleVarDecl(Scanner.nextName);
+		    gsv = new GlobalSimpleVarDecl(Scanner.nextName);
                     gsv.parse();
                     addDecl(gsv);
                 }
@@ -436,6 +451,9 @@ class GlobalSimpleVarDecl extends VarDecl {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+	Code.genInstr("", ".globl", assemblerName, "");
+        Code.genInstr(assemblerName, "fill", "size 4?", "int? " + name);
+        Code.genInstr("", ".text", "", "");
     }
 
     @Override void parse() {

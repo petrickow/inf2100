@@ -1578,7 +1578,7 @@ abstract class Operand extends SyntaxUnit {
 
     // egenopprettet metode
     static Operand makeNewOperand() {
-        if (Scanner.curToken == numberToken) {
+        if (Scanner.curToken == numberToken || Scanner.curToken == subtractToken) {
             //1- Must be changed in part 1:
             return new Number();
         } else if (Scanner.curToken == nameToken && Scanner.nextToken == leftParToken) {
@@ -1653,8 +1653,16 @@ class Number extends Operand {
     @Override void parse() {
         //1- Must be changed in part 1:
         Log.enterParser("<number>");
+	boolean isNeg = false;
+	if (Scanner.curToken == subtractToken) {
+	    Scanner.readNext();
+	    isNeg = true;
+	}
         numVal = Integer.parseInt(Scanner.curName); 
-        Scanner.skip(numberToken);
+        if (isNeg) {
+	    numVal = 0 - numVal;
+	}
+	Scanner.skip(numberToken);
         Log.leaveParser("</number>");
     }
 

@@ -94,7 +94,8 @@ public class Cflat {
 	Syntax.finish();  Scanner.finish();  CharGenerator.finish();  
 	Types.finish();  Code.finish();  Log.finish();  Error.finish();
 
-	if (! testScanner && ! testParser) assembleCode();
+	// TODO husk aa fjerne kommenteringen under
+	//if (! testScanner && ! testParser) assembleCode();
     }
 
     private static void assembleCode() {

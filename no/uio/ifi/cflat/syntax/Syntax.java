@@ -179,6 +179,17 @@ abstract class DeclList extends SyntaxUnit {
         //-- Must be changed in part 2:
         return null;
     }
+
+
+    // egenopprettet
+    void genCode() {
+	Declaration dx = firstDecl;
+	while (dx != null) {
+	    dx.genCode(null);
+	    dx = dx.nextDecl;
+	}
+    }
+
 }
 
 
@@ -194,15 +205,7 @@ class GlobalDeclList extends DeclList {
     
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
-	if (gsv != null) {
-	    gsv.genCode(null);
-	}
-	if (fd != null) {
-	    fd.genCode(null);
-	} 
-	if (gad != null) {
-	    gad.genCode(null);
-	}
+	genCode(); // got to decl
     }
 
     @Override void parse() {
@@ -451,9 +454,7 @@ class GlobalSimpleVarDecl extends VarDecl {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
-	Code.genInstr("", ".globl", assemblerName, "");
-        Code.genInstr(assemblerName, "fill", "size 4?", "int? " + name);
-        Code.genInstr("", ".text", "", "");
+	Code.genVar(assemblerName, true, declSize(), type.typeName() + " " + name + ";");
     }
 
     @Override void parse() {

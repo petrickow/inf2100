@@ -48,7 +48,7 @@ public class Syntax {
     }
 
     public static void checkProgram() {
-	program.check(library);
+        program.check(library);
     }
 
     public static void genCode() {
@@ -135,7 +135,7 @@ abstract class DeclList extends SyntaxUnit {
     DeclList outerScope;
 
     DeclList () {
-        //-- Must be changed in part 1:
+        //?- Must be changed in part 1:
     }
 
     @Override void check(DeclList curDecls) {
@@ -143,11 +143,13 @@ abstract class DeclList extends SyntaxUnit {
 
         Declaration dx = firstDecl;
         while (dx != null) {
+            System.out.println("checking dx: " + dx.name);
             dx.check(this); dx = dx.nextDecl;
         }
     }
 
     @Override void printTree() {
+        //2- Must be changed in part 1:
         Declaration dx = firstDecl;
         while (dx != null) {
             //TODO, logwtree
@@ -162,26 +164,25 @@ abstract class DeclList extends SyntaxUnit {
             dx = dx.nextDecl;
         }
 
-        //-- Must be changed in part 1:
     }
 
     void addDecl(Declaration d) {
-        //1- Must be changed in part 1:
-	
-	if (firstDecl == null) {
+        //2- Must be changed in part 1:
+
+        if (firstDecl == null) {
             firstDecl = d;
-	} else {
+        } else {
             Declaration temp = firstDecl;
-	    while (temp.nextDecl != null) {
-		if (temp.name.compareTo(d.name) == 0) {
-		    Error.alreadyDecl(temp.name);
-		}
-		temp = temp.nextDecl;
+            while (temp.nextDecl != null) {
+                if (temp.name.compareTo(d.name) == 0) {
+                    Error.alreadyDecl(temp.name);
+                }
+                temp = temp.nextDecl;
             }
-	    if (temp.name.compareTo(d.name) == 0) {
-		Error.alreadyDecl(temp.name);
-	    }
-	    temp.nextDecl = d;
+            if (temp.name.compareTo(d.name) == 0) {
+                Error.alreadyDecl(temp.name);
+            }
+            temp.nextDecl = d;
         }
     }
 
@@ -198,35 +199,24 @@ abstract class DeclList extends SyntaxUnit {
     Declaration findDecl(String name, SyntaxUnit usedIn) {
         //-- Must be changed in part 2:
         Declaration tempDecl = firstDecl;
-	while (tempDecl != null) {
-	    if (tempDecl.name.compareTo(name) == 0) {
-		return tempDecl;
-	    }
-	    tempDecl = tempDecl.nextDecl;
-	}
-	tempDecl = outerScope.firstDecl;
-	while (tempDecl != null) {
-	    if (tempDecl.name.compareTo(name) == 0) {
-		return tempDecl;
-	    }
-	    tempDecl = tempDecl.nextDecl;
-	}
-	Error.error(usedIn.lineNum, "Name " + name + " is unknown!!");
-	return null;
+        while (tempDecl != null) {
+            System.out.println("local: " + tempDecl.name);
+            if (tempDecl.name.compareTo(name) == 0) {
+                return tempDecl;
+            }
+            tempDecl = tempDecl.nextDecl;
+        }
+        tempDecl = outerScope.firstDecl;
+        while (tempDecl != null) {
+            System.out.println("global: " + tempDecl.name);
+            if (tempDecl.name.compareTo(name) == 0) {
+                return tempDecl;
+            }
+            tempDecl = tempDecl.nextDecl;
+        }
+        Error.error(usedIn.lineNum, "Name " + name + " is unknown!!");
+        return null;
     }
-
-
-    // egenopprettet
-    /* FJERNE ?
-    void genCode() {
-	Declaration dx = firstDecl;
-	while (dx != null) {
-	    dx.genCode(null);
-	    dx = dx.nextDecl;
-	}
-    }
-    */
-
 }
  
 
@@ -242,7 +232,7 @@ class GlobalDeclList extends DeclList {
     
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
-	//genCode(); // got to decl
+        //genCode(); // got to decl
     }
 
     @Override void parse() {
@@ -312,10 +302,9 @@ class ParamDeclList extends DeclList {
     }
 
     @Override void parse() {
-        //-- Must be changed in part 1:
-
-	while (Scanner.curToken != rightParToken) {
-	    Declaration d = new ParamDecl(Scanner.nextName);
+        //2- Must be changed in part 1:
+        while (Scanner.curToken != rightParToken) {
+            Declaration d = new ParamDecl(Scanner.nextName);
 
             d.parse();
             addDecl(d);
@@ -479,7 +468,7 @@ class GlobalSimpleVarDecl extends VarDecl {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
-	System.out.println(name);
+	    System.out.println("global simp" + name);
 	
     }
 
@@ -615,6 +604,7 @@ class ParamDecl extends VarDecl {
     }
 
     @Override void check(DeclList curDecls) {
+        curDecls.
         //-- Must be changed in part 2:
     }
 
@@ -665,8 +655,9 @@ class FuncDecl extends Declaration {
     }
 
     @Override void check(DeclList curDecls) {
-        //-- Must be changed in part 2:
-	fb.check(curDecls);
+        //1- Must be changed in part 2:
+        paramDecl.check(curDecls);
+        fb.check(curDecls);
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
@@ -744,8 +735,9 @@ class FuncBody extends SyntaxUnit {
     LocalDeclList localDeclList = new LocalDeclList(); // LocalSimpleVarDecl eller LocalArrayVarDecl
 
     @Override void check(DeclList currBody) {
-        //-- Must be changed in part 2:
-	stmlist.check(currBody);
+        //1- Must be changed in part 2:
+        localDeclList.check(currBody);  //check local variables
+        stmlist.check(localDeclList);   //check statements
     }
 
     @Override void genCode(FuncDecl currBody) {
@@ -790,11 +782,11 @@ class StatmList extends SyntaxUnit {
 
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-	Statement tempStatm = firstStatm;
-	while (tempStatm != null) {
-	    tempStatm.check(curDecls);
-	    tempStatm = tempStatm.nextStatm;
-	}
+        Statement tempStatm = firstStatm;
+        while (tempStatm != null) {
+            tempStatm.check(curDecls);
+            tempStatm = tempStatm.nextStatm;
+        }
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1759,7 +1751,7 @@ class Variable extends Operand {
             valType = ((ArrayType)d.type).elemType;
         }
         declRef = (VarDecl)d;
-	System.out.println(declRef);
+	System.out.println(declRef.name);
     }
 
     @Override void genCode(FuncDecl curFunc) {

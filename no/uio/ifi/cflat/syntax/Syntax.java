@@ -96,7 +96,7 @@ class Program extends SyntaxUnit {
 
     @Override void check(DeclList curDecls) {
         progDecls.check(curDecls);
-
+	
 
         if (! Cflat.noLink) {
             // Check that 'main' has been declared properly:
@@ -142,9 +142,8 @@ abstract class DeclList extends SyntaxUnit {
         outerScope = curDecls;
 
         Declaration dx = firstDecl;
-        while (dx != null) {
-            System.out.println("checking dx: " + dx.name);
-            dx.check(this); dx = dx.nextDecl;
+	while (dx != null) {
+	    dx.check(this); dx = dx.nextDecl;
         }
     }
 
@@ -152,16 +151,8 @@ abstract class DeclList extends SyntaxUnit {
         //2- Must be changed in part 1:
         Declaration dx = firstDecl;
         while (dx != null) {
-            //TODO, logwtree
-            if (FuncDecl.class.isInstance(dx)) {
-                //System.out.println("FUNC-DELC");
-                dx.printTree();
-            }
-            else {
-                //System.out.println("VAR-DECL");
-                dx.printTree();
-            }
-            dx = dx.nextDecl;
+	    dx.printTree();
+	    dx = dx.nextDecl;
         }
 
     }
@@ -604,7 +595,7 @@ class ParamDecl extends VarDecl {
     }
 
     @Override void check(DeclList curDecls) {
-        curDecls.
+        //curDecls.
         //-- Must be changed in part 2:
     }
 
@@ -1751,7 +1742,7 @@ class Variable extends Operand {
             valType = ((ArrayType)d.type).elemType;
         }
         declRef = (VarDecl)d;
-	System.out.println(declRef.name);
+	Log.noteBinding(declRef.name, lineNum, declRef.lineNum);
     }
 
     @Override void genCode(FuncDecl curFunc) {

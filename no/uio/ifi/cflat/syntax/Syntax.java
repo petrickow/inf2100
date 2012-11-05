@@ -1251,6 +1251,11 @@ class ExprList extends SyntaxUnit {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
+	Expression tempExpr = firstExpr;
+	while (tempExpr != null) {
+	    tempExpr.check(curDecls);
+	    tempExpr = tempExpr.nextExpr;
+	}
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1313,7 +1318,12 @@ class Expression extends Operand {
     }
 
     @Override void check(DeclList curDecls) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+	firstTerm.check(curDecls);
+	if (secondTerm != null) {
+	    secondTerm.check(curDecls);
+	}
+
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1367,6 +1377,12 @@ class Term extends SyntaxUnit {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
+	Factor tempFactor = firstFactor;
+	while (tempFactor != null) {
+	    //tempFactor.
+	    tempFactor = tempFactor.nextFactor;
+	}
+	
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1429,7 +1445,14 @@ class Factor extends SyntaxUnit {
     FactorOperator firstFactorOp = null;
     
     @Override void check(DeclList curDecls) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+	Operand tempOp = firstOperand;
+	
+	while (tempOp != null) {
+	    tempOp.check(curDecls);
+	    //tempOp = tempOp.nextOp;
+	}
+	
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1444,9 +1467,7 @@ class Factor extends SyntaxUnit {
         
 	firstOperand = Operand.makeNewOperand();
 	firstOperand.parse();
-	//operand = Operand.makeNewOperand();
-        //operand.parse();
-        
+	        
 	if (Token.isFactorOperator(Scanner.curToken)) {
 	    firstFactorOp = new FactorOperator();
 	}
@@ -1658,6 +1679,7 @@ class FunctionCall extends Operand {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
+	exprList.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1692,6 +1714,7 @@ class Number extends Operand {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
+	// TODO - Legge til noe her?
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1710,6 +1733,7 @@ class Number extends Operand {
         if (isNeg) {
 	    numVal = 0 - numVal;
 	}
+	valType = Types.intType;
 	Scanner.skip(numberToken);
         Log.leaveParser("</number>");
     }

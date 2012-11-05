@@ -21,7 +21,8 @@ public class Error {
     public static void error(String message) {
 	error("", message);
     }
-	
+    // Cb error in line 9: Name i is unknown!
+
     public static void error(int lineNum, String message) {
 	error((lineNum>0 ? "in line "+lineNum : ""), message);
     }
@@ -29,6 +30,12 @@ public class Error {
     public static void panic(String where) {
 	error("in method "+where, "PANIC! PROGRAMMING ERROR!");
     }
+    
+    // egen
+    public static void alreadyDecl(String decl) {
+	error("Cb error in line " + (Scanner.curLine-1) +  ": Name " + decl + " already decleared");
+    }
+
 
     public static void giveUsage() {
 	System.err.println("Usage: cflat [-c] [-log{B|P|S|T}] " +

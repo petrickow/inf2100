@@ -27,15 +27,28 @@ public class Syntax {
     static Program program;
 
     public static void init() {
-        //-- Must be changed in part 1:
+        //1- Must be changed in part 1:
+    
+	// make DeclList llibrary
+	makeLibrary();
     }
+
+    private static void makeLibrary() {
+	library = new GlobalDeclList();
+	String [] libList = {"exit","getchar","getdouble","getint","putchar","putdouble","putint"};
+	for (int i = 0; i < libList.length; i++) {
+	    library.addDecl(new FuncDecl(libList[i]));
+	}
+	
+    }
+    
 
     public static void finish() {
         //-- Must be changed in part 1:
     }
 
     public static void checkProgram() {
-        program.check(library);
+	program.check(library);
     }
 
     public static void genCode() {
@@ -84,10 +97,11 @@ class Program extends SyntaxUnit {
     @Override void check(DeclList curDecls) {
         progDecls.check(curDecls);
 
+
         if (! Cflat.noLink) {
             // Check that 'main' has been declared properly:
             //-- Must be changed in part 2:
-	    //System.out.println("Heeeeeer -> line 90");
+	    // Naar hele programmet har blitt sjekket maa ogsaa main ha blitt deklarert
 	}
     }
 
@@ -153,15 +167,21 @@ abstract class DeclList extends SyntaxUnit {
 
     void addDecl(Declaration d) {
         //1- Must be changed in part 1:
-
-        if (firstDecl == null) {
+	
+	if (firstDecl == null) {
             firstDecl = d;
-        } else {
+	} else {
             Declaration temp = firstDecl;
-            while (temp.nextDecl != null) {
-                temp = temp.nextDecl;
+	    while (temp.nextDecl != null) {
+		if (temp.name.compareTo(d.name) == 0) {
+		    Error.alreadyDecl(temp.name);
+		}
+		temp = temp.nextDecl;
             }
-            temp.nextDecl = d;
+	    if (temp.name.compareTo(d.name) == 0) {
+		Error.alreadyDecl(temp.name);
+	    }
+	    temp.nextDecl = d;
         }
     }
 
@@ -177,11 +197,27 @@ abstract class DeclList extends SyntaxUnit {
 
     Declaration findDecl(String name, SyntaxUnit usedIn) {
         //-- Must be changed in part 2:
-        return null;
+        Declaration tempDecl = firstDecl;
+	while (tempDecl != null) {
+	    if (tempDecl.name.compareTo(name) == 0) {
+		return tempDecl;
+	    }
+	    tempDecl = tempDecl.nextDecl;
+	}
+	tempDecl = outerScope.firstDecl;
+	while (tempDecl != null) {
+	    if (tempDecl.name.compareTo(name) == 0) {
+		return tempDecl;
+	    }
+	    tempDecl = tempDecl.nextDecl;
+	}
+	Error.error(usedIn.lineNum, "Name " + name + " is unknown!!");
+	return null;
     }
 
 
     // egenopprettet
+    /* FJERNE ?
     void genCode() {
 	Declaration dx = firstDecl;
 	while (dx != null) {
@@ -189,9 +225,10 @@ abstract class DeclList extends SyntaxUnit {
 	    dx = dx.nextDecl;
 	}
     }
+    */
 
 }
-
+ 
 
 /*
  * A list of global declarations.
@@ -205,7 +242,7 @@ class GlobalDeclList extends DeclList {
     
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
-	genCode(); // got to decl
+	//genCode(); // got to decl
     }
 
     @Override void parse() {
@@ -442,6 +479,8 @@ class GlobalSimpleVarDecl extends VarDecl {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
+	System.out.println(name);
+	
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
@@ -627,6 +666,7 @@ class FuncDecl extends Declaration {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
+	fb.check(curDecls);
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
@@ -705,6 +745,7 @@ class FuncBody extends SyntaxUnit {
 
     @Override void check(DeclList currBody) {
         //-- Must be changed in part 2:
+	stmlist.check(currBody);
     }
 
     @Override void genCode(FuncDecl currBody) {
@@ -748,7 +789,12 @@ class StatmList extends SyntaxUnit {
     Statement firstStatm = null;
 
     @Override void check(DeclList curDecls) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+	Statement tempStatm = firstStatm;
+	while (tempStatm != null) {
+	    tempStatm.check(curDecls);
+	    tempStatm = tempStatm.nextStatm;
+	}
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -947,6 +993,8 @@ class AssignStatm extends Statement {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
+	assignment.check(curDecls);
+	 
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -978,6 +1026,7 @@ class Assignment extends SyntaxUnit {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
+	variable.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1710,6 +1759,7 @@ class Variable extends Operand {
             valType = ((ArrayType)d.type).elemType;
         }
         declRef = (VarDecl)d;
+	System.out.println(declRef);
     }
 
     @Override void genCode(FuncDecl curFunc) {

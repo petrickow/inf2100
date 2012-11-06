@@ -95,7 +95,7 @@ class Program extends SyntaxUnit {
     DeclList progDecls = new GlobalDeclList();
 
     @Override void check(DeclList curDecls) {
-        progDecls.check(curDecls);
+        progDecls.check(curDecls);  // sender med library videre
 	
 
         if (! Cflat.noLink) {
@@ -164,8 +164,8 @@ abstract class DeclList extends SyntaxUnit {
             firstDecl = d;
         } else {
             Declaration temp = firstDecl;
-            while (temp.nextDecl != null) {
-                if (temp.name.compareTo(d.name) == 0) {
+	    while (temp.nextDecl != null) {
+		if (temp.name.compareTo(d.name) == 0) {
                     Error.alreadyDecl(temp.name);
                 }
                 temp = temp.nextDecl;
@@ -197,8 +197,10 @@ abstract class DeclList extends SyntaxUnit {
             }
             tempDecl = tempDecl.nextDecl;
         }
+	System.out.println("-------------__> " + outerScope);
         tempDecl = outerScope.firstDecl;
-        while (tempDecl != null) {
+        //tempDecl = usedIn
+	while (tempDecl != null) {
             System.out.println("global: " + tempDecl.name);
             if (tempDecl.name.compareTo(name) == 0) {
                 return tempDecl;
@@ -230,8 +232,7 @@ class GlobalDeclList extends DeclList {
         while (Token.isTypeName(Scanner.curToken)) {
             
             if (Scanner.nextToken == nameToken) {
-                
-                if (Scanner.nextNextToken == leftParToken) {
+		if (Scanner.nextNextToken == leftParToken) {
                     fd = new FuncDecl(Scanner.nextName);
                     fd.parse();
                     addDecl(fd);
@@ -241,7 +242,6 @@ class GlobalDeclList extends DeclList {
                     addDecl(gad);
                 } else {
                     //1- Must be changed in part 1:
-                    
 		    gsv = new GlobalSimpleVarDecl(Scanner.nextName);
                     gsv.parse();
                     addDecl(gsv);
@@ -263,6 +263,26 @@ class LocalDeclList extends DeclList {
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
     }
+
+    
+    // egen 06 nov
+    /* ----->  SLETT  <---------
+    @Override void check(DeclList curDecls) {
+	Declaration tempDecl = firstDecl;
+	
+	Declaration temp1 = curDecls.outerScope.firstDecl;
+	while (temp1 != null) {
+	    System.out.println(" -lib-> " + temp1.name);
+	    temp1 = temp1.nextDecl;
+	}
+
+	while (tempDecl != null) {
+	    System.out.println(tempDecl.name);
+	    tempDecl = tempDecl.nextDecl;
+	}
+    }
+    */
+    
 
     @Override void parse() { //TODO
         //-- Must be changed in part 1:
@@ -405,6 +425,7 @@ class GlobalArrayDecl extends VarDecl {
 
     @Override void check(DeclList curDecls) {
         visible = true;
+	//System.out.println(type);
         if (((ArrayType)type).nElems < 0)
             Syntax.error(this, "Arrays cannot have negative size!");
     }
@@ -459,7 +480,7 @@ class GlobalSimpleVarDecl extends VarDecl {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
-	    System.out.println("global simp" + name);
+	    System.out.println("global simp ln 460 " + name);
 	
     }
 
@@ -480,7 +501,7 @@ class GlobalSimpleVarDecl extends VarDecl {
         //1- Must be changed in part 1:
         Log.enterParser("<var decl>");
         type = Types.getType(Scanner.curToken);
-        Scanner.skip(intToken, doubleToken);
+	Scanner.skip(intToken, doubleToken);
         name = Scanner.curName;
         Scanner.skip(nameToken);
         Scanner.skip(semicolonToken);
@@ -727,8 +748,12 @@ class FuncBody extends SyntaxUnit {
 
     @Override void check(DeclList currBody) {
         //1- Must be changed in part 2:
-        localDeclList.check(currBody);  //check local variables
+	 
+	// Har vi ikke allerede gjort dette under addDecl(line 170) ?
+        //localDeclList.check(currBody);  // check local variables
+
         stmlist.check(localDeclList);   //check statements
+	//stmlist.check(currBody);   //check statements
     }
 
     @Override void genCode(FuncDecl currBody) {
@@ -977,7 +1002,6 @@ class AssignStatm extends Statement {
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
 	assignment.check(curDecls);
-	 
     }
 
     @Override void genCode(FuncDecl curFunc) {

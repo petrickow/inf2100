@@ -30,7 +30,7 @@ public class Syntax {
         //1- Must be changed in part 1:
     
 	// make DeclList llibrary
-	makeLibrary();
+	    makeLibrary();
     }
 
     private static void makeLibrary() {
@@ -94,14 +94,13 @@ abstract class SyntaxUnit {
 class Program extends SyntaxUnit {
     DeclList progDecls = new GlobalDeclList();
 
-    @Override void check(DeclList curDecls) {
-        progDecls.check(curDecls);  // sender med library videre
-	
+    @Override void check(DeclList curDecls) { //curDecl == library
+        progDecls.check(curDecls);
 
         if (! Cflat.noLink) {
             // Check that 'main' has been declared properly:
             //-- Must be changed in part 2:
-	    // Naar hele programmet har blitt sjekket maa ogsaa main ha blitt deklarert
+            // Naar hele programmet har blitt sjekket maa ogsaa main ha blitt deklarert
 	}
     }
 
@@ -140,10 +139,9 @@ abstract class DeclList extends SyntaxUnit {
 
     @Override void check(DeclList curDecls) {
         outerScope = curDecls;
-
         Declaration dx = firstDecl;
-	while (dx != null) {
-	    dx.check(this); dx = dx.nextDecl;
+    	while (dx != null) {
+	        dx.check(this); dx = dx.nextDecl;
         }
     }
 
@@ -151,10 +149,9 @@ abstract class DeclList extends SyntaxUnit {
         //2- Must be changed in part 1:
         Declaration dx = firstDecl;
         while (dx != null) {
-	    dx.printTree();
-	    dx = dx.nextDecl;
+            dx.printTree();
+            dx = dx.nextDecl;
         }
-
     }
 
     void addDecl(Declaration d) {
@@ -188,19 +185,16 @@ abstract class DeclList extends SyntaxUnit {
     }
 
     Declaration findDecl(String name, SyntaxUnit usedIn) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
         Declaration tempDecl = firstDecl;
         while (tempDecl != null) {
-            System.out.println("local: " + tempDecl.name);
             if (tempDecl.name.compareTo(name) == 0) {
                 return tempDecl;
             }
             tempDecl = tempDecl.nextDecl;
         }
-	System.out.println("-------------__> " + outerScope);
         tempDecl = outerScope.firstDecl;
-        //tempDecl = usedIn
-	while (tempDecl != null) {
+        while (tempDecl != null) {
             System.out.println("global: " + tempDecl.name);
             if (tempDecl.name.compareTo(name) == 0) {
                 return tempDecl;
@@ -265,24 +259,19 @@ class LocalDeclList extends DeclList {
     }
 
     
-    // egen 06 nov
-    /* ----->  SLETT  <---------
     @Override void check(DeclList curDecls) {
-	Declaration tempDecl = firstDecl;
-	
-	Declaration temp1 = curDecls.outerScope.firstDecl;
-	while (temp1 != null) {
-	    System.out.println(" -lib-> " + temp1.name);
-	    temp1 = temp1.nextDecl;
-	}
+        outerScope = curDecls;
+        
+        Declaration dx = firstDecl; //sjekker først de lokale decls
+        while (dx != null) {
+            
 
-	while (tempDecl != null) {
-	    System.out.println(tempDecl.name);
-	    tempDecl = tempDecl.nextDecl;
-	}
-    }
-    */
+            
+        }
+        
     
+    }
+
 
     @Override void parse() { //TODO
         //-- Must be changed in part 1:
@@ -418,6 +407,8 @@ abstract class VarDecl extends Declaration {
  */
 class GlobalArrayDecl extends VarDecl {
     int nElements; //TODO tmp solution
+    ArrayType arrayType;
+
     GlobalArrayDecl(String n) {
         super(n);
         assemblerName = (Cflat.underscoredGlobals() ? "_" : "") + n;
@@ -425,7 +416,6 @@ class GlobalArrayDecl extends VarDecl {
 
     @Override void check(DeclList curDecls) {
         visible = true;
-	//System.out.println(type);
         if (((ArrayType)type).nElems < 0)
             Syntax.error(this, "Arrays cannot have negative size!");
     }
@@ -450,7 +440,7 @@ class GlobalArrayDecl extends VarDecl {
         Scanner.skip(intToken, doubleToken);
 
         name = Scanner.curName;
-	Scanner.skip(nameToken);
+    	Scanner.skip(nameToken);
         Scanner.skip(leftBracketToken);
 
         nElements = Integer.parseInt(Scanner.curName);
@@ -480,8 +470,7 @@ class GlobalSimpleVarDecl extends VarDecl {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
-	    System.out.println("global simp ln 460 " + name);
-	
+        //TODO	
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
@@ -654,7 +643,7 @@ class FuncDecl extends Declaration {
     // egne
     FuncBody fb = new FuncBody();
     ParamDeclList paramDecl;
-
+    
     FuncDecl(String n) {
         // Used for user functions:
         //1- Must be changed in part 1:
@@ -668,7 +657,7 @@ class FuncDecl extends Declaration {
 
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-        paramDecl.check(curDecls);
+        //paramDecl.check(curDecls); //Decllist...TODO
         fb.check(curDecls);
     }
 
@@ -717,7 +706,6 @@ class FuncDecl extends Declaration {
 
     @Override void printTree() {
         //2- Must be changed in part 1:
-        //System.out.println("printTree in FuncDecl");
         Log.wTreeLn("");
         Log.wTree(type.typeName() + " " + name + " (");
         Declaration pd = paramDecl.firstDecl;
@@ -739,7 +727,6 @@ class FuncDecl extends Declaration {
     }
 }
 
-
 class FuncBody extends SyntaxUnit {
 
     //DeclList declList = new DeclList();
@@ -748,12 +735,9 @@ class FuncBody extends SyntaxUnit {
 
     @Override void check(DeclList currBody) {
         //1- Must be changed in part 2:
-	 
-	// Har vi ikke allerede gjort dette under addDecl(line 170) ?
-        //localDeclList.check(currBody);  // check local variables
-
+        //Declerations has been checked in parsing
+        localDeclList.outerScope = currBody;
         stmlist.check(localDeclList);   //check statements
-	//stmlist.check(currBody);   //check statements
     }
 
     @Override void genCode(FuncDecl currBody) {
@@ -1001,7 +985,7 @@ class AssignStatm extends Statement {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
-	assignment.check(curDecls);
+	    assignment.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1033,7 +1017,9 @@ class Assignment extends SyntaxUnit {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
-	variable.check(curDecls);
+	    variable.check(curDecls);
+        expression.check(curDecls);
+//        if (variable.varType ...
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1241,6 +1227,8 @@ class CallStatm extends Statement {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
+        //Er funksjonen definert? Er argumentene riktig type?
+        functionCall.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1275,11 +1263,11 @@ class ExprList extends SyntaxUnit {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
-	Expression tempExpr = firstExpr;
-	while (tempExpr != null) {
-	    tempExpr.check(curDecls);
-	    tempExpr = tempExpr.nextExpr;
-	}
+        Expression tempExpr = firstExpr;
+        while (tempExpr != null) {
+            tempExpr.check(curDecls);
+            tempExpr = tempExpr.nextExpr;
+        }
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1343,11 +1331,10 @@ class Expression extends Operand {
 
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-	firstTerm.check(curDecls);
-	if (secondTerm != null) {
-	    secondTerm.check(curDecls);
-	}
-
+        firstTerm.check(curDecls);
+        if (secondTerm != null) {
+            secondTerm.check(curDecls);
+        }
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1401,12 +1388,17 @@ class Term extends SyntaxUnit {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
-	Factor tempFactor = firstFactor;
-	while (tempFactor != null) {
-	    //tempFactor.
-	    tempFactor = tempFactor.nextFactor;
-	}
-	
+        Factor tempFactor = firstFactor;
+        Factor prev = null;
+        while (tempFactor != null) {
+            tempFactor.check(curDecls);
+            if (prev != null) {
+                if (tempFactor.firstOperand.valType != prev.firstOperand.valType)
+                    Error.error(lineNum, "Comparison operands should have the same type, not " + prev.firstOperand.valType.typeName() + " and " + tempFactor.firstOperand.valType.typeName());
+            }
+            prev = tempFactor;
+            tempFactor = tempFactor.nextFactor;
+        }
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1470,13 +1462,17 @@ class Factor extends SyntaxUnit {
     
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-	Operand tempOp = firstOperand;
-	
-	while (tempOp != null) {
-	    tempOp.check(curDecls);
-	    //tempOp = tempOp.nextOp;
-	}
-	
+	    Operand tempOperand = firstOperand;
+        Operand prev = null;    	
+        while (tempOperand != null) {
+            tempOperand.check(curDecls);
+            if (prev != null) {
+                if (prev != null && tempOperand.valType != prev.valType)
+                    Error.error(lineNum, "Comparison operands should have the same type, not " + prev.valType.typeName() + " and " + tempOperand.valType.typeName());
+            }
+            prev = tempOperand;
+            tempOperand = tempOperand.nextOperand;
+        }
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1702,8 +1698,9 @@ class FunctionCall extends Operand {
     String callName = "";
 
     @Override void check(DeclList curDecls) {
-        //-- Must be changed in part 2:
-	exprList.check(curDecls);
+        //2- Must be changed in part 2:
+        curDecls.findDecl(callName, this);
+        exprList.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1714,7 +1711,7 @@ class FunctionCall extends Operand {
         //1- Must be changed in part 1:
         Log.enterParser("<function call>");
         callName = Scanner.curName; 
-	Scanner.skip(nameToken);
+    	Scanner.skip(nameToken);
         Scanner.skip(leftParToken);
         exprList.parse();
         Scanner.skip(rightParToken);
@@ -1748,17 +1745,17 @@ class Number extends Operand {
     @Override void parse() {
         //1- Must be changed in part 1:
         Log.enterParser("<number>");
-	boolean isNeg = false;
-	if (Scanner.curToken == subtractToken) {
-	    Scanner.readNext();
-	    isNeg = true;
-	}
+        boolean isNeg = false;
+        if (Scanner.curToken == subtractToken) {
+            Scanner.readNext();
+            isNeg = true;
+        }
         numVal = Integer.parseInt(Scanner.curName); 
         if (isNeg) {
-	    numVal = 0 - numVal;
-	}
-	valType = Types.intType;
-	Scanner.skip(numberToken);
+            numVal = 0 - numVal;
+        }
+        valType = Types.intType;
+        Scanner.skip(numberToken);
         Log.leaveParser("</number>");
     }
 
@@ -1779,7 +1776,7 @@ class Variable extends Operand {
 
 
     @Override void check(DeclList curDecls) {
-        Declaration d = curDecls.findDecl(varName,this);
+        Declaration d = curDecls.findDecl(varName, this);
         if (index == null) {
             d.checkWhetherSimpleVar(this);
             valType = d.type;

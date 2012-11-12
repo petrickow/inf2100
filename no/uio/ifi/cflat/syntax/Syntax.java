@@ -29,8 +29,7 @@ public class Syntax {
     public static void init() {
         //1- Must be changed in part 1:
     
-	// make DeclList llibrary
-	    makeLibrary();
+	makeLibrary();
     }
 
     private static void makeLibrary() {
@@ -42,7 +41,6 @@ public class Syntax {
 	
     }
     
-
     public static void finish() {
         //-- Must be changed in part 1:
     }
@@ -95,12 +93,20 @@ class Program extends SyntaxUnit {
     DeclList progDecls = new GlobalDeclList();
 
     @Override void check(DeclList curDecls) { //curDecl == library
-        progDecls.check(curDecls);
+	progDecls.check(curDecls);
 
         if (! Cflat.noLink) {
             // Check that 'main' has been declared properly:
-            //-- Must be changed in part 2:
-            // Naar hele programmet har blitt sjekket maa ogsaa main ha blitt deklarert
+            //1- Must be changed in part 2:
+	    Declaration tempDecl = progDecls.firstDecl;
+	    while (tempDecl != null) {
+		if (tempDecl.name.compareTo("main") == 0 ) {
+		    Log.noteBindingMain(tempDecl.lineNum);
+		    break;
+		}
+		tempDecl = tempDecl.nextDecl;
+	    }
+	    
 	}
     }
 
@@ -141,8 +147,9 @@ abstract class DeclList extends SyntaxUnit {
         outerScope = curDecls;
         Declaration dx = firstDecl;
     	while (dx != null) {
-	        dx.check(this); dx = dx.nextDecl;
+	    dx.check(this); dx = dx.nextDecl;
         }
+	
     }
 
     @Override void printTree() {
@@ -188,20 +195,30 @@ abstract class DeclList extends SyntaxUnit {
         //1- Must be changed in part 2:
         Declaration tempDecl = firstDecl;
         while (tempDecl != null) {
-            if (tempDecl.name.compareTo(name) == 0) {
+            
+	    if (tempDecl.name.compareTo(name) == 0) {
                 return tempDecl;
             }
             tempDecl = tempDecl.nextDecl;
         }
         tempDecl = outerScope.firstDecl;
-        while (tempDecl != null) {
-            System.out.println("global: " + tempDecl.name);
-            if (tempDecl.name.compareTo(name) == 0) {
-                return tempDecl;
+	while (tempDecl != null) {
+	    if (tempDecl.name.compareTo(name) == 0) {
+                System.out.println("global: " + tempDecl.name);
+		return tempDecl;
             }
             tempDecl = tempDecl.nextDecl;
         }
-        Error.error(usedIn.lineNum, "Name " + name + " is unknown!!");
+	tempDecl = outerScope.outerScope.firstDecl;
+	while (tempDecl != null) {
+	    if (tempDecl.name.compareTo(name) == 0) {
+                System.out.println("Library: " + tempDecl.name);
+		return tempDecl;
+            }
+            tempDecl = tempDecl.nextDecl;
+        }
+	        
+	Error.error(usedIn.lineNum, "Name " + name + " is unknown!!");
         return null;
     }
 }
@@ -297,9 +314,22 @@ class LocalDeclList extends DeclList {
  * (This class is not mentioned in the syntax diagrams.)
  */
 class ParamDeclList extends DeclList {
+    
+    int numOfPara = 0; // number of parameters
+    
+    @Override void check (DeclList curDecls) {
+	Declaration tempDecl = firstDecl;
+	
+	while (tempDecl != null) {
+	    numOfPara++;
+	    tempDecl = tempDecl.nextDecl;
+	}
+    }
+
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
     }
+   
 
     @Override void parse() {
         //2- Must be changed in part 1:
@@ -605,8 +635,9 @@ class ParamDecl extends VarDecl {
     }
 
     @Override void check(DeclList curDecls) {
-        //curDecls.
-        //-- Must be changed in part 2:
+	//-- Must be changed in part 2:
+	// Declaration d = curDecls.findDecl(name, this);
+	
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
@@ -657,7 +688,7 @@ class FuncDecl extends Declaration {
 
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-        //paramDecl.check(curDecls); //Decllist...TODO
+	paramDecl.check(null); 
         fb.check(curDecls);
     }
 
@@ -1263,9 +1294,9 @@ class ExprList extends SyntaxUnit {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
-        Expression tempExpr = firstExpr;
-        while (tempExpr != null) {
-            tempExpr.check(curDecls);
+	Expression tempExpr = firstExpr;
+	while (tempExpr != null) {
+	    tempExpr.check(curDecls);
             tempExpr = tempExpr.nextExpr;
         }
     }
@@ -1281,13 +1312,13 @@ class ExprList extends SyntaxUnit {
 
         //1- Must be changed in part 1:
         while (Scanner.curToken != rightParToken) {
-            if (firstExpr == null) {
+	    if (firstExpr == null) {
                 firstExpr = lastExpr = new Expression();
                 firstExpr.parse();
-            } else {
+	    } else {
                 lastExpr.nextExpr = lastExpr = new Expression(); //put in list
                 lastExpr.parse();
-            }
+	    }
 
             if (Scanner.curToken == commaToken) {
                 Scanner.skip(commaToken);
@@ -1696,11 +1727,16 @@ class FunctionCall extends Operand {
     //-- Must be changed in part 1+2:
     ExprList exprList = new ExprList();
     String callName = "";
-
+    
     @Override void check(DeclList curDecls) {
         //2- Must be changed in part 2:
-        curDecls.findDecl(callName, this);
-        exprList.check(curDecls);
+        Declaration d = curDecls.findDecl(callName, this);
+	if (d.type == null) // function from library
+	    Log.noteBindingLib(callName, lineNum);
+	else {
+	    Log.noteBinding(d.name, lineNum, d.lineNum);
+	}	    
+	exprList.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1776,8 +1812,8 @@ class Variable extends Operand {
 
 
     @Override void check(DeclList curDecls) {
-        Declaration d = curDecls.findDecl(varName, this);
-        if (index == null) {
+	Declaration d = curDecls.findDecl(varName, this);
+	if (index == null) {
             d.checkWhetherSimpleVar(this);
             valType = d.type;
         } else {

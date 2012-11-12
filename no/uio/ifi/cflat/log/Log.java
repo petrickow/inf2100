@@ -107,7 +107,24 @@ public class Log {
     public static void noteBinding(String name, int lineNum, int useLineNum) {
         if (! doLogBinding) return;
         //-- Must be changed in part 2:
+	// Example ---> Binding: Line 9: x refers to declaration in line 8
+	writeLogLine("Binding: Line " + lineNum + ": " + name + " refers to declaration in line " + useLineNum);  
     }
+
+    public static void noteBindingLib(String name, int lineNum) {
+        if (! doLogBinding) return;
+        //-- Must be changed in part 2:
+	writeLogLine("Binding: Line " + lineNum + ": " + name + " refers to declaration in the library");  
+    }
+
+    public static void noteBindingMain(int lineNum) {
+        if (! doLogBinding) return;
+        //-- Must be changed in part 2:
+	writeLogLine("Binding: main refers to declaration in line " + lineNum);  
+    }
+
+    
+    
 
 
     public static void wTree(String s) {

@@ -209,7 +209,8 @@ abstract class DeclList extends SyntaxUnit {
             }
             tempDecl = tempDecl.nextDecl;
         }
-	tempDecl = outerScope.outerScope.firstDecl;
+	if (outerScope.outerScope != null)
+	    tempDecl = outerScope.outerScope.firstDecl;
 	while (tempDecl != null) {
 	    if (tempDecl.name.compareTo(name) == 0) {
                 System.out.println("Library: " + tempDecl.name);
@@ -316,10 +317,13 @@ class LocalDeclList extends DeclList {
 class ParamDeclList extends DeclList {
     
     int numOfPara = 0; // number of parameters
-    
+    static DeclList outerScope;
+
     @Override void check (DeclList curDecls) {
 	Declaration tempDecl = firstDecl;
-	
+	outerScope = curDecls;	
+	System.out.println(this);
+	System.out.println(outerScope);
 	while (tempDecl != null) {
 	    numOfPara++;
 	    tempDecl = tempDecl.nextDecl;
@@ -674,7 +678,7 @@ class FuncDecl extends Declaration {
     // egne
     FuncBody fb = new FuncBody();
     ParamDeclList paramDecl;
-    
+        
     FuncDecl(String n) {
         // Used for user functions:
         //1- Must be changed in part 1:
@@ -688,9 +692,10 @@ class FuncDecl extends Declaration {
 
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-	paramDecl.check(null); 
-        fb.check(curDecls);
+	paramDecl.check(curDecls);
+	fb.check(paramDecl);
     }
+    
 
     @Override void checkWhetherArray(SyntaxUnit use) {
         //-- Must be changed in part 2:
@@ -761,15 +766,23 @@ class FuncDecl extends Declaration {
 class FuncBody extends SyntaxUnit {
 
     //DeclList declList = new DeclList();
-    StatmList stmlist = new StatmList();
+    StatmList statmlist = new StatmList();
     LocalDeclList localDeclList = new LocalDeclList(); // LocalSimpleVarDecl eller LocalArrayVarDecl
 
     @Override void check(DeclList currBody) {
         //1- Must be changed in part 2:
         //Declerations has been checked in parsing
-        localDeclList.outerScope = currBody;
-        stmlist.check(localDeclList);   //check statements
+	
+	localDeclList.outerScope = currBody;     // outerScope = paramDecl som igjen har en outerScope som peker paa GlobalDecl
+			
+	System.out.println("\n"+localDeclList.firstDecl.name);                         // int v..    localDecl
+	System.out.println(localDeclList.outerScope.firstDecl.name);                  // int a..    paramDecl
+	System.out.println(localDeclList.outerScope.outerScope);                     // int g..    globalDecl 
+	System.out.println(localDeclList.outerScope.outerScope.outerScope);         // int exit.. libraryDecl
+	statmlist.check(localDeclList);   //check statements
+	                                    
     }
+   
 
     @Override void genCode(FuncDecl currBody) {
         //-- Must be changed in part 2:
@@ -781,7 +794,7 @@ class FuncBody extends SyntaxUnit {
 
         Scanner.skip(leftCurlToken);
         localDeclList.parse();  //parsere lokale variabler i sin klasse!
-        stmlist.parse(); 
+        statmlist.parse(); 
 
         Scanner.skip(rightCurlToken);
         Log.leaveParser("</func body>");
@@ -795,7 +808,7 @@ class FuncBody extends SyntaxUnit {
 	    //Log.wTreeLn(localDecl.type.typeName() + " " + localDecl.name + ";");
             localDecl = localDecl.nextDecl;
         }
-        Statement st = stmlist.firstStatm;
+        Statement st = statmlist.firstStatm;
         while (st != null) {
             st.printTree();
             st = st.nextStatm;

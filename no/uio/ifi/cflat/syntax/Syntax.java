@@ -316,11 +316,16 @@ class LocalDeclList extends DeclList {
  */
 class ParamDeclList extends DeclList {
     
-    int numOfPara = 0; // number of parameters
-    static DeclList outerScope;
+    int numOfPara; // number of parameters
+    DeclList outerScope;
+
+    ParamDeclList () {
+    
+    }
 
     @Override void check (DeclList curDecls) {
 	Declaration tempDecl = firstDecl;
+	numOfPara = 0;
 	outerScope = curDecls;	
 	System.out.println(this);
 	System.out.println(outerScope);
@@ -693,6 +698,8 @@ class FuncDecl extends Declaration {
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
 	paramDecl.check(curDecls);
+	System.out.println("-------_>" + paramDecl.outerScope);
+	System.out.println("---------> " + curDecls);
 	fb.check(paramDecl);
     }
     
@@ -772,13 +779,12 @@ class FuncBody extends SyntaxUnit {
     @Override void check(DeclList currBody) {
         //1- Must be changed in part 2:
         //Declerations has been checked in parsing
+	ParamDeclList copyParamDecl = (ParamDeclList) currBody;
+	//System.out.println("----null-->" + currBody.numOfPara);
+	localDeclList.outerScope = copyParamDecl;     // outerScope = paramDecl som igjen har en outerScope som peker paa GlobalDecl
 	
-	localDeclList.outerScope = currBody;     // outerScope = paramDecl som igjen har en outerScope som peker paa GlobalDecl
-			
-	System.out.println("\n"+localDeclList.firstDecl.name);                         // int v..    localDecl
-	System.out.println(localDeclList.outerScope.firstDecl.name);                  // int a..    paramDecl
-	System.out.println(localDeclList.outerScope.outerScope);                     // int g..    globalDecl 
-	System.out.println(localDeclList.outerScope.outerScope.outerScope);         // int exit.. libraryDecl
+	System.out.println(" -------->>>" + copyParamDecl.outerScope.firstDecl.name);                     // int g..    globalDecl 
+	//System.out.println(localDeclList.outerScope.outerScope.outerScope);         // int exit.. libraryDecl
 	statmlist.check(localDeclList);   //check statements
 	                                    
     }
@@ -1062,7 +1068,7 @@ class Assignment extends SyntaxUnit {
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
 	    variable.check(curDecls);
-        expression.check(curDecls);
+	    expression.check(curDecls);
 //        if (variable.varType ...
     }
 

@@ -193,32 +193,66 @@ abstract class DeclList extends SyntaxUnit {
 
     Declaration findDecl(String name, SyntaxUnit usedIn) {
         //1- Must be changed in part 2:
-        Declaration tempDecl = firstDecl;
-        while (tempDecl != null) {
+        
+	ParamDeclList copyParamDecl = (ParamDeclList) outerScope;
+	
+	Declaration tempDecl = firstDecl;
+	
+	DeclList tempOuterScope = copyParamDecl;
+	
+	while (tempDecl != null) {  // Leter igjennom de lokale
+	    if (tempDecl.name.compareTo(name) == 0) {
+		    return tempDecl;
+		}
+	    tempDecl = tempDecl.nextDecl;
+	}
+	
+	if (copyParamDecl != null) {
+	    tempDecl = copyParamDecl.firstDecl;
+	}
+	while (tempDecl != null) {  // Leter igjennom parameterne
+	    if (tempDecl.name.compareTo(name) == 0) {
+		    return tempDecl;
+		}
+	    tempDecl = tempDecl.nextDecl;
+	}
+
+	if (copyParamDecl.outerScope != null) {
+	    tempDecl = copyParamDecl.outerScope.firstDecl;
+	}
+	while (tempDecl != null) {  // Leter igjennom de globale
+	    if (tempDecl.name.compareTo(name) == 0) {
+		    return tempDecl;
+		}
+	    tempDecl = tempDecl.nextDecl;
+	}
+
+	if (copyParamDecl.outerScope.outerScope != null) {
+	    tempDecl = copyParamDecl.outerScope.outerScope.firstDecl;
+	}
+	while (tempDecl != null) {  // Leter igjennom de biblioteket
+	    if (tempDecl.name.compareTo(name) == 0) {
+		    return tempDecl;
+		}
+	    tempDecl = tempDecl.nextDecl;
+	}
+	
+	/* FUNGERER IKKE -> tempOuterScope.outerScope blir automatiks null :S
+	while (tempDecl != null) {
             
-	    if (tempDecl.name.compareTo(name) == 0) {
-                return tempDecl;
-            }
-            tempDecl = tempDecl.nextDecl;
-        }
-        tempDecl = outerScope.firstDecl;
-	while (tempDecl != null) {
-	    if (tempDecl.name.compareTo(name) == 0) {
-                System.out.println("global: " + tempDecl.name);
-		return tempDecl;
-            }
-            tempDecl = tempDecl.nextDecl;
-        }
-	if (outerScope.outerScope != null)
-	    tempDecl = outerScope.outerScope.firstDecl;
-	while (tempDecl != null) {
-	    if (tempDecl.name.compareTo(name) == 0) {
-                System.out.println("Library: " + tempDecl.name);
-		return tempDecl;
-            }
-            tempDecl = tempDecl.nextDecl;
-        }
-	        
+	    while (tempDecl != null) {
+		if (tempDecl.name.compareTo(name) == 0) {
+		    return tempDecl;
+		}
+		tempDecl = tempDecl.nextDecl;
+	    }
+	    
+	    if (tempOuterScope != null) {
+	        tempDecl =  tempOuterScope.firstDecl;
+		tempOuterScope = tempOuterScope.outerScope;
+	    }
+	}*/
+      
 	Error.error(usedIn.lineNum, "Name " + name + " is unknown!!");
         return null;
     }
@@ -324,11 +358,10 @@ class ParamDeclList extends DeclList {
     }
 
     @Override void check (DeclList curDecls) {
-	Declaration tempDecl = firstDecl;
+	Declaration tempDecl = firstDecl;          
 	numOfPara = 0;
-	outerScope = curDecls;	
-	System.out.println(this);
-	System.out.println(outerScope);
+	outerScope = curDecls;	       // Setter paramDecl sitt outerScope til å peke på globalDeclList 
+		
 	while (tempDecl != null) {
 	    numOfPara++;
 	    tempDecl = tempDecl.nextDecl;
@@ -676,6 +709,7 @@ class ParamDecl extends VarDecl {
 /*
  * A <func decl>
  */
+
 class FuncDecl extends Declaration {
 
     //-- Must be changed in part 1+2:
@@ -698,8 +732,6 @@ class FuncDecl extends Declaration {
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
 	paramDecl.check(curDecls);
-	System.out.println("-------_>" + paramDecl.outerScope);
-	System.out.println("---------> " + curDecls);
 	fb.check(paramDecl);
     }
     
@@ -779,14 +811,16 @@ class FuncBody extends SyntaxUnit {
     @Override void check(DeclList currBody) {
         //1- Must be changed in part 2:
         //Declerations has been checked in parsing
-	ParamDeclList copyParamDecl = (ParamDeclList) currBody;
-	//System.out.println("----null-->" + currBody.numOfPara);
-	localDeclList.outerScope = copyParamDecl;     // outerScope = paramDecl som igjen har en outerScope som peker paa GlobalDecl
+
+			
+	// --->  Må uansett gjøre det samme i findDecl. line 200
+	//ParamDeclList copyParamDecl = (ParamDeclList) currBody;
 	
-	System.out.println(" -------->>>" + copyParamDecl.outerScope.firstDecl.name);                     // int g..    globalDecl 
-	//System.out.println(localDeclList.outerScope.outerScope.outerScope);         // int exit.. libraryDecl
+	localDeclList.outerScope = currBody;     	
+		
 	statmlist.check(localDeclList);   //check statements
-	                                    
+	
+	
     }
    
 
@@ -831,7 +865,7 @@ class StatmList extends SyntaxUnit {
     Statement firstStatm = null;
 
     @Override void check(DeclList curDecls) {
-        //1- Must be changed in part 2:
+        //1- Must be changed in  part 2:
         Statement tempStatm = firstStatm;
         while (tempStatm != null) {
             tempStatm.check(curDecls);
@@ -1069,7 +1103,7 @@ class Assignment extends SyntaxUnit {
         //-- Must be changed in part 2:
 	    variable.check(curDecls);
 	    expression.check(curDecls);
-//        if (variable.varType ...
+	    //        if (variable.varType ...
     }
 
     @Override void genCode(FuncDecl curFunc) {

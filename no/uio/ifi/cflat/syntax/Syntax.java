@@ -198,8 +198,7 @@ abstract class DeclList extends SyntaxUnit {
 	
 	Declaration tempDecl = firstDecl;
 	
-	DeclList tempOuterScope = copyParamDecl;
-	
+	//DeclList tempOuterScope = copyParamDecl;
 	while (tempDecl != null) {  // Leter igjennom de lokale
 	    if (tempDecl.name.compareTo(name) == 0) {
 		    return tempDecl;
@@ -251,7 +250,8 @@ abstract class DeclList extends SyntaxUnit {
 	        tempDecl =  tempOuterScope.firstDecl;
 		tempOuterScope = tempOuterScope.outerScope;
 	    }
-	}*/
+	}
+	*/
       
 	Error.error(usedIn.lineNum, "Name " + name + " is unknown!!");
         return null;
@@ -351,7 +351,7 @@ class LocalDeclList extends DeclList {
 class ParamDeclList extends DeclList {
     
     int numOfPara; // number of parameters
-    DeclList outerScope;
+    //DeclList outerScope;
 
     ParamDeclList () {
     
@@ -1142,7 +1142,11 @@ class IfStatm extends Statement {
     ElsePart elsePart = null;
 
     @Override void check(DeclList curDecls) {
-        //-- Must be changed in part 2:
+	//1- Must be changed in part 2:
+	expression.check(curDecls);
+        statmList.check(curDecls);
+	if (elsePart != null)
+	    elsePart.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1190,7 +1194,8 @@ class ElsePart extends SyntaxUnit {
 
 
     @Override void check(DeclList curDecls) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+	statmList.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1230,7 +1235,8 @@ class ReturnStatm extends Statement {
     Expression expression = new Expression();
 
     @Override void check(DeclList curDecls) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+	expression.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {

@@ -1436,6 +1436,9 @@ class Expression extends Operand {
         if (innerExpr)
             Scanner.skip(leftParToken);
         firstTerm.parse();
+	
+	valType = Types.intType;    
+        // TODO maa sette riktig valtype her. Ellers problemer med expression med paranteser
 
         if (Token.isRelOperator(Scanner.curToken)) {
             relOp = new RelOperator();
@@ -1480,15 +1483,17 @@ class Term extends SyntaxUnit {
         //-- Must be changed in part 2:
         Factor tempFactor = firstFactor;
         Factor prev = null;
+	
         while (tempFactor != null) {
-            tempFactor.check(curDecls);
-            if (prev != null) {
-                if (tempFactor.firstOperand.valType != prev.firstOperand.valType)
-                    Error.error(lineNum, "Comparison operands should have the same type, not " + prev.firstOperand.valType.typeName() + " and " + tempFactor.firstOperand.valType.typeName());
-            }
-            prev = tempFactor;
-            tempFactor = tempFactor.nextFactor;
-        }
+	    tempFactor.check(curDecls);
+	    if (prev != null) {
+		if (tempFactor.firstOperand.valType != prev.firstOperand.valType) {
+		    Error.error(lineNum, "Comparison operands should have the same type, not " + prev.firstOperand.valType.typeName() + " and " + tempFactor.firstOperand.valType.typeName());
+		}
+	    }
+	    prev = tempFactor;
+	    tempFactor = tempFactor.nextFactor;
+	}
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1552,7 +1557,7 @@ class Factor extends SyntaxUnit {
     
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-	    Operand tempOperand = firstOperand;
+	Operand tempOperand = firstOperand;
         Operand prev = null;    	
         while (tempOperand != null) {
             tempOperand.check(curDecls);

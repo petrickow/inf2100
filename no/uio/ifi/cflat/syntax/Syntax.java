@@ -283,12 +283,12 @@ class GlobalDeclList extends DeclList {
                     fd.parse();
                     addDecl(fd);
                 } else if (Scanner.nextNextToken == leftBracketToken) {
-		    gad = new GlobalArrayDecl(Scanner.nextName);
+                    gad = new GlobalArrayDecl(Scanner.nextName);
                     gad.parse();
                     addDecl(gad);
                 } else {
                     //1- Must be changed in part 1:
-		    gsv = new GlobalSimpleVarDecl(Scanner.nextName);
+                    gsv = new GlobalSimpleVarDecl(Scanner.nextName);
                     gsv.parse();
                     addDecl(gsv);
                 }
@@ -316,12 +316,7 @@ class LocalDeclList extends DeclList {
         
         Declaration dx = firstDecl; //sjekker først de lokale decls
         while (dx != null) {
-            
-
-            
         }
-        
-    
     }
 
 
@@ -358,14 +353,14 @@ class ParamDeclList extends DeclList {
     }
 
     @Override void check (DeclList curDecls) {
-	Declaration tempDecl = firstDecl;          
-	numOfPara = 0;
-	outerScope = curDecls;	       // Setter paramDecl sitt outerScope til å peke på globalDeclList 
+    	Declaration tempDecl = firstDecl;          
+	   numOfPara = 0;
+	   outerScope = curDecls;	       // Setter paramDecl sitt outerScope til å peke på globalDeclList 
 		
-	while (tempDecl != null) {
-	    numOfPara++;
-	    tempDecl = tempDecl.nextDecl;
-	}
+    	while (tempDecl != null) {
+	       numOfPara++;
+	        tempDecl = tempDecl.nextDecl;
+	   }
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -478,8 +473,6 @@ abstract class VarDecl extends Declaration {
  * A global array declaration
  */
 class GlobalArrayDecl extends VarDecl {
-    int nElements; //TODO tmp solution
-    ArrayType arrayType;
 
     GlobalArrayDecl(String n) {
         super(n);
@@ -508,14 +501,17 @@ class GlobalArrayDecl extends VarDecl {
         Log.enterParser("<var decl>");
 
         //2- Must be changed in part 1:
-        type = Types.getType(Scanner.curToken);
+        
+        Type arrType = Types.getType(Scanner.curToken);
+        System.out.println(arrType);
         Scanner.skip(intToken, doubleToken);
 
-        name = Scanner.curName;
+        //name = Scanner.curName; //already done in constructor
     	Scanner.skip(nameToken);
         Scanner.skip(leftBracketToken);
 
-        nElements = Integer.parseInt(Scanner.curName);
+        int nElems = Integer.parseInt(Scanner.curName);
+        type = new ArrayType(nElems, arrType);
         Scanner.skip(numberToken);
 
         Scanner.skip(rightBracketToken);
@@ -526,7 +522,7 @@ class GlobalArrayDecl extends VarDecl {
 
     @Override void printTree() {
         //1- Must be changed in part 1:
-	Log.wTreeLn(type.typeName() + " " + name + "[" + nElements + "];");
+	Log.wTreeLn(type.typeName() + " " + name + "[" + ((ArrayType)type).nElems + "];");
     }
 }
 
@@ -1435,12 +1431,10 @@ class Expression extends Operand {
         Log.enterParser("<expression>");
         if (innerExpr)
             Scanner.skip(leftParToken);
-        	
-	firstTerm.parse();
-	//  maa sette riktig valtype her. Ellers problemer med expression med paranteser
-	valType = firstTerm.firstFactor.firstOperand.valType;
+        firstTerm.parse();
 	
-        
+	valType = Types.intType;    
+        // TODO maa sette riktig valtype her. Ellers problemer med expression med paranteser
 
         if (Token.isRelOperator(Scanner.curToken)) {
             relOp = new RelOperator();
@@ -1490,8 +1484,6 @@ class Term extends SyntaxUnit {
 	    tempFactor.check(curDecls);
 	    if (prev != null) {
 		if (tempFactor.firstOperand.valType != prev.firstOperand.valType) {
-		    System.out.println("----1--->" +tempFactor.firstOperand.valType);
-		    System.out.println("----2--->" +prev.firstOperand.valType);
 		    Error.error(lineNum, "Comparison operands should have the same type, not " + prev.firstOperand.valType.typeName() + " and " + tempFactor.firstOperand.valType.typeName());
 		}
 	    }

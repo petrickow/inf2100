@@ -503,7 +503,6 @@ class GlobalArrayDecl extends VarDecl {
         //2- Must be changed in part 1:
         
         Type arrType = Types.getType(Scanner.curToken);
-        System.out.println(arrType);
         Scanner.skip(intToken, doubleToken);
 
         //name = Scanner.curName; //already done in constructor
@@ -558,7 +557,7 @@ class GlobalSimpleVarDecl extends VarDecl {
         //1- Must be changed in part 1:
         Log.enterParser("<var decl>");
         type = Types.getType(Scanner.curToken);
-	Scanner.skip(intToken, doubleToken);
+        Scanner.skip(intToken, doubleToken);
         name = Scanner.curName;
         Scanner.skip(nameToken);
         Scanner.skip(semicolonToken);
@@ -571,10 +570,10 @@ class GlobalSimpleVarDecl extends VarDecl {
  * A local array declaration
  */
 class LocalArrayDecl extends VarDecl {
-    int nElements; //Skal ligge i type? TODO tmp solution eller et NumberObjekt?
     
     LocalArrayDecl(String n) {
         super(n);
+        assemblerName = n; //right?
     }
 
     @Override void check(DeclList curDecls) {
@@ -596,15 +595,16 @@ class LocalArrayDecl extends VarDecl {
     @Override void parse() {
         //1- Must be changed in part 1:
         Log.enterParser("<var decl>");
-        type = Types.getType(Scanner.curToken);
+        Type arrType = Types.getType(Scanner.curToken);
         Scanner.skip(intToken, doubleToken);
 
-        name = Scanner.curName;
-	Scanner.skip(nameToken);
+    	Scanner.skip(nameToken);
         Scanner.skip(leftBracketToken);
 
-	nElements = Integer.parseInt(Scanner.curName);
+	    int nElems = Integer.parseInt(Scanner.curName);
         Scanner.skip(numberToken);
+
+        type = new ArrayType(nElems, arrType);
 
         Scanner.skip(rightBracketToken);
         Scanner.skip(semicolonToken);
@@ -613,7 +613,7 @@ class LocalArrayDecl extends VarDecl {
 
     @Override void printTree() {
         //1- Must be changed in part 1:
-	Log.wTreeLn(type.typeName() + " " + name + "[" + nElements + "];");
+	Log.wTreeLn(type.typeName() + " " + name + "[" + ((ArrayType)type).nElems + "];");
     }
 
 }

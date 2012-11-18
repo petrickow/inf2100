@@ -5,7 +5,8 @@ import no.uio.ifi.cflat.error.Error;
 public class ArrayType extends Type {
     public int nElems;
     public Type elemType;
-
+    
+    
     public ArrayType(int n, Type t) {
 	nElems = n;  elemType = t;
     }
@@ -16,6 +17,10 @@ public class ArrayType extends Type {
 
     @Override public String typeName() {
 	return elemType.typeName() + " array";
+    }
+
+     @Override public String typeName2() {
+	return "array";
     }
 
     @Override public void checkSameType(int lineNum, Type otherType, String what) {
@@ -32,7 +37,7 @@ public class ArrayType extends Type {
 	    elemType == ((ArrayType)correctType).elemType) return;
 
 	Error.error(lineNum, 
-		    what + " is " + typeName() +
-		    ", not " + correctType.typeName() + ".");
+		    what + " is an " + typeName2() +
+		    " and no " + correctType.typeName2() + "!");
     }
 }

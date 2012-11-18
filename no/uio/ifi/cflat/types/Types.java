@@ -15,37 +15,55 @@ import static no.uio.ifi.cflat.scanner.Token.*;
 
 public class Types {
     public static BasicType doubleType, intType;//TODO arrayType, where?
-
+    
+    
     public static void init() {
         doubleType = new BasicType() {
-            @Override public int size() {
-                return 8;
-            }
+		@Override public int size() {
+		    return 8;
+		}
+		
+		@Override public String typeName() {
+		    return "double";
+		}
 
-            @Override public String typeName() {
-                return "double";
-            }
+		// ny 18/11
+		public String typeName2() {
+		    return " simple variable";
+		}
+		
+		
+		
 
             @Override public void genJumpIfZero(String jumpLabel) {
                 Code.genInstr("", "fstps", Code.tmpLabel, "");
                 Code.genInstr("", "cmpl", "$0,"+Code.tmpLabel, "");
                 Code.genInstr("", "je", jumpLabel, "");
             }
+	    		
         };
     
         //-- Must be changed in part 2:
         intType = new BasicType() {
-            @Override public int size() {
-                return 4;
-            }
-
-            @Override public String typeName() {
-                return "int";
-            }
-            @Override public void genJumpIfZero(String jumpLabe) {
-                //TODO
-            }
+		@Override public int size() {
+		    return 4;
+		}
+		
+		@Override public String typeName() {
+		    return "int";
+		}
+		
+		// ny 18/11
+		@Override public String typeName2() {
+		    return "simple variable";
+		}
+		
+		@Override public void genJumpIfZero(String jumpLabe) {
+		    //TODO
+		}
+				    
         };
+	
     }
     public static void finish() {
 	//-- Must be changed in part 2:
@@ -59,4 +77,7 @@ public class Types {
 	}
 	return null;  // Just to keep the Java compiler happy. :-)
     }
+
+    
+   
 }

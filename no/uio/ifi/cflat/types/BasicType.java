@@ -13,8 +13,8 @@ abstract public class BasicType extends Type {
     @Override public void checkType(int lineNum, Type correctType, String what) {
 	if (this != correctType)
 	    Error.error(lineNum, 
-			what + " is " + typeName() +
-			", not " + correctType.typeName() + ".");
+			what + " is a " + typeName2() +
+			" and no " + correctType.typeName2() + "!");
     }
 
 }

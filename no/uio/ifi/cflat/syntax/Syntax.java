@@ -278,7 +278,7 @@ class GlobalDeclList extends DeclList {
         while (Token.isTypeName(Scanner.curToken)) {
             
             if (Scanner.nextToken == nameToken) {
-		if (Scanner.nextNextToken == leftParToken) {
+                if (Scanner.nextNextToken == leftParToken) {
                     fd = new FuncDecl(Scanner.nextName);
                     fd.parse();
                     addDecl(fd);
@@ -326,15 +326,14 @@ class LocalDeclList extends DeclList {
             // sjekke om den er "simple-" eller "arrarVarDecl"
             if (Scanner.nextNextToken == semicolonToken) {
                 LocalSimpleVarDecl v = new LocalSimpleVarDecl(Scanner.nextName);
-		v.parse();
+                v.parse();
                 addDecl(v);
             } else {
                 LocalArrayDecl v = new LocalArrayDecl(Scanner.nextName);
-		v.parse();
+                v.parse();
                 addDecl(v);
             }
         }
-
     }
 }
 
@@ -359,7 +358,7 @@ class ParamDeclList extends DeclList {
 		
     	while (tempDecl != null) {
 	       numOfPara++;
-	        tempDecl = tempDecl.nextDecl;
+           tempDecl = tempDecl.nextDecl;
 	   }
     }
 
@@ -490,7 +489,7 @@ class GlobalArrayDecl extends VarDecl {
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
-        Syntax.error(use, name + " is an array and no simple variable!");
+            Syntax.error(use, name + " is an array and no simple variable!");
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -541,6 +540,8 @@ class GlobalSimpleVarDecl extends VarDecl {
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
+        if (!(this.type instanceof ArrayType))
+            Error.error(use.lineNum, "" + this.name + " is a simple variable and not an array");
         //-- Must be changed in part 2:
     }
 
@@ -633,6 +634,8 @@ class LocalSimpleVarDecl extends VarDecl {
 
     @Override void checkWhetherArray(SyntaxUnit use) {
         //-- Must be changed in part 2:
+        if (!(this.type instanceof ArrayType))
+            Error.error(use.lineNum, "" + this.name + " is a simple variable and not an array");
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
@@ -675,7 +678,8 @@ class ParamDecl extends VarDecl {
     @Override void check(DeclList curDecls) {
 	//-- Must be changed in part 2:
 	// Declaration d = curDecls.findDecl(name, this);
-	
+	// if (d == null)
+        // Error.error(lineNum, )
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
@@ -727,21 +731,30 @@ class FuncDecl extends Declaration {
 
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-	paramDecl.check(curDecls);
-	fb.check(paramDecl);
+	   paramDecl.check(curDecls);
+	   fb.check(paramDecl);
     }
     
 
     @Override void checkWhetherArray(SyntaxUnit use) {
         //-- Must be changed in part 2:
+        System.out.println("----------->" + this + this.name);
+        /* FUNGERER IKKE...
+        if (this instanceof GlobalArrayDecl || this instanceof LocalArrayDecl)
+            Error.error(use.lineNum, "" + this.name + " is a function and not an array");
+        */
     }
 
     @Override void checkWhetherFunction(int nParamsUsed, SyntaxUnit use) {
         //-- Must be changed in part 2:
+
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
         //-- Must be changed in part 2:
+        if (this.type instanceof BasicType)
+            Error.error(use.lineNum, "" + this.name + " is a function and not a simple variable");
+
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1874,15 +1887,17 @@ class Variable extends Operand {
     @Override void check(DeclList curDecls) {
 	Declaration d = curDecls.findDecl(varName, this);
 	if (index == null) {
-            d.checkWhetherSimpleVar(this);
-            valType = d.type;
-        } else {
-            d.checkWhetherArray(this);
-            index.check(curDecls);
-            index.valType.checkType(lineNum, Types.intType, "Array index");
-            valType = ((ArrayType)d.type).elemType;
-        }
-        declRef = (VarDecl)d;
+        d.checkWhetherSimpleVar(this);
+        valType = d.type;
+    } else {
+        System.out.println("$$$$$$$$---> " + d.name);
+        d.checkWhetherArray(this);
+        index.check(curDecls);
+        index.valType.checkType(lineNum, Types.intType, "Array index");
+        valType = ((ArrayType)d.type).elemType;
+    }
+    System.out.println(d);
+    declRef = (VarDecl)d;
 	Log.noteBinding(declRef.name, lineNum, declRef.lineNum);
     }
 

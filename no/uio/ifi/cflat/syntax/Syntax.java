@@ -25,7 +25,7 @@ import no.uio.ifi.cflat.types.*;
 public class Syntax {
     static DeclList library;
     static Program program;
-
+    
     public static void init() {
         //1- Must be changed in part 1:
     
@@ -485,11 +485,12 @@ class GlobalArrayDecl extends VarDecl {
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
-        /* OK TODO*/
+        // OK 
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
-            Syntax.error(use, name + " is an array and no simple variable!");
+	//Syntax.error(use, name + " is an array and no simple variable!");
+	type.checkType(use.lineNum, Types.intType, name);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -535,13 +536,16 @@ class GlobalSimpleVarDecl extends VarDecl {
     }
 
     @Override void check(DeclList curDecls) {
-        //-- Must be changed in part 2:
-        //TODO	
+        //1- Must be changed in part 2:
+        // TODO
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
-        if (!(this.type instanceof ArrayType))
-            Error.error(use.lineNum, "" + this.name + " is a simple variable and not an array");
+		
+	type.checkType(use.lineNum, new ArrayType(0,Types.intType), name);
+	
+	//if (!(this.type instanceof ArrayType))
+        //    Error.error(use.lineNum, "" + this.name + " is a simple variable and not an array");
         //-- Must be changed in part 2:
     }
 
@@ -583,10 +587,12 @@ class LocalArrayDecl extends VarDecl {
 
     @Override void checkWhetherArray(SyntaxUnit use) {
         //-- Must be changed in part 2:
+	// OK
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+	type.checkType(use.lineNum, Types.intType, name);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -602,7 +608,7 @@ class LocalArrayDecl extends VarDecl {
     	Scanner.skip(nameToken);
         Scanner.skip(leftBracketToken);
 
-	    int nElems = Integer.parseInt(Scanner.curName);
+	int nElems = Integer.parseInt(Scanner.curName);
         Scanner.skip(numberToken);
 
         type = new ArrayType(nElems, arrType);
@@ -634,8 +640,9 @@ class LocalSimpleVarDecl extends VarDecl {
 
     @Override void checkWhetherArray(SyntaxUnit use) {
         //-- Must be changed in part 2:
-        if (!(this.type instanceof ArrayType))
-            Error.error(use.lineNum, "" + this.name + " is a simple variable and not an array");
+        type.checkType(use.lineNum, new ArrayType(0,Types.intType), name);
+	//if (!(this.type instanceof ArrayType))
+        //    Error.error(use.lineNum, "" + this.name + " is a simple variable and not an array");
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
@@ -716,7 +723,7 @@ class FuncDecl extends Declaration {
 
     // egne
     FuncBody fb = new FuncBody();
-    ParamDeclList paramDecl;
+    ParamDeclList paramDecl = new ParamDeclList();;
         
     FuncDecl(String n) {
         // Used for user functions:
@@ -737,24 +744,24 @@ class FuncDecl extends Declaration {
     
 
     @Override void checkWhetherArray(SyntaxUnit use) {
-        //-- Must be changed in part 2:
-        System.out.println("----------->" + this + this.name);
-        /* FUNGERER IKKE...
-        if (this instanceof GlobalArrayDecl || this instanceof LocalArrayDecl)
-            Error.error(use.lineNum, "" + this.name + " is a function and not an array");
-        */
+        //1- Must be changed in part 2:
+	
+	// Funksjon skal aldri vare en array uansett saa hvis vi kommer inn hit er det feil
+	Error.error(use.lineNum, "" + this.name + " is a function and no array!");
+	
     }
 
     @Override void checkWhetherFunction(int nParamsUsed, SyntaxUnit use) {
         //-- Must be changed in part 2:
-
+	// DENNE ER OK
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
         //-- Must be changed in part 2:
-        if (this.type instanceof BasicType)
-            Error.error(use.lineNum, "" + this.name + " is a function and not a simple variable");
-
+	
+	// Funksjon skal aldri vare en simple var uansett saa hvis vi kommer inn hit er det feil
+	Error.error(use.lineNum, "" + this.name + " is a function and not a simple variable");
+	
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -777,7 +784,7 @@ class FuncDecl extends Declaration {
         Scanner.skip(nameToken);
         Scanner.skip(leftParToken);
 
-        paramDecl = new ParamDeclList();
+        //paramDecl = new ParamDeclList();
         paramDecl.parse();
 
 
@@ -1112,7 +1119,6 @@ class Assignment extends SyntaxUnit {
         //-- Must be changed in part 2:
 	    variable.check(curDecls);
 	    expression.check(curDecls);
-	    //        if (variable.varType ...
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1359,13 +1365,16 @@ class CallStatm extends Statement {
 
 class ExprList extends SyntaxUnit {
     Expression firstExpr = null;
+    int numOfExp = 0;
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
 	Expression tempExpr = firstExpr;
 	while (tempExpr != null) {
+	    numOfExp++;
 	    tempExpr.check(curDecls);
             tempExpr = tempExpr.nextExpr;
+	    
         }
     }
 
@@ -1804,13 +1813,24 @@ class FunctionCall extends Operand {
     @Override void check(DeclList curDecls) {
         //2- Must be changed in part 2:
         Declaration d = curDecls.findDecl(callName, this);
+	
+	//ParamDeclList tempParaDecl = d.paramDecl
+	FuncDecl tempFuncDecl = (FuncDecl)d;
+	
+	d.checkWhetherFunction(10, this); // TODO - temp
 	if (d.type == null) // function from library
 	    Log.noteBindingLib(callName, lineNum);
 	else {
 	    Log.noteBinding(d.name, lineNum, d.lineNum);
-	}	    
+	}
 	exprList.check(curDecls);
-    }
+
+	
+	// test number of parameters
+	if (tempFuncDecl.paramDecl.numOfPara != exprList.numOfExp) {
+	    Error.error(lineNum, "Calls to " + callName + " should hava " + tempFuncDecl.paramDecl.numOfPara + " parameters, not " + exprList.numOfExp + "!");
+	}
+    }                 
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
@@ -1882,22 +1902,21 @@ class Variable extends Operand {
     String varName;
     VarDecl declRef = null;
     Expression index = null;
-
-
+    
     @Override void check(DeclList curDecls) {
 	Declaration d = curDecls.findDecl(varName, this);
+	
+	
 	if (index == null) {
-        d.checkWhetherSimpleVar(this);
-        valType = d.type;
-    } else {
-        System.out.println("$$$$$$$$---> " + d.name);
-        d.checkWhetherArray(this);
-        index.check(curDecls);
-        index.valType.checkType(lineNum, Types.intType, "Array index");
-        valType = ((ArrayType)d.type).elemType;
-    }
-    System.out.println(d);
-    declRef = (VarDecl)d;
+	    d.checkWhetherSimpleVar(this);
+	    valType = d.type;
+	} else {
+	    d.checkWhetherArray(this);
+	    index.check(curDecls);
+	    index.valType.checkType(lineNum, Types.intType, "Array index");
+	    valType = ((ArrayType)d.type).elemType;
+	}
+	declRef = (VarDecl)d;
 	Log.noteBinding(declRef.name, lineNum, declRef.lineNum);
     }
 

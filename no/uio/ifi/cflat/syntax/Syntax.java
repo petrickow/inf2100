@@ -1435,10 +1435,12 @@ class Expression extends Operand {
         Log.enterParser("<expression>");
         if (innerExpr)
             Scanner.skip(leftParToken);
-        firstTerm.parse();
+        	
+	firstTerm.parse();
+	//  maa sette riktig valtype her. Ellers problemer med expression med paranteser
+	valType = firstTerm.firstFactor.firstOperand.valType;
 	
-	valType = Types.intType;    
-        // TODO maa sette riktig valtype her. Ellers problemer med expression med paranteser
+        
 
         if (Token.isRelOperator(Scanner.curToken)) {
             relOp = new RelOperator();
@@ -1488,6 +1490,8 @@ class Term extends SyntaxUnit {
 	    tempFactor.check(curDecls);
 	    if (prev != null) {
 		if (tempFactor.firstOperand.valType != prev.firstOperand.valType) {
+		    System.out.println("----1--->" +tempFactor.firstOperand.valType);
+		    System.out.println("----2--->" +prev.firstOperand.valType);
 		    Error.error(lineNum, "Comparison operands should have the same type, not " + prev.firstOperand.valType.typeName() + " and " + tempFactor.firstOperand.valType.typeName());
 		}
 	    }

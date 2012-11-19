@@ -34,11 +34,43 @@ public class Syntax {
 
     private static void makeLibrary() {
 	library = new GlobalDeclList();
-	String [] libList = {"exit","getchar","getdouble","getint","putchar","putdouble","putint"};
+	
+	/*String [] libList = {"exit","getchar","getdouble","getint","putchar","putdouble","putint"};
 	for (int i = 0; i < libList.length; i++) {
 	    library.addDecl(new FuncDecl(libList[i]));
-	}
+	}*/
+
+	FuncDecl tempLibFunc = new FuncDecl("exit");
+	tempLibFunc.paramDecl.numOfPara = 1;
+	//tempLibFunc.type = Types.intType;    
+	library.addDecl(tempLibFunc);
+
+	tempLibFunc = new FuncDecl("getchar");
+	//tempLibFunc.type = Types.intType;    
+	library.addDecl(tempLibFunc);
+
+	tempLibFunc = new FuncDecl("getdouble");
+	//tempLibFunc.type = Types.doubleType;    
+	library.addDecl(tempLibFunc);
 	
+	tempLibFunc = new FuncDecl("getint");
+	//tempLibFunc.type = Types.intType;    
+	library.addDecl(tempLibFunc);
+	
+	tempLibFunc = new FuncDecl("putchar");
+	tempLibFunc.paramDecl.numOfPara = 1;
+	//tempLibFunc.type = Types.intType;    
+	library.addDecl(tempLibFunc);
+	
+	tempLibFunc = new FuncDecl("putdouble");
+	tempLibFunc.paramDecl.numOfPara = 1;
+	//tempLibFunc.type = Types.doubleType;    
+	library.addDecl(tempLibFunc);
+
+	tempLibFunc = new FuncDecl("putint");
+	tempLibFunc.paramDecl.numOfPara = 1;
+	//tempLibFunc.type = Types.intType;    
+	library.addDecl(tempLibFunc);
     }
     
     public static void finish() {
@@ -236,7 +268,7 @@ abstract class DeclList extends SyntaxUnit {
 	    tempDecl = tempDecl.nextDecl;
 	}
 	
-	/* FUNGERER IKKE -> tempOuterScope.outerScope blir automatiks null :S
+	/* TODO FUNGERER IKKE. back up over -> tempOuterScope.outerScope blir automatiks null :S
 	while (tempDecl != null) {
             
 	    while (tempDecl != null) {
@@ -1004,6 +1036,8 @@ class ForStatm extends Statement {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
+	forControl.check(curDecls);
+	statmList.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1048,7 +1082,10 @@ class ForControl extends SyntaxUnit {
     Assignment assignment2 = new Assignment();
 
     @Override void check(DeclList curDecls) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+	assignment1.check(curDecls);
+	expression.check(curDecls);
+	assignment2.check(curDecls);	
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1440,6 +1477,7 @@ class Expression extends Operand {
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
         firstTerm.check(curDecls);
+	valType = firstTerm.firstFactor.firstOperand.valType;
         if (secondTerm != null) {
             secondTerm.check(curDecls);
         }
@@ -1506,6 +1544,10 @@ class Term extends SyntaxUnit {
 	    tempFactor.check(curDecls);
 	    if (prev != null) {
 		if (tempFactor.firstOperand.valType != prev.firstOperand.valType) {
+		    System.out.println("\n\n"+tempFactor.firstOperand + " "+ tempFactor.firstOperand.valType); 
+		    System.out.println(prev.firstOperand + " " + prev.firstOperand.valType);
+
+		    
 		    Error.error(lineNum, "Comparison operands should have the same type, not " + prev.firstOperand.valType.typeName() + " and " + tempFactor.firstOperand.valType.typeName());
 		}
 	    }
@@ -1580,8 +1622,11 @@ class Factor extends SyntaxUnit {
         while (tempOperand != null) {
             tempOperand.check(curDecls);
             if (prev != null) {
-                if (prev != null && tempOperand.valType != prev.valType)
-                    Error.error(lineNum, "Comparison operands should have the same type, not " + prev.valType.typeName() + " and " + tempOperand.valType.typeName());
+		if (prev != null && tempOperand.valType != prev.valType) {
+		    System.out.println("\n--->"+ prev.valType.typeName()+" "+tempOperand.valType.typeName());
+		    System.out.println("\n--->"+prev+" "+tempOperand+"\n");
+		    Error.error(lineNum, "Comparison operands should have the same type, not " + prev.valType.typeName() + " and " + tempOperand.valType.typeName());
+		}
             }
             prev = tempOperand;
             tempOperand = tempOperand.nextOperand;
@@ -1615,6 +1660,7 @@ class Factor extends SyntaxUnit {
 
 	    tempFactorOp.nextFactorOp = new FactorOperator();
 	    tempFactorOp = tempFactorOp.nextFactorOp;
+	    //System.out.println(tempOperand + "--> " + tempOperand.valType);
 	    tempOperand = tempOperand.nextOperand;
 	}
 	
@@ -1816,15 +1862,15 @@ class FunctionCall extends Operand {
 	
 	//ParamDeclList tempParaDecl = d.paramDecl
 	FuncDecl tempFuncDecl = (FuncDecl)d;
-	
 	d.checkWhetherFunction(10, this); // TODO - temp
+	valType = tempFuncDecl.type;
 	if (d.type == null) // function from library
 	    Log.noteBindingLib(callName, lineNum);
 	else {
 	    Log.noteBinding(d.name, lineNum, d.lineNum);
 	}
 	exprList.check(curDecls);
-
+	
 	
 	// test number of parameters
 	if (tempFuncDecl.paramDecl.numOfPara != exprList.numOfExp) {
@@ -1840,7 +1886,8 @@ class FunctionCall extends Operand {
         //1- Must be changed in part 1:
         Log.enterParser("<function call>");
         callName = Scanner.curName; 
-    	Scanner.skip(nameToken);
+	valType = Types.intType;
+	Scanner.skip(nameToken);
         Scanner.skip(leftParToken);
         exprList.parse();
         Scanner.skip(rightParToken);
@@ -1912,14 +1959,16 @@ class Variable extends Operand {
 	    valType = d.type;
 	} else {
 	    d.checkWhetherArray(this);
-	    index.check(curDecls);
+	    //index.check(curDecls);
 	    index.valType.checkType(lineNum, Types.intType, "Array index");
 	    valType = ((ArrayType)d.type).elemType;
 	}
 	declRef = (VarDecl)d;
 	Log.noteBinding(declRef.name, lineNum, declRef.lineNum);
+	if (index != null)  // flyttet ned hit pga index binding maa komme etter i notbinding
+	    index.check(curDecls);
     }
-
+    
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
     }

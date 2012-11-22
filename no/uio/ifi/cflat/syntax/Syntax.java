@@ -131,13 +131,17 @@ class Program extends SyntaxUnit {
             // Check that 'main' has been declared properly:
             //1- Must be changed in part 2:
 	    Declaration tempDecl = progDecls.firstDecl;
+	    boolean mainFound = false;
 	    while (tempDecl != null) {
 		if (tempDecl.name.compareTo("main") == 0 ) {
 		    Log.noteBindingMain(tempDecl.lineNum);
+		    mainFound = true;
 		    break;
 		}
 		tempDecl = tempDecl.nextDecl;
 	    }
+	    if (!mainFound)
+		Error.error("Name main is unknown");
 	    
 	}
     }
@@ -303,7 +307,14 @@ class GlobalDeclList extends DeclList {
     
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
-        //genCode(); // got to decl
+
+	Declaration tempDecl = firstDecl;
+
+	while (tempDecl != null) {
+	    tempDecl.genCode(null);
+	    tempDecl = tempDecl.nextDecl;
+	}
+
     }
 
     @Override void parse() {
@@ -339,7 +350,11 @@ class GlobalDeclList extends DeclList {
 class LocalDeclList extends DeclList {
 
     @Override void genCode(FuncDecl curFunc) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+	int lSize = dataSize();
+	if (lSize > 0) {
+	    Code.genInstr("", "subl", "$"+lSize, "Get "+lSize +" bytes local data space");
+	}
     }
 
     
@@ -504,6 +519,7 @@ abstract class VarDecl extends Declaration {
  * A global array declaration
  */
 class GlobalArrayDecl extends VarDecl {
+    int nElems = -1;
 
     GlobalArrayDecl(String n) {
         super(n);
@@ -526,7 +542,8 @@ class GlobalArrayDecl extends VarDecl {
     }
 
     @Override void genCode(FuncDecl curFunc) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+	Code.genVar(assemblerName, true, declSize(), type.typeName3() + " " + name + "["+nElems+"];");
     }
 
     @Override void parse() {
@@ -541,7 +558,7 @@ class GlobalArrayDecl extends VarDecl {
     	Scanner.skip(nameToken);
         Scanner.skip(leftBracketToken);
 
-        int nElems = Integer.parseInt(Scanner.curName);
+        nElems = Integer.parseInt(Scanner.curName);
         type = new ArrayType(nElems, arrType);
         Scanner.skip(numberToken);
 
@@ -569,21 +586,18 @@ class GlobalSimpleVarDecl extends VarDecl {
 
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-        // TODO
+        
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
-		
+	//2- Must be changed in part 2:	
 	type.checkType(use.lineNum, new ArrayType(0,Types.intType), name);
-	
-	//if (!(this.type instanceof ArrayType))
-        //    Error.error(use.lineNum, "" + this.name + " is a simple variable and not an array");
-        //-- Must be changed in part 2:
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
         /* OK */
     }
+
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
@@ -800,7 +814,14 @@ class FuncDecl extends Declaration {
         Code.genInstr("", ".globl", assemblerName, "");
         Code.genInstr(assemblerName, "pushl", "%ebp", "Start function "+name);
         Code.genInstr("", "movl", "%esp,%ebp", "");
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+
+	fb.genCode(null);
+
+	Code.genInstr("exit$" + assemblerName,"","", "");
+	Code.genInstr("", "movl", "%ebp,%esp", "");
+	Code.genInstr("", "popl", "%ebp", "");
+	Code.genInstr("", "ret","", "End function " +name);
     }
 
 
@@ -860,7 +881,6 @@ class FuncBody extends SyntaxUnit {
         //1- Must be changed in part 2:
         //Declerations has been checked in parsing
 
-			
 	// --->  Må uansett gjøre det samme i findDecl. line 200
 	//ParamDeclList copyParamDecl = (ParamDeclList) currBody;
 	
@@ -873,7 +893,10 @@ class FuncBody extends SyntaxUnit {
    
 
     @Override void genCode(FuncDecl currBody) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+	
+	localDeclList.genCode(null);
+	statmlist.genCode(null);
     }
 
     @Override void parse() {
@@ -922,7 +945,12 @@ class StatmList extends SyntaxUnit {
     }
 
     @Override void genCode(FuncDecl curFunc) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+	Statement tempStatm = firstStatm;
+        while (tempStatm != null) {
+            tempStatm.genCode(curFunc);
+            tempStatm = tempStatm.nextStatm;
+        }
     }
 
     @Override void parse() {
@@ -1126,7 +1154,8 @@ class AssignStatm extends Statement {
     }
 
     @Override void genCode(FuncDecl curFunc) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+	assignment.genCode(null);
     }
 
     @Override void parse() {
@@ -1160,6 +1189,7 @@ class Assignment extends SyntaxUnit {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+	expression.genCode(null);
     }
 
     @Override void parse() {
@@ -1485,6 +1515,7 @@ class Expression extends Operand {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+	firstTerm.genCode(null);
     }
 
     @Override void parse() {
@@ -1557,7 +1588,12 @@ class Term extends SyntaxUnit {
     }
 
     @Override void genCode(FuncDecl curFunc) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+	Factor tempFactor = firstFactor;
+	while (tempFactor != null) {
+	    tempFactor.genCode(null);
+	    tempFactor = tempFactor.nextFactor;
+	}
     }
 
     //Trenger while lokke saa vi faar satt inn alle faktorer og operander, prover forst med enkle a+b a-b, saa a*b a/b
@@ -1623,8 +1659,6 @@ class Factor extends SyntaxUnit {
             tempOperand.check(curDecls);
             if (prev != null) {
 		if (prev != null && tempOperand.valType != prev.valType) {
-		    System.out.println("\n--->"+ prev.valType.typeName()+" "+tempOperand.valType.typeName());
-		    System.out.println("\n--->"+prev+" "+tempOperand+"\n");
 		    Error.error(lineNum, "Comparison operands should have the same type, not " + prev.valType.typeName() + " and " + tempOperand.valType.typeName());
 		}
             }
@@ -1635,6 +1669,11 @@ class Factor extends SyntaxUnit {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+	Operand tempOperand = firstOperand;
+	while (tempOperand != null) {
+	    tempOperand.genCode(null);
+	    tempOperand = tempOperand.nextOperand;
+	}
     }
 
     @Override void parse() {
@@ -1830,7 +1869,7 @@ abstract class Operand extends SyntaxUnit {
     // egenopprettet metode
     static Operand makeNewOperand() {
         if (Scanner.curToken == numberToken || Scanner.curToken == subtractToken) {
-            //1- Must be changed in part 1:
+            //1- Mustbe changed in part 1:
             return new Number();
         } else if (Scanner.curToken == nameToken && Scanner.nextToken == leftParToken) {
             //1- Must be changed in part 1:

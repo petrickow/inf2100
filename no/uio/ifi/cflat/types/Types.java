@@ -31,6 +31,10 @@ public class Types {
 		public String typeName2() {
 		    return " simple variable";
 		}
+
+		public String typeName3() {
+		    return " double";
+		}
 		
 		
 		
@@ -56,6 +60,10 @@ public class Types {
 		// ny 18/11
 		@Override public String typeName2() {
 		    return "simple variable";
+		}
+		
+		public String typeName3() {
+		    return " int";
 		}
 		
 		@Override public void genJumpIfZero(String jumpLabe) {

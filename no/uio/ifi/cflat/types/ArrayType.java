@@ -23,6 +23,12 @@ public class ArrayType extends Type {
 	return "array";
     }
 
+    public String typeName3() {
+	return elemType.typeName();
+    }
+
+    
+
     @Override public void checkSameType(int lineNum, Type otherType, String what) {
 	if (otherType instanceof ArrayType &&
 	    elemType == ((ArrayType)otherType).elemType) return;

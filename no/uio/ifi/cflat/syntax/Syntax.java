@@ -390,12 +390,12 @@ class LocalDeclList extends DeclList {
  * (This class is not mentioned in the syntax diagrams.)
  */
 class ParamDeclList extends DeclList {
-
+    int stackOffset;
     int numOfPara; // number of parameters
     //DeclList outerScope;
 
     ParamDeclList () {
-
+        stackOffset = 4;
     }
 
     @Override void check (DeclList curDecls) {
@@ -404,13 +404,19 @@ class ParamDeclList extends DeclList {
         outerScope = curDecls;	       // Setter paramDecl sitt outerScope til å peke på globalDeclList 
 
         while (tempDecl != null) {
-            numOfPara++;
+            System.out.println(tempDecl.name);
+            ((ParamDecl)tempDecl).paramNum = ++numOfPara;
             tempDecl = tempDecl.nextDecl;
         }
     }
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+        Declaration tempDecl = firstDecl;
+        while (tempDecl != null) {
+            tempDecl.genCode(curFunc);
+            tempDecl = tempDecl.nextDecl;
+        }
     }
 
 
@@ -727,10 +733,12 @@ class ParamDecl extends VarDecl {
 
     ParamDecl(String n) {
         super(n);
+        assemblerName = n;
     }
 
     @Override void check(DeclList curDecls) {
-        //-- Must be changed in part 2:
+        //-- Must be changed in part 2: TODO, sjekk at den faktisk finnes i det lokale skopet og type sjekk
+        
         // Declaration d = curDecls.findDecl(name, this);
         // if (d == null)
         // Error.error(lineNum, )
@@ -743,9 +751,13 @@ class ParamDecl extends VarDecl {
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
         //-- Must be changed in part 2:
     }
-
+    
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+        //Code.genInstr(assemblerName, "pushl", "%ebp", "Start function "+name);
+        Code.genInstr("", "movl" , (curFunc.stackOffset + declSize()) + "(%ebp),%eax", name);
+        curFunc.stackOffset = curFunc.stackOffset + declSize();
+//        Code.genInstr... TODO push eax...
     }
 
     @Override void parse() {
@@ -768,6 +780,7 @@ class FuncDecl extends Declaration {
 
     //-- Must be changed in part 1+2:
 
+    int stackOffset;
     // egne
     FuncBody fb = new FuncBody();
     ParamDeclList paramDecl = new ParamDeclList();;
@@ -777,6 +790,7 @@ class FuncDecl extends Declaration {
         //1- Must be changed in part 1:
         super(n);
         assemblerName = (Cflat.underscoredGlobals() ? "_" : "") + n;
+        stackOffset = 4;
     }
 
     @Override int declSize() {
@@ -816,7 +830,7 @@ class FuncDecl extends Declaration {
         Code.genInstr(assemblerName, "pushl", "%ebp", "Start function "+name);
         Code.genInstr("", "movl", "%esp,%ebp", "");
         //1- Must be changed in part 2:
-
+        paramDecl.genCode(this);
         fb.genCode(this);
 
         Code.genInstr("exit$" + assemblerName,"","", "");
@@ -1443,8 +1457,8 @@ class ExprList extends SyntaxUnit {
             numOfExp++;
             tempExpr.check(curDecls);
             tempExpr = tempExpr.nextExpr;
-
         }
+        System.out.println("number of expressions in exprList: " + numOfExp);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1455,11 +1469,12 @@ class ExprList extends SyntaxUnit {
         Expression lastExpr = null;
 
         Log.enterParser("<expr list>");
-
+        int i = 0;
         //1- Must be changed in part 1:
         while (Scanner.curToken != rightParToken) {
+            System.out.println(++i);
             if (firstExpr == null) {
-                firstExpr = lastExpr = new Expression();
+                firstExpr = lastExpr =  new Expression();
                 firstExpr.parse();
             } else {
                 lastExpr.nextExpr = lastExpr = new Expression(); //put in list
@@ -1907,10 +1922,9 @@ class FunctionCall extends Operand {
         }
         exprList.check(curDecls);
 
-
         // test number of parameters
         if (tempFuncDecl.paramDecl.numOfPara != exprList.numOfExp) {
-            Error.error(lineNum, "Calls to " + callName + " should hava " + tempFuncDecl.paramDecl.numOfPara + " parameters, not " + exprList.numOfExp + "!");
+            Error.error(lineNum, "Calls to " + callName + " should have " + tempFuncDecl.paramDecl.numOfPara + " parameters, not " + exprList.numOfExp + "!");
         }
     }                 
 
@@ -2009,6 +2023,7 @@ class Variable extends Operand {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+        
     }
 
     @Override void parse() {

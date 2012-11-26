@@ -1,5 +1,9 @@
 package no.uio.ifi.cflat.syntax;
-
+/*PUT in before call!
+        Code.genInstr("", "movl" , (curFunc.stackOffset + declSize()) + "(%ebp),%eax", name);
+        curFunc.stackOffset = curFunc.stackOffset + declSize();
+        Code.genInstr("", "pushl", "%eax", "");
+*/
 /*
  * module Syntax
  */
@@ -147,7 +151,7 @@ class Program extends SyntaxUnit {
     }
 
     @Override void genCode(FuncDecl curFunc) {
-        progDecls.genCode(null);
+        progDecls.genCode(curFunc);
     }
 
     @Override void parse() {
@@ -174,7 +178,7 @@ class Program extends SyntaxUnit {
 abstract class DeclList extends SyntaxUnit {
     Declaration firstDecl = null;
     DeclList outerScope;
-
+    int totalSize;
     DeclList () {
         //?- Must be changed in part 1:
     }
@@ -199,7 +203,7 @@ abstract class DeclList extends SyntaxUnit {
 
     void addDecl(Declaration d) {
         //2- Must be changed in part 1:
-
+        
         if (firstDecl == null) {
             firstDecl = d;
         } else {
@@ -300,7 +304,7 @@ abstract class DeclList extends SyntaxUnit {
  * (This class is not mentioned in the syntax diagrams.)
  */
 class GlobalDeclList extends DeclList {
-
+    
     FuncDecl fd = null;                // flyttet hit i del 2 pga maa vaere tilgjengelige for genCode
     GlobalArrayDecl gad = null;
     GlobalSimpleVarDecl gsv = null;
@@ -348,12 +352,12 @@ class GlobalDeclList extends DeclList {
  * (This class is not mentioned in the syntax diagrams.)
  */
 class LocalDeclList extends DeclList {
-
+    int offset = 0;
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
         int lSize = dataSize();
         if (lSize > 0) {
-            Code.genInstr("", "subl", "$"+lSize, "Get "+lSize +" bytes local data space");
+            Code.genInstr("", "subl", "$"+lSize+",%esp", "Get "+lSize +" bytes local data space");
         }
     }
 
@@ -363,6 +367,8 @@ class LocalDeclList extends DeclList {
 
         Declaration dx = firstDecl; //sjekker først de lokale decls
         while (dx != null) {
+            dx.check(this);
+            dx = dx.nextDecl;
         }
     }
 
@@ -395,7 +401,6 @@ class ParamDeclList extends DeclList {
     //DeclList outerScope;
 
     ParamDeclList () {
-        stackOffset = 4;
     }
 
     @Override void check (DeclList curDecls) {
@@ -404,7 +409,6 @@ class ParamDeclList extends DeclList {
         outerScope = curDecls;	       // Setter paramDecl sitt outerScope til å peke på globalDeclList 
 
         while (tempDecl != null) {
-            System.out.println(tempDecl.name);
             ((ParamDecl)tempDecl).paramNum = ++numOfPara;
             tempDecl = tempDecl.nextDecl;
         }
@@ -502,6 +506,8 @@ abstract class Declaration extends SyntaxUnit {
  * A <var decl>
  */
 abstract class VarDecl extends Declaration {
+    
+    int offSet;
     VarDecl(String n) {
         super(n);
     }
@@ -592,7 +598,8 @@ class GlobalSimpleVarDecl extends VarDecl {
 
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-
+        //duplicate check already in parse
+        visible = true;
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
@@ -627,7 +634,6 @@ class GlobalSimpleVarDecl extends VarDecl {
  * A local array declaration
  */
 class LocalArrayDecl extends VarDecl {
-
     LocalArrayDecl(String n) {
         super(n);
         assemblerName = n; //right?
@@ -635,6 +641,7 @@ class LocalArrayDecl extends VarDecl {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
+        ((LocalDeclList)curDecls).offset = offSet = declSize() + ((LocalDeclList)curDecls).offset;
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
@@ -690,6 +697,7 @@ class LocalSimpleVarDecl extends VarDecl {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
+        ((LocalDeclList)curDecls).offset = offSet = declSize()+((LocalDeclList)curDecls).offset;
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
@@ -754,10 +762,6 @@ class ParamDecl extends VarDecl {
     
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
-        //Code.genInstr(assemblerName, "pushl", "%ebp", "Start function "+name);
-        Code.genInstr("", "movl" , (curFunc.stackOffset + declSize()) + "(%ebp),%eax", name);
-        curFunc.stackOffset = curFunc.stackOffset + declSize();
-//        Code.genInstr... TODO push eax...
     }
 
     @Override void parse() {
@@ -790,7 +794,6 @@ class FuncDecl extends Declaration {
         //1- Must be changed in part 1:
         super(n);
         assemblerName = (Cflat.underscoredGlobals() ? "_" : "") + n;
-        stackOffset = 4;
     }
 
     @Override int declSize() {
@@ -833,7 +836,7 @@ class FuncDecl extends Declaration {
         paramDecl.genCode(this);
         fb.genCode(this);
 
-        Code.genInstr("exit$" + assemblerName,"","", "");
+        Code.genInstr(".exit$" + assemblerName,"","", "");
         Code.genInstr("", "movl", "%ebp,%esp", "");
         Code.genInstr("", "popl", "%ebp", "");
         Code.genInstr("", "ret","", "End function " +name);
@@ -899,11 +902,9 @@ class FuncBody extends SyntaxUnit {
         // --->  Må uansett gjøre det samme i findDecl. line 200
         //ParamDeclList copyParamDecl = (ParamDeclList) currBody;
 
-        localDeclList.outerScope = currBody;     	
+        localDeclList.check(currBody);	
 
         statmlist.check(localDeclList);   //check statements
-
-
     }
 
 
@@ -1170,6 +1171,7 @@ class AssignStatm extends Statement {
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
         assignment.genCode(curFunc);
+        
     }
 
     @Override void parse() {
@@ -1203,8 +1205,9 @@ class Assignment extends SyntaxUnit {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
-
+        
         expression.genCode(curFunc);
+        variable.genCode(curFunc);
     }
 
     @Override void parse() {
@@ -1458,7 +1461,6 @@ class ExprList extends SyntaxUnit {
             tempExpr.check(curDecls);
             tempExpr = tempExpr.nextExpr;
         }
-        System.out.println("number of expressions in exprList: " + numOfExp);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1472,7 +1474,6 @@ class ExprList extends SyntaxUnit {
         int i = 0;
         //1- Must be changed in part 1:
         while (Scanner.curToken != rightParToken) {
-            System.out.println(++i);
             if (firstExpr == null) {
                 firstExpr = lastExpr =  new Expression();
                 firstExpr.parse();
@@ -1687,10 +1688,25 @@ class Factor extends SyntaxUnit {
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
         Operand tempOperand = firstOperand;
+        FactorOperator factorOperator = firstFactorOp;
+        
+        int count = 0;
+
         while (tempOperand != null) {
+            if (count == 1) {
+                Code.genInstr("", "pushl", "%eax", "");
+            }
             tempOperand.genCode(curFunc);
             tempOperand = tempOperand.nextOperand;
+            
+            count++;
+            if (count == 2) {
+                factorOperator.genCode(curFunc);
+                factorOperator = factorOperator.nextFactorOp;
+                count = 1;
+            }
         }
+
     }
 
     @Override void parse() {
@@ -1764,7 +1780,14 @@ class FactorOperator extends Operator {
     FactorOperator nextFactorOp = null;
 
     @Override void genCode(FuncDecl curFunc) {
-        //TODO
+        String comp = "";
+        Code.genInstr("", "movl", "%eax,%ecx", "");
+        Code.genInstr("", "popl", "%eax", "");
+        switch (opToken) {
+            case divideToken: comp = "idivl"; Code.genInstr("", "cdq", "", ""); break;
+            case multiplyToken: comp = "imull"; break;
+        }
+        Code.genInstr("", comp, "%ecx,%eax", "Compute " + (comp.equals("idivl") ? "/" : "*") );
     }
 
     @Override void parse() {
@@ -2005,7 +2028,6 @@ class Variable extends Operand {
     @Override void check(DeclList curDecls) {
         Declaration d = curDecls.findDecl(varName, this);
 
-
         if (index == null) {
             d.checkWhetherSimpleVar(this);
             valType = d.type;
@@ -2023,6 +2045,13 @@ class Variable extends Operand {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+        if (declRef.visible)
+            Code.genInstr("", "movl", "%eax,"+varName, "="+varName);
+        else {
+            int o = 0-declRef.offSet;
+            Code.genInstr("", "movl", "%eax,"+o+"(%ebp)", "=");
+        }
+    
         
     }
 

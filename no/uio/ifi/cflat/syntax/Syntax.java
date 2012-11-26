@@ -25,54 +25,54 @@ import no.uio.ifi.cflat.types.*;
 public class Syntax {
     static DeclList library;
     static Program program;
-    
+
     public static void init() {
         //1- Must be changed in part 1:
-    
-	makeLibrary();
+
+        makeLibrary();
     }
 
     private static void makeLibrary() {
-	library = new GlobalDeclList();
-	
-	/*String [] libList = {"exit","getchar","getdouble","getint","putchar","putdouble","putint"};
-	for (int i = 0; i < libList.length; i++) {
-	    library.addDecl(new FuncDecl(libList[i]));
-	}*/
+        library = new GlobalDeclList();
 
-	FuncDecl tempLibFunc = new FuncDecl("exit");
-	tempLibFunc.paramDecl.numOfPara = 1;
-	//tempLibFunc.type = Types.intType;    
-	library.addDecl(tempLibFunc);
+        /*String [] libList = {"exit","getchar","getdouble","getint","putchar","putdouble","putint"};
+          for (int i = 0; i < libList.length; i++) {
+          library.addDecl(new FuncDecl(libList[i]));
+          }*/
 
-	tempLibFunc = new FuncDecl("getchar");
-	//tempLibFunc.type = Types.intType;    
-	library.addDecl(tempLibFunc);
+        FuncDecl tempLibFunc = new FuncDecl("exit");
+        tempLibFunc.paramDecl.numOfPara = 1;
+        //tempLibFunc.type = Types.intType;    
+        library.addDecl(tempLibFunc);
 
-	tempLibFunc = new FuncDecl("getdouble");
-	//tempLibFunc.type = Types.doubleType;    
-	library.addDecl(tempLibFunc);
-	
-	tempLibFunc = new FuncDecl("getint");
-	//tempLibFunc.type = Types.intType;    
-	library.addDecl(tempLibFunc);
-	
-	tempLibFunc = new FuncDecl("putchar");
-	tempLibFunc.paramDecl.numOfPara = 1;
-	//tempLibFunc.type = Types.intType;    
-	library.addDecl(tempLibFunc);
-	
-	tempLibFunc = new FuncDecl("putdouble");
-	tempLibFunc.paramDecl.numOfPara = 1;
-	//tempLibFunc.type = Types.doubleType;    
-	library.addDecl(tempLibFunc);
+        tempLibFunc = new FuncDecl("getchar");
+        //tempLibFunc.type = Types.intType;    
+        library.addDecl(tempLibFunc);
 
-	tempLibFunc = new FuncDecl("putint");
-	tempLibFunc.paramDecl.numOfPara = 1;
-	//tempLibFunc.type = Types.intType;    
-	library.addDecl(tempLibFunc);
+        tempLibFunc = new FuncDecl("getdouble");
+        //tempLibFunc.type = Types.doubleType;    
+        library.addDecl(tempLibFunc);
+
+        tempLibFunc = new FuncDecl("getint");
+        //tempLibFunc.type = Types.intType;    
+        library.addDecl(tempLibFunc);
+
+        tempLibFunc = new FuncDecl("putchar");
+        tempLibFunc.paramDecl.numOfPara = 1;
+        //tempLibFunc.type = Types.intType;    
+        library.addDecl(tempLibFunc);
+
+        tempLibFunc = new FuncDecl("putdouble");
+        tempLibFunc.paramDecl.numOfPara = 1;
+        //tempLibFunc.type = Types.doubleType;    
+        library.addDecl(tempLibFunc);
+
+        tempLibFunc = new FuncDecl("putint");
+        tempLibFunc.paramDecl.numOfPara = 1;
+        //tempLibFunc.type = Types.intType;    
+        library.addDecl(tempLibFunc);
     }
-    
+
     public static void finish() {
         //-- Must be changed in part 1:
     }
@@ -125,25 +125,25 @@ class Program extends SyntaxUnit {
     DeclList progDecls = new GlobalDeclList();
 
     @Override void check(DeclList curDecls) { //curDecl == library
-	progDecls.check(curDecls);
+        progDecls.check(curDecls);
 
         if (! Cflat.noLink) {
             // Check that 'main' has been declared properly:
             //1- Must be changed in part 2:
-	    Declaration tempDecl = progDecls.firstDecl;
-	    boolean mainFound = false;
-	    while (tempDecl != null) {
-		if (tempDecl.name.compareTo("main") == 0 ) {
-		    Log.noteBindingMain(tempDecl.lineNum);
-		    mainFound = true;
-		    break;
-		}
-		tempDecl = tempDecl.nextDecl;
-	    }
-	    if (!mainFound)
-		Error.error("Name main is unknown");
-	    
-	}
+            Declaration tempDecl = progDecls.firstDecl;
+            boolean mainFound = false;
+            while (tempDecl != null) {
+                if (tempDecl.name.compareTo("main") == 0 ) {
+                    Log.noteBindingMain(tempDecl.lineNum);
+                    mainFound = true;
+                    break;
+                }
+                tempDecl = tempDecl.nextDecl;
+            }
+            if (!mainFound)
+                Error.error("Name main is unknown");
+
+        }
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -182,10 +182,10 @@ abstract class DeclList extends SyntaxUnit {
     @Override void check(DeclList curDecls) {
         outerScope = curDecls;
         Declaration dx = firstDecl;
-    	while (dx != null) {
-	    dx.check(this); dx = dx.nextDecl;
+        while (dx != null) {
+            dx.check(this); dx = dx.nextDecl;
         }
-	
+
     }
 
     @Override void printTree() {
@@ -204,8 +204,8 @@ abstract class DeclList extends SyntaxUnit {
             firstDecl = d;
         } else {
             Declaration temp = firstDecl;
-	    while (temp.nextDecl != null) {
-		if (temp.name.compareTo(d.name) == 0) {
+            while (temp.nextDecl != null) {
+                if (temp.name.compareTo(d.name) == 0) {
                     Error.alreadyDecl(temp.name);
                 }
                 temp = temp.nextDecl;
@@ -229,97 +229,97 @@ abstract class DeclList extends SyntaxUnit {
 
     Declaration findDecl(String name, SyntaxUnit usedIn) {
         //1- Must be changed in part 2:
-        
-	ParamDeclList copyParamDecl = (ParamDeclList) outerScope;
-	
-	Declaration tempDecl = firstDecl;
-	
-	//DeclList tempOuterScope = copyParamDecl;
-	while (tempDecl != null) {  // Leter igjennom de lokale
-	    if (tempDecl.name.compareTo(name) == 0) {
-		    return tempDecl;
-		}
-	    tempDecl = tempDecl.nextDecl;
-	}
-	
-	if (copyParamDecl != null) {
-	    tempDecl = copyParamDecl.firstDecl;
-	}
-	while (tempDecl != null) {  // Leter igjennom parameterne
-	    if (tempDecl.name.compareTo(name) == 0) {
-		    return tempDecl;
-		}
-	    tempDecl = tempDecl.nextDecl;
-	}
 
-	if (copyParamDecl.outerScope != null) {
-	    tempDecl = copyParamDecl.outerScope.firstDecl;
-	}
-	while (tempDecl != null) {  // Leter igjennom de globale
-	    if (tempDecl.name.compareTo(name) == 0) {
-		    return tempDecl;
-		}
-	    tempDecl = tempDecl.nextDecl;
-	}
+        ParamDeclList copyParamDecl = (ParamDeclList) outerScope;
 
-	if (copyParamDecl.outerScope.outerScope != null) {
-	    tempDecl = copyParamDecl.outerScope.outerScope.firstDecl;
-	}
-	while (tempDecl != null) {  // Leter igjennom de biblioteket
-	    if (tempDecl.name.compareTo(name) == 0) {
-		    return tempDecl;
-		}
-	    tempDecl = tempDecl.nextDecl;
-	}
-	
-	/* TODO FUNGERER IKKE. back up over -> tempOuterScope.outerScope blir automatiks null :S
-	while (tempDecl != null) {
-            
-	    while (tempDecl != null) {
-		if (tempDecl.name.compareTo(name) == 0) {
-		    return tempDecl;
-		}
-		tempDecl = tempDecl.nextDecl;
-	    }
-	    
-	    if (tempOuterScope != null) {
-	        tempDecl =  tempOuterScope.firstDecl;
-		tempOuterScope = tempOuterScope.outerScope;
-	    }
-	}
-	*/
-      
-	Error.error(usedIn.lineNum, "Name " + name + " is unknown!!");
+        Declaration tempDecl = firstDecl;
+
+        //DeclList tempOuterScope = copyParamDecl;
+        while (tempDecl != null) {  // Leter igjennom de lokale
+            if (tempDecl.name.compareTo(name) == 0) {
+                return tempDecl;
+            }
+            tempDecl = tempDecl.nextDecl;
+        }
+
+        if (copyParamDecl != null) {
+            tempDecl = copyParamDecl.firstDecl;
+        }
+        while (tempDecl != null) {  // Leter igjennom parameterne
+            if (tempDecl.name.compareTo(name) == 0) {
+                return tempDecl;
+            }
+            tempDecl = tempDecl.nextDecl;
+        }
+
+        if (copyParamDecl.outerScope != null) {
+            tempDecl = copyParamDecl.outerScope.firstDecl;
+        }
+        while (tempDecl != null) {  // Leter igjennom de globale
+            if (tempDecl.name.compareTo(name) == 0) {
+                return tempDecl;
+            }
+            tempDecl = tempDecl.nextDecl;
+        }
+
+        if (copyParamDecl.outerScope.outerScope != null) {
+            tempDecl = copyParamDecl.outerScope.outerScope.firstDecl;
+        }
+        while (tempDecl != null) {  // Leter igjennom de biblioteket
+            if (tempDecl.name.compareTo(name) == 0) {
+                return tempDecl;
+            }
+            tempDecl = tempDecl.nextDecl;
+        }
+
+        /* TODO FUNGERER IKKE. back up over -> tempOuterScope.outerScope blir automatiks null :S
+           while (tempDecl != null) {
+
+           while (tempDecl != null) {
+           if (tempDecl.name.compareTo(name) == 0) {
+           return tempDecl;
+           }
+           tempDecl = tempDecl.nextDecl;
+           }
+
+           if (tempOuterScope != null) {
+           tempDecl =  tempOuterScope.firstDecl;
+           tempOuterScope = tempOuterScope.outerScope;
+           }
+           }
+         */
+
+        Error.error(usedIn.lineNum, "Name " + name + " is unknown!!");
         return null;
     }
 }
- 
+
 
 /*
  * A list of global declarations.
  * (This class is not mentioned in the syntax diagrams.)
  */
 class GlobalDeclList extends DeclList {
-    
+
     FuncDecl fd = null;                // flyttet hit i del 2 pga maa vaere tilgjengelige for genCode
     GlobalArrayDecl gad = null;
     GlobalSimpleVarDecl gsv = null;
-    
+
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
 
-	Declaration tempDecl = firstDecl;
+        Declaration tempDecl = firstDecl;
 
-	while (tempDecl != null) {
-	    tempDecl.genCode(null);
-	    tempDecl = tempDecl.nextDecl;
-	}
+        while (tempDecl != null) {
+            tempDecl.genCode(null);
+            tempDecl = tempDecl.nextDecl;
+        }
 
     }
 
     @Override void parse() {
         while (Token.isTypeName(Scanner.curToken)) {
-            
+
             if (Scanner.nextToken == nameToken) {
                 if (Scanner.nextNextToken == leftParToken) {
                     fd = new FuncDecl(Scanner.nextName);
@@ -351,16 +351,16 @@ class LocalDeclList extends DeclList {
 
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
-	int lSize = dataSize();
-	if (lSize > 0) {
-	    Code.genInstr("", "subl", "$"+lSize, "Get "+lSize +" bytes local data space");
-	}
+        int lSize = dataSize();
+        if (lSize > 0) {
+            Code.genInstr("", "subl", "$"+lSize, "Get "+lSize +" bytes local data space");
+        }
     }
 
-    
+
     @Override void check(DeclList curDecls) {
         outerScope = curDecls;
-        
+
         Declaration dx = firstDecl; //sjekker først de lokale decls
         while (dx != null) {
         }
@@ -390,29 +390,29 @@ class LocalDeclList extends DeclList {
  * (This class is not mentioned in the syntax diagrams.)
  */
 class ParamDeclList extends DeclList {
-    
+
     int numOfPara; // number of parameters
     //DeclList outerScope;
 
     ParamDeclList () {
-    
+
     }
 
     @Override void check (DeclList curDecls) {
-    	Declaration tempDecl = firstDecl;          
-	   numOfPara = 0;
-	   outerScope = curDecls;	       // Setter paramDecl sitt outerScope til å peke på globalDeclList 
-		
-    	while (tempDecl != null) {
-	       numOfPara++;
-           tempDecl = tempDecl.nextDecl;
-	   }
+        Declaration tempDecl = firstDecl;          
+        numOfPara = 0;
+        outerScope = curDecls;	       // Setter paramDecl sitt outerScope til å peke på globalDeclList 
+
+        while (tempDecl != null) {
+            numOfPara++;
+            tempDecl = tempDecl.nextDecl;
+        }
     }
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
     }
-   
+
 
     @Override void parse() {
         //2- Must be changed in part 1:
@@ -537,25 +537,25 @@ class GlobalArrayDecl extends VarDecl {
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
-	//Syntax.error(use, name + " is an array and no simple variable!");
-	type.checkType(use.lineNum, Types.intType, name);
+        //Syntax.error(use, name + " is an array and no simple variable!");
+        type.checkType(use.lineNum, Types.intType, name);
     }
 
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
-	Code.genVar(assemblerName, true, declSize(), type.typeName3() + " " + name + "["+nElems+"];");
+        Code.genVar(assemblerName, true, declSize(), type.typeName3() + " " + name + "["+((ArrayType)type).nElems+"];");
     }
 
     @Override void parse() {
         Log.enterParser("<var decl>");
 
         //2- Must be changed in part 1:
-        
+
         Type arrType = Types.getType(Scanner.curToken);
         Scanner.skip(intToken, doubleToken);
 
         //name = Scanner.curName; //already done in constructor
-    	Scanner.skip(nameToken);
+        Scanner.skip(nameToken);
         Scanner.skip(leftBracketToken);
 
         nElems = Integer.parseInt(Scanner.curName);
@@ -570,7 +570,7 @@ class GlobalArrayDecl extends VarDecl {
 
     @Override void printTree() {
         //1- Must be changed in part 1:
-	Log.wTreeLn(type.typeName() + " " + name + "[" + ((ArrayType)type).nElems + "];");
+        Log.wTreeLn(type.typeName() + " " + name + "[" + ((ArrayType)type).nElems + "];");
     }
 }
 
@@ -586,12 +586,12 @@ class GlobalSimpleVarDecl extends VarDecl {
 
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-        
+
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
-	//2- Must be changed in part 2:	
-	type.checkType(use.lineNum, new ArrayType(0,Types.intType), name);
+        //2- Must be changed in part 2:	
+        type.checkType(use.lineNum, new ArrayType(0,Types.intType), name);
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
@@ -601,7 +601,7 @@ class GlobalSimpleVarDecl extends VarDecl {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
-	Code.genVar(assemblerName, true, declSize(), type.typeName() + " " + name + ";");
+        Code.genVar(assemblerName, true, declSize(), type.typeName() + " " + name + ";");
     }
 
     @Override void parse() {
@@ -621,7 +621,7 @@ class GlobalSimpleVarDecl extends VarDecl {
  * A local array declaration
  */
 class LocalArrayDecl extends VarDecl {
-    
+
     LocalArrayDecl(String n) {
         super(n);
         assemblerName = n; //right?
@@ -633,16 +633,17 @@ class LocalArrayDecl extends VarDecl {
 
     @Override void checkWhetherArray(SyntaxUnit use) {
         //-- Must be changed in part 2:
-	// OK
+        // OK
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
         //1- Must be changed in part 2:
-	type.checkType(use.lineNum, Types.intType, name);
+        type.checkType(use.lineNum, Types.intType, name);
     }
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+        Code.genVar(assemblerName, false, declSize(), type.typeName3() + " " + name + "["+((ArrayType)type).nElems+"];");
     }
 
     @Override void parse() {
@@ -651,10 +652,10 @@ class LocalArrayDecl extends VarDecl {
         Type arrType = Types.getType(Scanner.curToken);
         Scanner.skip(intToken, doubleToken);
 
-    	Scanner.skip(nameToken);
+        Scanner.skip(nameToken);
         Scanner.skip(leftBracketToken);
 
-	int nElems = Integer.parseInt(Scanner.curName);
+        int nElems = Integer.parseInt(Scanner.curName);
         Scanner.skip(numberToken);
 
         type = new ArrayType(nElems, arrType);
@@ -666,7 +667,7 @@ class LocalArrayDecl extends VarDecl {
 
     @Override void printTree() {
         //1- Must be changed in part 1:
-	Log.wTreeLn(type.typeName() + " " + name + "[" + ((ArrayType)type).nElems + "];");
+        Log.wTreeLn(type.typeName() + " " + name + "[" + ((ArrayType)type).nElems + "];");
     }
 
 }
@@ -678,6 +679,7 @@ class LocalArrayDecl extends VarDecl {
 class LocalSimpleVarDecl extends VarDecl {
     LocalSimpleVarDecl(String n) {
         super(n);
+        assemblerName = n; //right?
     }
 
     @Override void check(DeclList curDecls) {
@@ -687,8 +689,6 @@ class LocalSimpleVarDecl extends VarDecl {
     @Override void checkWhetherArray(SyntaxUnit use) {
         //-- Must be changed in part 2:
         type.checkType(use.lineNum, new ArrayType(0,Types.intType), name);
-	//if (!(this.type instanceof ArrayType))
-        //    Error.error(use.lineNum, "" + this.name + " is a simple variable and not an array");
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
@@ -697,6 +697,7 @@ class LocalSimpleVarDecl extends VarDecl {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+        Code.genVar(assemblerName, false, declSize(), type.typeName() + " " + name + ";");
     }
 
     @Override void parse() {
@@ -712,7 +713,7 @@ class LocalSimpleVarDecl extends VarDecl {
 
     @Override void printTree() {
         //1- Must be changed in part 1:
-	Log.wTreeLn(type.typeName() + " " + name + ";");
+        Log.wTreeLn(type.typeName() + " " + name + ";");
     }
 
 }
@@ -729,9 +730,9 @@ class ParamDecl extends VarDecl {
     }
 
     @Override void check(DeclList curDecls) {
-	//-- Must be changed in part 2:
-	// Declaration d = curDecls.findDecl(name, this);
-	// if (d == null)
+        //-- Must be changed in part 2:
+        // Declaration d = curDecls.findDecl(name, this);
+        // if (d == null)
         // Error.error(lineNum, )
     }
 
@@ -770,7 +771,7 @@ class FuncDecl extends Declaration {
     // egne
     FuncBody fb = new FuncBody();
     ParamDeclList paramDecl = new ParamDeclList();;
-        
+
     FuncDecl(String n) {
         // Used for user functions:
         //1- Must be changed in part 1:
@@ -784,30 +785,30 @@ class FuncDecl extends Declaration {
 
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-	   paramDecl.check(curDecls);
-	   fb.check(paramDecl);
+        paramDecl.check(curDecls);
+        fb.check(paramDecl);
     }
-    
+
 
     @Override void checkWhetherArray(SyntaxUnit use) {
         //1- Must be changed in part 2:
-	
-	// Funksjon skal aldri vare en array uansett saa hvis vi kommer inn hit er det feil
-	Error.error(use.lineNum, "" + this.name + " is a function and no array!");
-	
+
+        // Funksjon skal aldri vare en array uansett saa hvis vi kommer inn hit er det feil
+        Error.error(use.lineNum, "" + this.name + " is a function and no array!");
+
     }
 
     @Override void checkWhetherFunction(int nParamsUsed, SyntaxUnit use) {
         //-- Must be changed in part 2:
-	// DENNE ER OK
+        // DENNE ER OK
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
         //-- Must be changed in part 2:
-	
-	// Funksjon skal aldri vare en simple var uansett saa hvis vi kommer inn hit er det feil
-	Error.error(use.lineNum, "" + this.name + " is a function and not a simple variable");
-	
+
+        // Funksjon skal aldri vare en simple var uansett saa hvis vi kommer inn hit er det feil
+        Error.error(use.lineNum, "" + this.name + " is a function and not a simple variable");
+
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -816,12 +817,12 @@ class FuncDecl extends Declaration {
         Code.genInstr("", "movl", "%esp,%ebp", "");
         //1- Must be changed in part 2:
 
-	fb.genCode(null);
+        fb.genCode(this);
 
-	Code.genInstr("exit$" + assemblerName,"","", "");
-	Code.genInstr("", "movl", "%ebp,%esp", "");
-	Code.genInstr("", "popl", "%ebp", "");
-	Code.genInstr("", "ret","", "End function " +name);
+        Code.genInstr("exit$" + assemblerName,"","", "");
+        Code.genInstr("", "movl", "%ebp,%esp", "");
+        Code.genInstr("", "popl", "%ebp", "");
+        Code.genInstr("", "ret","", "End function " +name);
     }
 
 
@@ -881,22 +882,21 @@ class FuncBody extends SyntaxUnit {
         //1- Must be changed in part 2:
         //Declerations has been checked in parsing
 
-	// --->  Må uansett gjøre det samme i findDecl. line 200
-	//ParamDeclList copyParamDecl = (ParamDeclList) currBody;
-	
-	localDeclList.outerScope = currBody;     	
-		
-	statmlist.check(localDeclList);   //check statements
-	
-	
-    }
-   
+        // --->  Må uansett gjøre det samme i findDecl. line 200
+        //ParamDeclList copyParamDecl = (ParamDeclList) currBody;
 
-    @Override void genCode(FuncDecl currBody) {
+        localDeclList.outerScope = currBody;     	
+
+        statmlist.check(localDeclList);   //check statements
+
+
+    }
+
+
+    @Override void genCode(FuncDecl curBody) {
         //1- Must be changed in part 2:
-	
-	localDeclList.genCode(null);
-	statmlist.genCode(null);
+        localDeclList.genCode(curBody);
+        statmlist.genCode(curBody);
     }
 
     @Override void parse() {
@@ -916,7 +916,7 @@ class FuncBody extends SyntaxUnit {
         Declaration localDecl = localDeclList.firstDecl;
         while (localDecl != null) {
             localDecl.printTree();
-	    //Log.wTreeLn(localDecl.type.typeName() + " " + localDecl.name + ";");
+            //Log.wTreeLn(localDecl.type.typeName() + " " + localDecl.name + ";");
             localDecl = localDecl.nextDecl;
         }
         Statement st = statmlist.firstStatm;
@@ -946,7 +946,7 @@ class StatmList extends SyntaxUnit {
 
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
-	Statement tempStatm = firstStatm;
+        Statement tempStatm = firstStatm;
         while (tempStatm != null) {
             tempStatm.genCode(curFunc);
             tempStatm = tempStatm.nextStatm;
@@ -960,8 +960,8 @@ class StatmList extends SyntaxUnit {
         while (Scanner.curToken != rightCurlToken) {
             Log.enterParser("<statement>");
             //-1 Must be changed in part 1:
-	    Statement statement = Statement.makeNewStatement();
-	    statement.parse();
+            Statement statement = Statement.makeNewStatement();
+            statement.parse();
 
             if (firstStatm == null) {
                 firstStatm = lastStatm = statement;
@@ -995,7 +995,7 @@ abstract class Statement extends SyntaxUnit {
     Statement nextStatm = null;
 
     static Statement makeNewStatement() {
-	if (Scanner.curToken==nameToken &&
+        if (Scanner.curToken==nameToken &&
                 Scanner.nextToken==leftParToken) {
             //1- Must be changed in part 1:
             return new CallStatm();
@@ -1009,7 +1009,7 @@ abstract class Statement extends SyntaxUnit {
             return new IfStatm();
         } else if (Scanner.curToken == returnToken) {
             //1- Must be changed in part 1:
-	    return new ReturnStatm();
+            return new ReturnStatm();
         } else if (Scanner.curToken == whileToken) {
             return new WhileStatm();
         } else if (Scanner.curToken == semicolonToken) {
@@ -1064,8 +1064,8 @@ class ForStatm extends Statement {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
-	forControl.check(curDecls);
-	statmList.check(curDecls);
+        forControl.check(curDecls);
+        statmList.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1111,9 +1111,9 @@ class ForControl extends SyntaxUnit {
 
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-	assignment1.check(curDecls);
-	expression.check(curDecls);
-	assignment2.check(curDecls);	
+        assignment1.check(curDecls);
+        expression.check(curDecls);
+        assignment2.check(curDecls);	
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1150,12 +1150,12 @@ class AssignStatm extends Statement {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
-	    assignment.check(curDecls);
+        assignment.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
-	assignment.genCode(null);
+        assignment.genCode(curFunc);
     }
 
     @Override void parse() {
@@ -1183,13 +1183,14 @@ class Assignment extends SyntaxUnit {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
-	    variable.check(curDecls);
-	    expression.check(curDecls);
+        variable.check(curDecls);
+        expression.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
-	expression.genCode(null);
+
+        expression.genCode(curFunc);
     }
 
     @Override void parse() {
@@ -1224,11 +1225,11 @@ class IfStatm extends Statement {
     ElsePart elsePart = null;
 
     @Override void check(DeclList curDecls) {
-	//1- Must be changed in part 2:
-	expression.check(curDecls);
+        //1- Must be changed in part 2:
+        expression.check(curDecls);
         statmList.check(curDecls);
-	if (elsePart != null)
-	    elsePart.check(curDecls);
+        if (elsePart != null)
+            elsePart.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1277,7 +1278,7 @@ class ElsePart extends SyntaxUnit {
 
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-	statmList.check(curDecls);
+        statmList.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1318,7 +1319,7 @@ class ReturnStatm extends Statement {
 
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-	expression.check(curDecls);
+        expression.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1405,6 +1406,7 @@ class CallStatm extends Statement {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+        functionCall.genCode(curFunc);
     }
 
     @Override void parse() {
@@ -1436,12 +1438,12 @@ class ExprList extends SyntaxUnit {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
-	Expression tempExpr = firstExpr;
-	while (tempExpr != null) {
-	    numOfExp++;
-	    tempExpr.check(curDecls);
+        Expression tempExpr = firstExpr;
+        while (tempExpr != null) {
+            numOfExp++;
+            tempExpr.check(curDecls);
             tempExpr = tempExpr.nextExpr;
-	    
+
         }
     }
 
@@ -1456,13 +1458,13 @@ class ExprList extends SyntaxUnit {
 
         //1- Must be changed in part 1:
         while (Scanner.curToken != rightParToken) {
-	    if (firstExpr == null) {
+            if (firstExpr == null) {
                 firstExpr = lastExpr = new Expression();
                 firstExpr.parse();
-	    } else {
+            } else {
                 lastExpr.nextExpr = lastExpr = new Expression(); //put in list
                 lastExpr.parse();
-	    }
+            }
 
             if (Scanner.curToken == commaToken) {
                 Scanner.skip(commaToken);
@@ -1495,11 +1497,11 @@ class Expression extends Operand {
     Term firstTerm = new Term(), secondTerm = null;
     Operator relOp = null;
     boolean innerExpr = false;
-    
+
     Expression () {
         //Empty constructor just to make the Java compiler happy :)
     }
-    
+
     Expression (boolean innerExpr) {
         this.innerExpr = innerExpr;
     }
@@ -1507,7 +1509,7 @@ class Expression extends Operand {
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
         firstTerm.check(curDecls);
-	valType = firstTerm.firstFactor.firstOperand.valType;
+        valType = firstTerm.firstFactor.firstOperand.valType;
         if (secondTerm != null) {
             secondTerm.check(curDecls);
         }
@@ -1515,7 +1517,7 @@ class Expression extends Operand {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
-	firstTerm.genCode(null);
+        firstTerm.genCode(curFunc);
     }
 
     @Override void parse() {
@@ -1523,8 +1525,8 @@ class Expression extends Operand {
         if (innerExpr)
             Scanner.skip(leftParToken);
         firstTerm.parse();
-	
-	valType = Types.intType;    
+
+        valType = Types.intType;    
         // TODO maa sette riktig valtype her. Ellers problemer med expression med paranteser
 
         if (Token.isRelOperator(Scanner.curToken)) {
@@ -1534,8 +1536,8 @@ class Expression extends Operand {
             secondTerm.parse();
         }
         if (innerExpr) {
-	    Scanner.skip(rightParToken);
-	}
+            Scanner.skip(rightParToken);
+        }
         Log.leaveParser("</expression>");
     }
 
@@ -1570,30 +1572,30 @@ class Term extends SyntaxUnit {
         //-- Must be changed in part 2:
         Factor tempFactor = firstFactor;
         Factor prev = null;
-	
-        while (tempFactor != null) {
-	    tempFactor.check(curDecls);
-	    if (prev != null) {
-		if (tempFactor.firstOperand.valType != prev.firstOperand.valType) {
-		    System.out.println("\n\n"+tempFactor.firstOperand + " "+ tempFactor.firstOperand.valType); 
-		    System.out.println(prev.firstOperand + " " + prev.firstOperand.valType);
 
-		    
-		    Error.error(lineNum, "Comparison operands should have the same type, not " + prev.firstOperand.valType.typeName() + " and " + tempFactor.firstOperand.valType.typeName());
-		}
-	    }
-	    prev = tempFactor;
-	    tempFactor = tempFactor.nextFactor;
-	}
+        while (tempFactor != null) {
+            tempFactor.check(curDecls);
+            if (prev != null) {
+                if (tempFactor.firstOperand.valType != prev.firstOperand.valType) {
+                    System.out.println("\n\n"+tempFactor.firstOperand + " "+ tempFactor.firstOperand.valType); 
+                    System.out.println(prev.firstOperand + " " + prev.firstOperand.valType);
+
+
+                    Error.error(lineNum, "Comparison operands should have the same type, not " + prev.firstOperand.valType.typeName() + " and " + tempFactor.firstOperand.valType.typeName());
+                }
+            }
+            prev = tempFactor;
+            tempFactor = tempFactor.nextFactor;
+        }
     }
 
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
-	Factor tempFactor = firstFactor;
-	while (tempFactor != null) {
-	    tempFactor.genCode(null);
-	    tempFactor = tempFactor.nextFactor;
-	}
+        Factor tempFactor = firstFactor;
+        while (tempFactor != null) {
+            tempFactor.genCode(curFunc);
+            tempFactor = tempFactor.nextFactor;
+        }
     }
 
     //Trenger while lokke saa vi faar satt inn alle faktorer og operander, prover forst med enkle a+b a-b, saa a*b a/b
@@ -1647,20 +1649,20 @@ class Factor extends SyntaxUnit {
     //-- Must be changed in part 1+2:
     //Operand operand = null;
     Operand firstOperand = null;
-    
+
     Factor nextFactor = null;
     FactorOperator firstFactorOp = null;
-    
+
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-	Operand tempOperand = firstOperand;
+        Operand tempOperand = firstOperand;
         Operand prev = null;    	
         while (tempOperand != null) {
             tempOperand.check(curDecls);
             if (prev != null) {
-		if (prev != null && tempOperand.valType != prev.valType) {
-		    Error.error(lineNum, "Comparison operands should have the same type, not " + prev.valType.typeName() + " and " + tempOperand.valType.typeName());
-		}
+                if (prev != null && tempOperand.valType != prev.valType) {
+                    Error.error(lineNum, "Comparison operands should have the same type, not " + prev.valType.typeName() + " and " + tempOperand.valType.typeName());
+                }
             }
             prev = tempOperand;
             tempOperand = tempOperand.nextOperand;
@@ -1669,11 +1671,11 @@ class Factor extends SyntaxUnit {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
-	Operand tempOperand = firstOperand;
-	while (tempOperand != null) {
-	    tempOperand.genCode(null);
-	    tempOperand = tempOperand.nextOperand;
-	}
+        Operand tempOperand = firstOperand;
+        while (tempOperand != null) {
+            tempOperand.genCode(curFunc);
+            tempOperand = tempOperand.nextOperand;
+        }
     }
 
     @Override void parse() {
@@ -1681,53 +1683,49 @@ class Factor extends SyntaxUnit {
         Log.enterParser("<factor>");
         // lese inn [operand] og [factor opr] i while-loop
         Log.enterParser("<operand>");
-        
-	firstOperand = Operand.makeNewOperand();
-	firstOperand.parse();
-	        
-	if (Token.isFactorOperator(Scanner.curToken)) {
-	    firstFactorOp = new FactorOperator();
-	}
-	
-	Operand tempOperand = firstOperand;
-	FactorOperator tempFactorOp = firstFactorOp;
 
-	while (Token.isFactorOperator(Scanner.curToken)) {
-	    tempFactorOp.parse();
-	    tempOperand.nextOperand = Operand.makeNewOperand();
-	    tempOperand.nextOperand.parse();
+        firstOperand = Operand.makeNewOperand();
+        firstOperand.parse();
 
-	    tempFactorOp.nextFactorOp = new FactorOperator();
-	    tempFactorOp = tempFactorOp.nextFactorOp;
-	    //System.out.println(tempOperand + "--> " + tempOperand.valType);
-	    tempOperand = tempOperand.nextOperand;
-	}
-	
-	Log.leaveParser("</operand>");
+        if (Token.isFactorOperator(Scanner.curToken)) {
+            firstFactorOp = new FactorOperator();
+        }
+
+        Operand tempOperand = firstOperand;
+        FactorOperator tempFactorOp = firstFactorOp;
+
+        while (Token.isFactorOperator(Scanner.curToken)) {
+            tempFactorOp.parse();
+            tempOperand.nextOperand = Operand.makeNewOperand();
+            tempOperand.nextOperand.parse();
+
+            tempFactorOp.nextFactorOp = new FactorOperator();
+            tempFactorOp = tempFactorOp.nextFactorOp;
+            //System.out.println(tempOperand + "--> " + tempOperand.valType);
+            tempOperand = tempOperand.nextOperand;
+        }
+
+        Log.leaveParser("</operand>");
 
         Log.leaveParser("</factor>");
     }
 
     @Override void printTree() {
         //1- Must be changed in part 1+2:
-	Operand tempOperand = firstOperand;
-	FactorOperator tempFactorOp = firstFactorOp;
+        Operand tempOperand = firstOperand;
+        FactorOperator tempFactorOp = firstFactorOp;
 
-	while (tempOperand != null) {
-	    tempOperand.printTree();
-	    if (tempFactorOp != null) {
-		tempFactorOp.printTree();
-		tempFactorOp = tempFactorOp.nextFactorOp;
-	    }
-	    tempOperand = tempOperand.nextOperand;
-	}
+        while (tempOperand != null) {
+            tempOperand.printTree();
+            if (tempFactorOp != null) {
+                tempFactorOp.printTree();
+                tempFactorOp = tempFactorOp.nextFactorOp;
+            }
+            tempOperand = tempOperand.nextOperand;
+        }
         //operand.printTree();
     }
 }
-
-
-
-
 
 //-- Must be changed in part 1+2:
 
@@ -1749,11 +1747,11 @@ abstract class Operator extends SyntaxUnit {
 // egenoprettet klasse
 class FactorOperator extends Operator {
     FactorOperator nextFactorOp = null;
-    
+
     @Override void genCode(FuncDecl curFunc) {
         //TODO
     }
-    
+
     @Override void parse() {
         Log.enterParser("<factor operator>");
         opToken = Scanner.curToken;
@@ -1771,7 +1769,6 @@ class FactorOperator extends Operator {
             Log.wTree(" " + op + " ");
         }
     }
-    
 }
 
 
@@ -1894,39 +1891,41 @@ class FunctionCall extends Operand {
     //-- Must be changed in part 1+2:
     ExprList exprList = new ExprList();
     String callName = "";
-    
+
     @Override void check(DeclList curDecls) {
         //2- Must be changed in part 2:
         Declaration d = curDecls.findDecl(callName, this);
-	
-	//ParamDeclList tempParaDecl = d.paramDecl
-	FuncDecl tempFuncDecl = (FuncDecl)d;
-	d.checkWhetherFunction(10, this); // TODO - temp
-	valType = tempFuncDecl.type;
-	if (d.type == null) // function from library
-	    Log.noteBindingLib(callName, lineNum);
-	else {
-	    Log.noteBinding(d.name, lineNum, d.lineNum);
-	}
-	exprList.check(curDecls);
-	
-	
-	// test number of parameters
-	if (tempFuncDecl.paramDecl.numOfPara != exprList.numOfExp) {
-	    Error.error(lineNum, "Calls to " + callName + " should hava " + tempFuncDecl.paramDecl.numOfPara + " parameters, not " + exprList.numOfExp + "!");
-	}
+
+        //ParamDeclList tempParaDecl = d.paramDecl
+        FuncDecl tempFuncDecl = (FuncDecl)d;
+        d.checkWhetherFunction(10, this); // TODO - temp
+        valType = tempFuncDecl.type;
+        if (d.type == null) // function from library
+            Log.noteBindingLib(callName, lineNum);
+        else {
+            Log.noteBinding(d.name, lineNum, d.lineNum);
+        }
+        exprList.check(curDecls);
+
+
+        // test number of parameters
+        if (tempFuncDecl.paramDecl.numOfPara != exprList.numOfExp) {
+            Error.error(lineNum, "Calls to " + callName + " should hava " + tempFuncDecl.paramDecl.numOfPara + " parameters, not " + exprList.numOfExp + "!");
+        }
     }                 
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+        //Assem: call <functionName>
+        Code.genInstr("", "call", callName, "Call " + callName);
     }
 
     @Override void parse() {
         //1- Must be changed in part 1:
         Log.enterParser("<function call>");
         callName = Scanner.curName; 
-	valType = Types.intType;
-	Scanner.skip(nameToken);
+        valType = Types.intType;
+        Scanner.skip(nameToken);
         Scanner.skip(leftParToken);
         exprList.parse();
         Scanner.skip(rightParToken);
@@ -1950,7 +1949,7 @@ class Number extends Operand {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
-	// TODO - Legge til noe her?
+        // TODO - Legge til noe her?
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1988,26 +1987,26 @@ class Variable extends Operand {
     String varName;
     VarDecl declRef = null;
     Expression index = null;
-    
+
     @Override void check(DeclList curDecls) {
-	Declaration d = curDecls.findDecl(varName, this);
-	
-	
-	if (index == null) {
-	    d.checkWhetherSimpleVar(this);
-	    valType = d.type;
-	} else {
-	    d.checkWhetherArray(this);
-	    //index.check(curDecls);
-	    index.valType.checkType(lineNum, Types.intType, "Array index");
-	    valType = ((ArrayType)d.type).elemType;
-	}
-	declRef = (VarDecl)d;
-	Log.noteBinding(declRef.name, lineNum, declRef.lineNum);
-	if (index != null)  // flyttet ned hit pga index binding maa komme etter i notbinding
-	    index.check(curDecls);
+        Declaration d = curDecls.findDecl(varName, this);
+
+
+        if (index == null) {
+            d.checkWhetherSimpleVar(this);
+            valType = d.type;
+        } else {
+            d.checkWhetherArray(this);
+            //index.check(curDecls);
+            index.valType.checkType(lineNum, Types.intType, "Array index");
+            valType = ((ArrayType)d.type).elemType;
+        }
+        declRef = (VarDecl)d;
+        Log.noteBinding(declRef.name, lineNum, declRef.lineNum);
+        if (index != null)  // flyttet ned hit pga index binding maa komme etter i notbinding
+            index.check(curDecls);
     }
-    
+
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
     }
@@ -2016,10 +2015,10 @@ class Variable extends Operand {
         //-- Must be changed in part 1:
         Log.enterParser("<variable>");
         varName = Scanner.curName;
-	Scanner.skip(nameToken);
+        Scanner.skip(nameToken);
         if (Scanner.curToken == leftBracketToken) { 
-	    Scanner.skip(leftBracketToken);
-	    index = new Expression();
+            Scanner.skip(leftBracketToken);
+            index = new Expression();
             index.parse();
             Scanner.skip(rightBracketToken);
         }
@@ -2030,11 +2029,11 @@ class Variable extends Operand {
     @Override void printTree() {
         //1- Must be changed in part 1:
         Log.wTree(varName);
-	if (index != null) {
-	    Log.wTree("[");
-	    index.printTree();
-	    Log.wTree("]");
-	}
+        if (index != null) {
+            Log.wTree("[");
+            index.printTree();
+            Log.wTree("]");
+        }
     }
 }
 

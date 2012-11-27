@@ -434,7 +434,6 @@ class ParamDeclList extends DeclList {
 
             if (Scanner.curToken != rightParToken)
                 Scanner.skip(commaToken);
-
         }
     }
 }
@@ -747,9 +746,10 @@ class ParamDecl extends VarDecl {
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2: TODO, sjekk at den faktisk finnes i det lokale skopet og type sjekk
         
-        // Declaration d = curDecls.findDecl(name, this);
-        // if (d == null)
-        // Error.error(lineNum, )
+        /*
+        Declaration d = curDecls.findDecl(name, this);
+        if (d == null)
+             Error.error(lineNum, " )*/
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
@@ -898,7 +898,6 @@ class FuncBody extends SyntaxUnit {
     @Override void check(DeclList currBody) {
         //1- Must be changed in part 2:
         //Declerations has been checked in parsing
-
         // --->  Må uansett gjøre det samme i findDecl. line 200
         //ParamDeclList copyParamDecl = (ParamDeclList) currBody;
 
@@ -1525,7 +1524,7 @@ class Expression extends Operand {
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
         firstTerm.check(curDecls);
-        valType = firstTerm.firstFactor.firstOperand.valType;
+//        valType = firstTerm.firstFactor.firstOperand.valType;
         if (secondTerm != null) {
             secondTerm.check(curDecls);
         }
@@ -1542,7 +1541,7 @@ class Expression extends Operand {
             Scanner.skip(leftParToken);
         firstTerm.parse();
 
-        valType = Types.intType;    
+        valType = firstTerm.firstFactor.firstOperand.valType;    
         // TODO maa sette riktig valtype her. Ellers problemer med expression med paranteser
 
         if (Token.isRelOperator(Scanner.curToken)) {
@@ -1580,9 +1579,10 @@ class Expression extends Operand {
 class Term extends SyntaxUnit {
     //-- Must be changed in part 1+2:
     Factor firstFactor = new Factor();
-
+    
     Term nextTerm = null;
     TermOperator firstTermOp = null; 
+    Type valType = null;
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
@@ -1592,12 +1592,10 @@ class Term extends SyntaxUnit {
         while (tempFactor != null) {
             tempFactor.check(curDecls);
             if (prev != null) {
+                /*TODO 2*/
+                System.out.println("in term");
                 if (tempFactor.firstOperand.valType != prev.firstOperand.valType) {
-                    System.out.println("\n\n"+tempFactor.firstOperand + " "+ tempFactor.firstOperand.valType); 
-                    System.out.println(prev.firstOperand + " " + prev.firstOperand.valType);
-
-
-                    Error.error(lineNum, "Comparison operands should have the same type, not " + prev.firstOperand.valType.typeName() + " and " + tempFactor.firstOperand.valType.typeName());
+                    Error.error(lineNum, "Operands should have the same type, not " + prev.firstOperand.valType.typeName() + " and " + tempFactor.firstOperand.valType.typeName());
                 }
             }
             prev = tempFactor;
@@ -1620,7 +1618,7 @@ class Term extends SyntaxUnit {
         Log.enterParser("<term>");
 
         firstFactor.parse();
-
+        
         if (Token.isTermOperator(Scanner.curToken)) { 
             firstTermOp = new TermOperator();           // lager firstTerm kun naar vi har en termOp,
         }
@@ -1630,6 +1628,7 @@ class Term extends SyntaxUnit {
 
         while (Token.isTermOperator(Scanner.curToken)) { 
             tempTermOp.parse();
+            tempTermOp.opType = tempFactor.firstOperand.valType;
             tempFactor.nextFactor = new Factor();
             tempFactor.nextFactor.parse();
 
@@ -1676,8 +1675,9 @@ class Factor extends SyntaxUnit {
         while (tempOperand != null) {
             tempOperand.check(curDecls);
             if (prev != null) {
-                if (prev != null && tempOperand.valType != prev.valType) {
-                    Error.error(lineNum, "Comparison operands should have the same type, not " + prev.valType.typeName() + " and " + tempOperand.valType.typeName());
+                System.out.println("in factor" + tempOperand.valType.typeName() + " " + prev.valType.typeName());
+                if (tempOperand.valType != prev.valType) {
+                    Error.error(lineNum, "Operands should have the same type, not " + prev.valType.typeName() + " and " + tempOperand.valType.typeName());
                 }
             }
             prev = tempOperand;
@@ -1727,6 +1727,7 @@ class Factor extends SyntaxUnit {
 
         while (Token.isFactorOperator(Scanner.curToken)) {
             tempFactorOp.parse();
+            tempFactorOp.opType = tempOperand.valType;
             tempOperand.nextOperand = Operand.makeNewOperand();
             tempOperand.nextOperand.parse();
 
@@ -2027,7 +2028,6 @@ class Variable extends Operand {
 
     @Override void check(DeclList curDecls) {
         Declaration d = curDecls.findDecl(varName, this);
-
         if (index == null) {
             d.checkWhetherSimpleVar(this);
             valType = d.type;
@@ -2051,8 +2051,6 @@ class Variable extends Operand {
             int o = 0-declRef.offSet;
             Code.genInstr("", "movl", "%eax,"+o+"(%ebp)", "=");
         }
-    
-        
     }
 
     @Override void parse() {

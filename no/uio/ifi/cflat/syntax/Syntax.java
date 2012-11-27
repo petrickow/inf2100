@@ -276,23 +276,6 @@ abstract class DeclList extends SyntaxUnit {
             tempDecl = tempDecl.nextDecl;
         }
 
-        /* TODO FUNGERER IKKE. back up over -> tempOuterScope.outerScope blir automatiks null :S
-           while (tempDecl != null) {
-
-           while (tempDecl != null) {
-           if (tempDecl.name.compareTo(name) == 0) {
-           return tempDecl;
-           }
-           tempDecl = tempDecl.nextDecl;
-           }
-
-           if (tempOuterScope != null) {
-           tempDecl =  tempOuterScope.firstDecl;
-           tempOuterScope = tempOuterScope.outerScope;
-           }
-           }
-         */
-
         Error.error(usedIn.lineNum, "Name " + name + " is unknown!!");
         return null;
     }
@@ -817,6 +800,7 @@ class FuncDecl extends Declaration {
 
     @Override void checkWhetherFunction(int nParamsUsed, SyntaxUnit use) {
         //-- Must be changed in part 2:
+        //TODO nParamsUsed
         // DENNE ER OK
     }
 
@@ -1523,7 +1507,6 @@ class Expression extends Operand {
     Term firstTerm = new Term(), secondTerm = null;
     Operator relOp = null;
     boolean innerExpr = false;
-
     Expression () {
         //Empty constructor just to make the Java compiler happy :)
     }
@@ -1535,7 +1518,7 @@ class Expression extends Operand {
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
         firstTerm.check(curDecls);
-        //        valType = firstTerm.firstFactor.firstOperand.valType;
+        valType = firstTerm.firstFactor.firstOperand.valType;
         if (secondTerm != null) {
             secondTerm.check(curDecls);
             if (firstTerm.firstFactor.firstOperand.valType != secondTerm.firstFactor.firstOperand.valType)
@@ -1558,9 +1541,7 @@ class Expression extends Operand {
             Scanner.skip(leftParToken);
         firstTerm.parse();
 
-        valType = firstTerm.firstFactor.firstOperand.valType;    
-        // TODO maa sette riktig valtype her. Ellers problemer med expression med paranteser
-
+       
         if (Token.isRelOperator(Scanner.curToken)) {
             relOp = new RelOperator();
             relOp.parse();
@@ -1690,7 +1671,6 @@ class Term extends SyntaxUnit {
 
 class Factor extends SyntaxUnit {
     //-- Must be changed in part 1+2:
-    //Operand operand = null;
     Operand firstOperand = null;
 
     Factor nextFactor = null;
@@ -1741,10 +1721,10 @@ class Factor extends SyntaxUnit {
         Log.enterParser("<factor>");
         // lese inn [operand] og [factor opr] i while-loop
         Log.enterParser("<operand>");
-
+        
         firstOperand = Operand.makeNewOperand();
         firstOperand.parse();
-
+        
         if (Token.isFactorOperator(Scanner.curToken)) {
             firstFactorOp = new FactorOperator();
         }
@@ -1754,13 +1734,12 @@ class Factor extends SyntaxUnit {
 
         while (Token.isFactorOperator(Scanner.curToken)) {
             tempFactorOp.parse();
-            tempFactorOp.opType = tempOperand.valType;
+            //tempFactorOp.opType = tempOperand.valType; //ARRRR
             tempOperand.nextOperand = Operand.makeNewOperand();
             tempOperand.nextOperand.parse();
 
             tempFactorOp.nextFactorOp = new FactorOperator();
             tempFactorOp = tempFactorOp.nextFactorOp;
-            //System.out.println(tempOperand + "--> " + tempOperand.valType);
             tempOperand = tempOperand.nextOperand;
         }
 
@@ -1797,7 +1776,7 @@ abstract class Operator extends SyntaxUnit {
     Token opToken;
 
     @Override void check(DeclList curDecls) {}
-}
+    }
 
 
 //-- Must be changed in part 1+2:
@@ -1976,10 +1955,17 @@ class FunctionCall extends Operand {
     @Override void check(DeclList curDecls) {
         //2- Must be changed in part 2:
         Declaration d = curDecls.findDecl(callName, this);
-
+        
+       
         //ParamDeclList tempParaDecl = d.paramDecl
         FuncDecl tempFuncDecl = (FuncDecl)d;
         d.checkWhetherFunction(10, this); // TODO - temp
+
+        Expression paramExp = exprList.firstExpr;
+        Declaration par = tempFuncDecl.paramDecl.firstDecl;
+        
+            
+
         valType = tempFuncDecl.type;
         if (d.type == null) // function from library
             Log.noteBindingLib(callName, lineNum);
@@ -1992,6 +1978,16 @@ class FunctionCall extends Operand {
         if (tempFuncDecl.paramDecl.numOfPara != exprList.numOfExp) {
             Error.error(lineNum, "Calls to " + callName + " should have " + tempFuncDecl.paramDecl.numOfPara + " parameters, not " + exprList.numOfExp + "!");
         }
+        int count = 0;
+        while (paramExp != null) {
+            if (paramExp.valType != par.type)
+                Error.error(lineNum, " Parameter #"+ ++count + " is " + paramExp.valType.typeName() +  ", not " + par.type.typeName());
+            else
+                count++;
+            paramExp = paramExp.nextExpr;
+            par = par.nextDecl;
+        }
+
     }                 
 
     @Override void genCode(FuncDecl curFunc) {
@@ -2004,7 +2000,7 @@ class FunctionCall extends Operand {
         //1- Must be changed in part 1:
         Log.enterParser("<function call>");
         callName = Scanner.curName; 
-        valType = Types.intType;
+        valType = Types.intType; //TODO NJET! Finn riktig
         Scanner.skip(nameToken);
         Scanner.skip(leftParToken);
         exprList.parse();
@@ -2022,7 +2018,7 @@ class FunctionCall extends Operand {
 
 
 /*
- * A <number>.
+ * A number.
  */
 class Number extends Operand {
     int numVal;
@@ -2075,13 +2071,12 @@ class Variable extends Operand {
             valType = d.type;
         } else {
             d.checkWhetherArray(this);
-            //index.check(curDecls);
             index.valType.checkType(lineNum, Types.intType, "Array index");
             valType = ((ArrayType)d.type).elemType;
         }
         declRef = (VarDecl)d;
         Log.noteBinding(declRef.name, lineNum, declRef.lineNum);
-        if (index != null)  // flyttet ned hit pga index binding maa komme etter i notbinding
+        if (index != null)
             index.check(curDecls);
     }
 
@@ -2126,5 +2121,3 @@ class Variable extends Operand {
         }
     }
 }
-
-

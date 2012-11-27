@@ -1,9 +1,9 @@
 package no.uio.ifi.cflat.syntax;
 /*PUT in before call!
-        Code.genInstr("", "movl" , (curFunc.stackOffset + declSize()) + "(%ebp),%eax", name);
-        curFunc.stackOffset = curFunc.stackOffset + declSize();
-        Code.genInstr("", "pushl", "%eax", "");
-*/
+  Code.genInstr("", "movl" , (curFunc.stackOffset + declSize()) + "(%ebp),%eax", name);
+  curFunc.stackOffset = curFunc.stackOffset + declSize();
+  Code.genInstr("", "pushl", "%eax", "");
+ */
 /*
  * module Syntax
  */
@@ -203,7 +203,7 @@ abstract class DeclList extends SyntaxUnit {
 
     void addDecl(Declaration d) {
         //2- Must be changed in part 1:
-        
+
         if (firstDecl == null) {
             firstDecl = d;
         } else {
@@ -304,7 +304,7 @@ abstract class DeclList extends SyntaxUnit {
  * (This class is not mentioned in the syntax diagrams.)
  */
 class GlobalDeclList extends DeclList {
-    
+
     FuncDecl fd = null;                // flyttet hit i del 2 pga maa vaere tilgjengelige for genCode
     GlobalArrayDecl gad = null;
     GlobalSimpleVarDecl gsv = null;
@@ -505,7 +505,7 @@ abstract class Declaration extends SyntaxUnit {
  * A <var decl>
  */
 abstract class VarDecl extends Declaration {
-    
+
     int offSet;
     VarDecl(String n) {
         super(n);
@@ -745,11 +745,11 @@ class ParamDecl extends VarDecl {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2: TODO, sjekk at den faktisk finnes i det lokale skopet og type sjekk
-        
+
         /*
-        Declaration d = curDecls.findDecl(name, this);
-        if (d == null)
-             Error.error(lineNum, " )*/
+           Declaration d = curDecls.findDecl(name, this);
+           if (d == null)
+           Error.error(lineNum, " )*/
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
@@ -759,7 +759,7 @@ class ParamDecl extends VarDecl {
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
         //-- Must be changed in part 2:
     }
-    
+
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
     }
@@ -1048,8 +1048,8 @@ class EmptyStatm extends Statement {
 
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
-    
-	// Do nothing
+
+        // Do nothing
     }
 
     @Override void parse() {
@@ -1172,7 +1172,7 @@ class AssignStatm extends Statement {
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
         assignment.genCode(curFunc);
-        
+
     }
 
     @Override void parse() {
@@ -1206,7 +1206,7 @@ class Assignment extends SyntaxUnit {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
-        
+
         expression.genCode(curFunc);
         variable.genCode(curFunc);
     }
@@ -1252,15 +1252,15 @@ class IfStatm extends Statement {
 
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
-	Code.genInstr("", "", "", "Start if-statement");
-	expression.genCode(curFunc);
-	
-	/* TODO
-	 statmList.genCode(curFunc);
-	 if (elsePart != null) {
-	 elsePart.genCode(curFunc);
-	 }
-	*/
+        Code.genInstr("", "", "", "Start if-statement");
+        expression.genCode(curFunc);
+
+        /* TODO
+           statmList.genCode(curFunc);
+           if (elsePart != null) {
+           elsePart.genCode(curFunc);
+           }
+         */
     }
 
     @Override void parse() {
@@ -1535,19 +1535,21 @@ class Expression extends Operand {
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
         firstTerm.check(curDecls);
-//        valType = firstTerm.firstFactor.firstOperand.valType;
+        //        valType = firstTerm.firstFactor.firstOperand.valType;
         if (secondTerm != null) {
-	    secondTerm.check(curDecls);
+            secondTerm.check(curDecls);
+            if (firstTerm.firstFactor.firstOperand.valType != secondTerm.firstFactor.firstOperand.valType)
+                    Error.error(lineNum, "Comparison operands should have the same type, not " + firstTerm.firstFactor.firstOperand.valType.typeName() + " and " + secondTerm.firstFactor.firstOperand.valType.typeName() );
         }
     }
 
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
         firstTerm.genCode(curFunc);
-	if (secondTerm != null) {
-	    Code.genInstr("", "pushl", "%eax", "");
-	    secondTerm.genCode(curFunc);
-	}
+        if (secondTerm != null) {
+            Code.genInstr("", "pushl", "%eax", "");
+            secondTerm.genCode(curFunc);
+        }
     }
 
     @Override void parse() {
@@ -1594,10 +1596,9 @@ class Expression extends Operand {
 class Term extends SyntaxUnit {
     //-- Must be changed in part 1+2:
     Factor firstFactor = new Factor();
-    
+
     Term nextTerm = null;
     TermOperator firstTermOp = null; 
-    Type valType = null;
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
@@ -1608,7 +1609,6 @@ class Term extends SyntaxUnit {
             tempFactor.check(curDecls);
             if (prev != null) {
                 /*TODO 2*/
-                System.out.println("in term");
                 if (tempFactor.firstOperand.valType != prev.firstOperand.valType) {
                     Error.error(lineNum, "Operands should have the same type, not " + prev.firstOperand.valType.typeName() + " and " + tempFactor.firstOperand.valType.typeName());
                 }
@@ -1621,23 +1621,23 @@ class Term extends SyntaxUnit {
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
         Factor tempFactor = firstFactor;
-	TermOperator termOperator = firstTermOp; 
-	
-	int count = 0;
-	
+        TermOperator termOperator = firstTermOp; 
+
+        int count = 0;
+
         while (tempFactor != null) {
-	    if (count == 1) {
-		Code.genInstr("", "pushl", "%eax", "");
-	    }
-	    tempFactor.genCode(curFunc);
+            if (count == 1) {
+                Code.genInstr("", "pushl", "%eax", "");
+            }
+            tempFactor.genCode(curFunc);
             tempFactor = tempFactor.nextFactor;
-	    count ++;
-	    if (count == 2) {
-		termOperator.genCode(curFunc);
-		termOperator = termOperator.nextTermOp;
-		count = 1;
-	    }
-	}
+            count ++;
+            if (count == 2) {
+                termOperator.genCode(curFunc);
+                termOperator = termOperator.nextTermOp;
+                count = 1;
+            }
+        }
     }
 
     //Trenger while lokke saa vi faar satt inn alle faktorer og operander, prover forst med enkle a+b a-b, saa a*b a/b
@@ -1646,7 +1646,7 @@ class Term extends SyntaxUnit {
         Log.enterParser("<term>");
 
         firstFactor.parse();
-        
+
         if (Token.isTermOperator(Scanner.curToken)) { 
             firstTermOp = new TermOperator();           // lager firstTerm kun naar vi har en termOp,
         }
@@ -1703,7 +1703,6 @@ class Factor extends SyntaxUnit {
         while (tempOperand != null) {
             tempOperand.check(curDecls);
             if (prev != null) {
-                System.out.println("in factor" + tempOperand.valType.typeName() + " " + prev.valType.typeName());
                 if (tempOperand.valType != prev.valType) {
                     Error.error(lineNum, "Operands should have the same type, not " + prev.valType.typeName() + " and " + tempOperand.valType.typeName());
                 }
@@ -1717,7 +1716,7 @@ class Factor extends SyntaxUnit {
         //-- Must be changed in part 2:
         Operand tempOperand = firstOperand;
         FactorOperator factorOperator = firstFactorOp;
-        
+
         int count = 0;
 
         while (tempOperand != null) {
@@ -1726,7 +1725,7 @@ class Factor extends SyntaxUnit {
             }
             tempOperand.genCode(curFunc);
             tempOperand = tempOperand.nextOperand;
-            
+
             count++;
             if (count == 2) {
                 factorOperator.genCode(curFunc);
@@ -1809,16 +1808,16 @@ class FactorOperator extends Operator {
     FactorOperator nextFactorOp = null;
 
     @Override void genCode(FuncDecl curFunc) {
-	Code.genInstr("", "movl", "%eax,%ecx", "");
+        Code.genInstr("", "movl", "%eax,%ecx", "");
         Code.genInstr("", "popl", "%eax", "");
         switch (opToken) {
-	case divideToken: 
-	    Code.genInstr("", "cdq", "", "");
-	    Code.genInstr("", "idivl", "%ecx", "Compute " + "/");
-	    break;
-	case multiplyToken: 
-	    Code.genInstr("", "imull", "%ecx,%eax", "Compute " + "*") ;
-	    break;
+            case divideToken: 
+                Code.genInstr("", "cdq", "", "");
+                Code.genInstr("", "idivl", "%ecx", "Compute " + "/");
+                break;
+            case multiplyToken: 
+                Code.genInstr("", "imull", "%ecx,%eax", "Compute " + "*") ;
+                break;
         }
     }
 
@@ -1844,21 +1843,21 @@ class FactorOperator extends Operator {
 
 class TermOperator extends Operator {
     TermOperator nextTermOp = null;
-    
+
     @Override void genCode(FuncDecl curFunc) {
         // TODO 
-	String comp = "";
-	Code.genInstr("", "movl", "%eax,%ecx", "");
-	Code.genInstr("", "popl", "%eax", "");
-	switch (opToken) {
-	case addToken: comp = "addl"; break;
-	case subtractToken: comp = "subl"; break;
-	}
-	Code.genInstr("", comp, "%ecx,%eax", "Compute " + (comp.equals("addl") ? "+" : "-") );
-	
+        String comp = "";
+        Code.genInstr("", "movl", "%eax,%ecx", "");
+        Code.genInstr("", "popl", "%eax", "");
+        switch (opToken) {
+            case addToken: comp = "addl"; break;
+            case subtractToken: comp = "subl"; break;
+        }
+        Code.genInstr("", comp, "%ecx,%eax", "Compute " + (comp.equals("addl") ? "+" : "-") );
+
 
     }
-    
+
     @Override void parse() {
         Log.enterParser("<term operator>");
         opToken = Scanner.curToken;
@@ -2092,13 +2091,13 @@ class Variable extends Operand {
             Code.genInstr("", "movl", "%eax,"+varName, varName + " =");
         else {
             int o = 0-declRef.offSet;
-	    if (valType.typeName().compareTo("int") == 0) {
-		Code.genInstr("", "movl", "%eax,"+o+"(%ebp)", varName + " =");
-	    } else if (valType.typeName().compareTo("double") == 0) {
-		Code.genInstr("", "movl", "%eax,.tmp","");
-		Code.genInstr("", "fildl", ".tmp","  (double)");
-		Code.genInstr("", "fstpl", o+"(%ebp)",varName + " =");
-	    }
+            if (valType.typeName().compareTo("int") == 0) {
+                Code.genInstr("", "movl", "%eax,"+o+"(%ebp)", varName + " =");
+            } else if (valType.typeName().compareTo("double") == 0) {
+                Code.genInstr("", "movl", "%eax,.tmp","");
+                Code.genInstr("", "fildl", ".tmp","  (double)");
+                Code.genInstr("", "fstpl", o+"(%ebp)",varName + " =");
+            }
         }
     }
 

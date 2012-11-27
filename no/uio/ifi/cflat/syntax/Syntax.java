@@ -1252,7 +1252,16 @@ class IfStatm extends Statement {
     }
 
     @Override void genCode(FuncDecl curFunc) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+	Code.genInstr("", "", "", "Start if-statement");
+	expression.genCode(curFunc);
+	
+	/* TODO
+	 statmList.genCode(curFunc);
+	 if (elsePart != null) {
+	 elsePart.genCode(curFunc);
+	 }
+	*/
     }
 
     @Override void parse() {
@@ -1529,13 +1538,17 @@ class Expression extends Operand {
         firstTerm.check(curDecls);
         valType = firstTerm.firstFactor.firstOperand.valType;
         if (secondTerm != null) {
-            secondTerm.check(curDecls);
+	    secondTerm.check(curDecls);
         }
     }
 
     @Override void genCode(FuncDecl curFunc) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
         firstTerm.genCode(curFunc);
+	if (secondTerm != null) {
+	    Code.genInstr("", "pushl", "%eax", "");
+	    secondTerm.genCode(curFunc);
+	}
     }
 
     @Override void parse() {

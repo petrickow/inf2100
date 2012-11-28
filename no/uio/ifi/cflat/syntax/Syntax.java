@@ -172,7 +172,8 @@ class Program extends SyntaxUnit {
 abstract class DeclList extends SyntaxUnit {
     Declaration firstDecl = null;
     DeclList outerScope;
-    int totalSize;
+    int totalSize = 0;
+    int offset = 0;
     DeclList () {
         //?- Must be changed in part 1:
     }
@@ -373,7 +374,6 @@ class LocalDeclList extends DeclList {
  * (This class is not mentioned in the syntax diagrams.)
  */
 class ParamDeclList extends DeclList {
-    int stackOffset;
     int numOfPara; // number of parameters
     //DeclList outerScope;
 
@@ -385,8 +385,14 @@ class ParamDeclList extends DeclList {
         numOfPara = 0;
         outerScope = curDecls;	       // Setter paramDecl sitt outerScope til å peke på globalDeclList 
 
+        int otemp = 8;
         while (tempDecl != null) {
             ((ParamDecl)tempDecl).paramNum = ++numOfPara;
+            
+            ((ParamDecl)tempDecl).offSet = otemp;
+
+            otemp = otemp + tempDecl.declSize();
+            tempDecl.check((DeclList)this);
             tempDecl = tempDecl.nextDecl;
         }
     }
@@ -714,7 +720,7 @@ class LocalSimpleVarDecl extends VarDecl {
  */
 class ParamDecl extends VarDecl {
     int paramNum = 0;
-
+    
     ParamDecl(String n) {
         super(n);
         assemblerName = n;
@@ -722,8 +728,7 @@ class ParamDecl extends VarDecl {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2: TODO, sjekk at den faktisk finnes i det lokale skopet og type sjekk
-
-        ((LocalDeclList)curDecls).offset = offSet = declSize() + ((LocalDeclList)curDecls).offset;
+        
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
@@ -1190,14 +1195,14 @@ class Assignment extends SyntaxUnit {
             if (variable.declRef.visible) {
                 Code.genInstr("", "fstpl", variable.varName, variable.varName + " =");
             } else {
-                Code.genInstr("", "fstpl", variable.o+"(%ebp)", variable.varName + " =");
+                Code.genInstr("", "fstpl", variable.off+"(%ebp)", variable.varName + " =");
             }
 
         } else {
             if (variable.declRef.visible) {
                 Code.genInstr("", "movl", "%eax,"+variable.varName, variable.varName + " =");
             } else {
-                Code.genInstr("", "movl", "%eax,"+variable.o+"(%ebp)", variable.varName + " =");
+                Code.genInstr("", "movl", "%eax,"+variable.off+"(%ebp)", variable.varName + " =");
             }
         }
         //variable.genCode(curFunc);
@@ -2139,8 +2144,8 @@ class Variable extends Operand {
     String varName;
     VarDecl declRef = null;
     Expression index = null;
-    int o = 0;
-
+    int off;
+    
     @Override void check(DeclList curDecls) {
         Declaration d = curDecls.findDecl(varName, this);
         if (index == null) {
@@ -2152,7 +2157,12 @@ class Variable extends Operand {
             valType = ((ArrayType)d.type).elemType;
         }
         declRef = (VarDecl)d;
-        o = 0-declRef.offSet;
+        if (declRef instanceof ParamDecl) {
+            off = declRef.offSet;
+        } else {
+            off = 0-declRef.offSet;
+        }
+
         Log.noteBinding(declRef.name, lineNum, declRef.lineNum);
         if (index != null)
             index.check(curDecls);
@@ -2160,13 +2170,14 @@ class Variable extends Operand {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+                
         if (declRef.visible)
             Code.genInstr("", "movl", varName+",%eax", varName);
         else {
             if (valType.typeName().compareTo("int") == 0) {
-                Code.genInstr("", "movl", o+"(%ebp),%eax", varName+ "HOOOIO");
+                Code.genInstr("", "movl", off+"(%ebp),%eax", varName+ "HOOOIO");
             } else {
-                Code.genInstr("", "fldl", o+"(%ebp)",varName);
+                Code.genInstr("", "fldl", off+"(%ebp)",varName);
             }
         }
     }

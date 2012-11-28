@@ -40,34 +40,34 @@ public class Syntax {
 
         FuncDecl tempLibFunc = new FuncDecl("exit");
         tempLibFunc.paramDecl.numOfPara = 1;
-        //tempLibFunc.type = Types.intType;    
+        tempLibFunc.type = Types.intType;    
         library.addDecl(tempLibFunc);
 
         tempLibFunc = new FuncDecl("getchar");
-        //tempLibFunc.type = Types.intType;    
+        tempLibFunc.type = Types.intType;    
         library.addDecl(tempLibFunc);
 
         tempLibFunc = new FuncDecl("getdouble");
-        //tempLibFunc.type = Types.doubleType;    
+        tempLibFunc.type = Types.doubleType;    
         library.addDecl(tempLibFunc);
 
         tempLibFunc = new FuncDecl("getint");
-        //tempLibFunc.type = Types.intType;    
+        tempLibFunc.type = Types.intType;    
         library.addDecl(tempLibFunc);
 
         tempLibFunc = new FuncDecl("putchar");
         tempLibFunc.paramDecl.numOfPara = 1;
-        //tempLibFunc.type = Types.intType;    
+        tempLibFunc.type = Types.intType;    
         library.addDecl(tempLibFunc);
 
         tempLibFunc = new FuncDecl("putdouble");
         tempLibFunc.paramDecl.numOfPara = 1;
-        //tempLibFunc.type = Types.doubleType;    
+        tempLibFunc.type = Types.doubleType;    
         library.addDecl(tempLibFunc);
 
         tempLibFunc = new FuncDecl("putint");
         tempLibFunc.paramDecl.numOfPara = 1;
-        //tempLibFunc.type = Types.intType;    
+        tempLibFunc.type = Types.intType;    
         library.addDecl(tempLibFunc);
     }
 
@@ -219,10 +219,12 @@ abstract class DeclList extends SyntaxUnit {
     int dataSize() {
         Declaration dx = firstDecl;
         int res = 0;
-
+        int debugCount = 0;
         while (dx != null) {
+            debugCount++;
             res += dx.declSize(); dx = dx.nextDecl;
         }
+        System.out.println("\nDEBUG COUNTER, " + debugCount + " of decls");
         return res;
     }
 
@@ -334,14 +336,17 @@ class LocalDeclList extends DeclList {
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
         int tempOffset = 0;
+
         int lSize = dataSize();
+
         if (lSize > 0) {
             Code.genInstr("", "subl", "$"+lSize+",%esp", "Get "+lSize +" bytes local data space");
         }
         Declaration dx = firstDecl;
 
         while (dx != null) {
-            dx.offSet = tempOffset = tempOffset + dx.declSize();
+            dx.offSet =  -(tempOffset + dx.declSize());
+            tempOffset += dx.declSize();
             dx = dx.nextDecl;
         }
     }
@@ -402,9 +407,10 @@ class ParamDeclList extends DeclList {
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
         Declaration tempDecl = firstDecl;
-        int tempOffset = 0;
+        int tempOffset = dataSize();
         while (tempDecl != null) {
-            tempOffset = tempDecl.offSet = tempOffset - tempDecl.declSize();
+            tempDecl.offSet = tempOffset + tempDecl.declSize();
+            tempOffset += tempDecl.declSize();
             tempDecl.genCode(curFunc);
             tempDecl = tempDecl.nextDecl;
         }
@@ -733,6 +739,7 @@ class ParamDecl extends VarDecl {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2: TODO, sjekk at den faktisk finnes i det lokale skopet og type sjekk
+
         
     }
 
@@ -746,7 +753,7 @@ class ParamDecl extends VarDecl {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
-
+        
     }
 
     @Override void parse() {
@@ -1235,14 +1242,14 @@ class Assignment extends SyntaxUnit {
                 if (variable.declRef.visible) {
                     Code.genInstr("", "fstpl", variable.varName, variable.varName + " =");
                 } else {
-                    Code.genInstr("", "fstpl", (-(variable.declRef.offSet))+"(%ebp)", variable.varName + " =");
+                    Code.genInstr("", "fstpl", variable.declRef.offSet+"(%ebp)", variable.varName + " =");
                 }
 
             } else {
                 if (variable.declRef.visible) {
                     Code.genInstr("", "movl", "%eax,"+variable.varName, variable.varName + " =");
                 } else {
-                    Code.genInstr("", "movl", "%eax,"+ (-(variable.declRef.offSet)) +"(%ebp)", variable.varName + " =");
+                    Code.genInstr("", "movl", "%eax,"+ variable.declRef.offSet +"(%ebp)", variable.varName + " =");
                 }
             }
         } else {
@@ -1255,15 +1262,15 @@ class Assignment extends SyntaxUnit {
                 if (variable.declRef.visible) {
                     Code.genInstr("", "fstpl", variable.varName, variable.varName + " =");
                 } else {
-                    Code.genInstr("", "fstpl", (-(variable.declRef.offSet))+"(%ebp)", variable.varName + " =");
+                    Code.genInstr("", "fstpl", variable.declRef.offSet+"(%ebp)", variable.varName + " =");
                 }
             }  
             //SAVE DOUBLE AS INT
             else {
-                if (variable.declRef.visible) {
+                if (variable.declRef.visible) { //TODO denne slår til ved getInt! Må 
                     Code.genInstr("", "fistpl", variable.varName, variable.varName + " = (int)");
                 } else {
-                    Code.genInstr("", "fistpl", (-(variable.declRef.offSet))+"(%ebp)", variable.varName + " = (int)");
+                    Code.genInstr("", "fistpl", variable.declRef.offSet+"(%ebp)", variable.varName + " = (int)");
                 }
             }
         }
@@ -2024,7 +2031,6 @@ class TermOperator extends Operator {
 
 class RelOperator extends Operator {
     @Override void genCode(FuncDecl curFunc) {
-        System.out.println("\nskal double: " + opType.typeName());
         if (opType == Types.doubleType) {
             Code.genInstr("", "fldl", "(%esp)", "");
             Code.genInstr("", "addl", "$8,%esp", "");
@@ -2122,8 +2128,6 @@ class FunctionCall extends Operand {
 
         FuncDecl tempFuncDecl = (FuncDecl)d;
         Declaration par = tempFuncDecl.paramDecl.firstDecl;
-        valType = tempFuncDecl.type;
-
         if (d.type == null) // function from library
             Log.noteBindingLib(callName, lineNum);
         else {
@@ -2131,16 +2135,17 @@ class FunctionCall extends Operand {
         }
         exprList.check(curDecls);
 
+        valType = tempFuncDecl.type; //FOR DENNE BLIR IKKE SATT! alltid...
+        System.out.println(valType);
         //d.checkWhetherFunction(exprList.numOfExp, this); //TODO switch the underlying if statement with this...
-
         if (tempFuncDecl.paramDecl.numOfPara != exprList.numOfExp) {
             Error.error(lineNum, "Calls to " + callName + " should have " + tempFuncDecl.paramDecl.numOfPara + " parameters, not " + exprList.numOfExp + "!");
         }
 
         Expression paramExp = exprList.firstExpr;
         int atParaNum = 0;
-
-        while (paramExp != null) {
+        //TODO, hvorfor får vi nullpointer her om vi ikke har med paramSize testen?        
+        while (paramExp != null && tempFuncDecl.paramSize != 0) {
             if (paramExp.valType != par.type)
                 Error.error(lineNum, " Parameter #"+ ++atParaNum + " is " + paramExp.valType.typeName() +  ", not " + par.type.typeName());
             else

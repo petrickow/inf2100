@@ -1187,8 +1187,7 @@ class Assignment extends SyntaxUnit {
         //-- Must be changed in part 2:
         variable.check(curDecls);
         expression.check(curDecls);
-	    /*HAIRY!
-
+	    /*HAIRY! For å minne oss på at hårete løsninger aldri fungerer!
         Term tempTerm = expression.firstTerm;
         Factor tempFactor = tempTerm.firstFactor;
         
@@ -1225,9 +1224,8 @@ class Assignment extends SyntaxUnit {
 
         expression.genCode(curFunc);
         //SAVE DOUBLE AS DOUBLE/INT AS INT
-        System.out.println(expression.valType.typeName() + " " + variable.valType.typeName());
         if (expression.valType == variable.valType) {
-            if (variable.valType.typeName().equals("double")) {
+            if (variable.valType == Types.doubleType) {
                 
                 if (variable.declRef.visible) {
                     Code.genInstr("", "fstpl", variable.varName, variable.varName + " =");
@@ -1243,7 +1241,6 @@ class Assignment extends SyntaxUnit {
                 }
             }
         } else {
-
             //SAVE INT AS DOUBLE
             if (variable.valType.typeName().equals("double")) {
                 //Code.genInstr("", "movl", "%eax,.tmp","TEST...");
@@ -1287,10 +1284,6 @@ class Assignment extends SyntaxUnit {
     }
 }
 
-
-
-
-
 /*
  * An <if-statm>.
  */
@@ -1315,20 +1308,26 @@ class IfStatm extends Statement {
         Code.genInstr("", "", "", "Start if-statement");
         expression.genCode(curFunc);
 
-        if (expression.firstTerm.firstFactor.firstOperand.valType.typeName().compareTo("int") == 0) {
+        if (expression.valType == Types.intType) {
             Code.genInstr("", "cmpl", "$0,%eax", "");
-        } else { // flyttall
+        } else { // flyttall TODO
             Code.genInstr("", "fstps", ".tmp", "");
             Code.genInstr("", "cmpl", "$0,.tmp", "");
         }
-        String tempLabel = Code.getLocalLabel();
-        Code.genInstr("", "je", tempLabel, "");
+        String exitLabel = Code.getLocalLabel();
+        String elseLabel = Code.getLocalLabel();
+        if (elsePart != null) {
+            Code.genInstr("", "je", elseLabel, "");
+        }
+
         statmList.genCode(curFunc);
+        Code.genInstr("", "jmp", exitLabel, "");
 
         if (elsePart != null) {
+            Code.genInstr(elseLabel, "","","Else-part");
             elsePart.genCode(curFunc);
         }
-        Code.genInstr(tempLabel, "", "", "End if-statement");
+        Code.genInstr(exitLabel, "", "", "End if-statement");
 
     }
 
@@ -1379,6 +1378,7 @@ class ElsePart extends SyntaxUnit {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+        statmList.genCode(curFunc);
     }
 
     @Override void parse() {
@@ -1633,7 +1633,14 @@ class Expression extends Operand {
         //1- Must be changed in part 2:
         firstTerm.genCode(curFunc);
         if (secondTerm != null) {
+            if (valType == Types.intType) {
+                Code.genInstr("", "pushl", "%eax", "");
+            } else {
+
+            }
+
             secondTerm.genCode(curFunc);
+            relOp.genCode(curFunc);
         }
     }
 

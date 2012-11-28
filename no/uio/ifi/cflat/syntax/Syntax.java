@@ -1187,28 +1187,85 @@ class Assignment extends SyntaxUnit {
         //-- Must be changed in part 2:
         variable.check(curDecls);
         expression.check(curDecls);
-	Fa
+	    /*HAIRY!
+
+        Term tempTerm = expression.firstTerm;
+        Factor tempFactor = tempTerm.firstFactor;
+        
+        TermOperator tempTermOp = tempTerm.firstTermOp;
+        FactorOperator tempFactorOp = tempFactor.firstFactorOp;
+        System.out.println(variable.valType.typeName());
+        
+        HVIS: vi har en variabel som er av annen type enn høyre side så skal 
+          utregningen på høyre side lagres som typen på venstre.
+          Dersom factoroperanden
+        
+        if (tempFactorOp != null && (tempFactorOp.opType != variable.valType ||tempFactor.firstOperand.valType != variable.valType)) {
+            
+            while (tempTerm != null) {
+                while (tempTermOp != null) {
+                    tempTermOp.opType = variable.valType;
+                    tempTermOp = tempTermOp.nextTermOp;
+                }
+                while (tempFactor != null) {
+                    while (tempFactorOp != null) {
+                        tempFactorOp.opType = variable.valType;
+                        tempFactorOp = tempFactorOp.nextFactorOp;
+                    }
+                    
+                    tempFactor = tempFactor.nextFactor;
+                }
+                tempTerm = tempTerm.nextTerm;
+            }
+        } */
     }
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
 
         expression.genCode(curFunc);
-        if (variable.valType.typeName().equals("double")) {
-            //Code.genInstr("", "movl", "%eax,.tmp","TEST...");
-            if (variable.declRef.visible) {
-                Code.genInstr("", "fstpl", variable.varName, variable.varName + " =");
-            } else {
-                Code.genInstr("", "fstpl", variable.off+"(%ebp)", variable.varName + " =");
-            }
+        //SAVE DOUBLE AS DOUBLE/INT AS INT
+        System.out.println(expression.valType.typeName() + " " + variable.valType.typeName());
+        if (expression.valType == variable.valType) {
+            if (variable.valType.typeName().equals("double")) {
+                
+                if (variable.declRef.visible) {
+                    Code.genInstr("", "fstpl", variable.varName, variable.varName + " =");
+                } else {
+                    Code.genInstr("", "fstpl", variable.off+"(%ebp)", variable.varName + " =");
+                }
 
-        } else {
-            if (variable.declRef.visible) {
-                Code.genInstr("", "movl", "%eax,"+variable.varName, variable.varName + " =");
             } else {
-                Code.genInstr("", "movl", "%eax,"+variable.off+"(%ebp)", variable.varName + " =");
+                if (variable.declRef.visible) {
+                    Code.genInstr("", "movl", "%eax,"+variable.varName, variable.varName + " =");
+                } else {
+                    Code.genInstr("", "movl", "%eax,"+variable.off+"(%ebp)", variable.varName + " =");
+                }
+            }
+        } else {
+
+            //SAVE INT AS DOUBLE
+            if (variable.valType.typeName().equals("double")) {
+                //Code.genInstr("", "movl", "%eax,.tmp","TEST...");
+                Code.genInstr("", "movl", "%eax,.tmp", ""); //konvertere til flyt
+                Code.genInstr("", "fildl", ".tmp", "  (double)");
+
+                if (variable.declRef.visible) {
+                    Code.genInstr("", "fstpl", variable.varName, variable.varName + " =");
+                } else {
+                    Code.genInstr("", "fstpl", variable.off+"(%ebp)", variable.varName + " =");
+                }
+            }  
+            //SAVE DOUBLE AS INT
+            else {
+                if (variable.declRef.visible) {
+                    Code.genInstr("", "movl", "%eax,"+variable.varName, variable.varName + " = (int)");
+                } else {
+                    Code.genInstr("", "fistpl", variable.off+"(%ebp)", variable.varName + " = (int)");
+                }
             }
         }
+        
         //variable.genCode(curFunc);
     }
 
@@ -1551,6 +1608,7 @@ class Expression extends Operand {
     Term firstTerm = new Term(), secondTerm = null;
     Operator relOp = null;
     boolean innerExpr = false;
+
     Expression () {
         //Empty constructor just to make the Java compiler happy :)
     }
@@ -1568,6 +1626,7 @@ class Expression extends Operand {
             if (firstTerm.firstFactor.firstOperand.valType != secondTerm.firstFactor.firstOperand.valType)
                 Error.error(lineNum, "Comparison operands should have the same type, not " + firstTerm.firstFactor.firstOperand.valType.typeName() + " and " + secondTerm.firstFactor.firstOperand.valType.typeName() );
         }
+
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1907,7 +1966,7 @@ class TermOperator extends Operator {
         if (opType.typeName().equals("double")) {
             //Code.genInstr("", "movl", "%eax,.tmp","");
             Code.genInstr("", "fldl", "(%esp)","");
-            Code.genInstr("", "addl", "$8,%esp","");
+            Code.genInstr("", "addl", "$8,%esp",""); //hardcoded double size
             switch (opToken) {
                 case addToken: comp = "faddp"; break;
                 case subtractToken: comp = "fsubp"; break;

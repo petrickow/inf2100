@@ -293,7 +293,7 @@ class GlobalDeclList extends DeclList {
         Declaration tempDecl = firstDecl;
 
         while (tempDecl != null) {
-            tempDecl.genCode(null);
+            tempDecl.genCode(curFunc);
             tempDecl = tempDecl.nextDecl;
         }
 
@@ -818,6 +818,10 @@ class FuncDecl extends Declaration {
         paramDecl.genCode(this);
         fb.genCode(this);
 
+	if (type == Types.doubleType) {
+	    Code.genInstr("","fldz","","");
+	}
+	
         Code.genInstr(".exit$" + assemblerName,"","","");
         Code.genInstr("", "movl", "%ebp,%esp", "");
         Code.genInstr("", "popl", "%ebp", "");
@@ -830,9 +834,8 @@ class FuncDecl extends Declaration {
         //1- Must be changed in part 1:
 
         Log.enterParser("<func decl>");
-
-        type = Types.getType(Scanner.curToken); 
-        Scanner.skip(intToken, doubleToken);
+        type = Types.getType(Scanner.curToken);
+	Scanner.skip(intToken, doubleToken);
         name = Scanner.curName;
         Scanner.skip(nameToken);
         Scanner.skip(leftParToken);
@@ -1184,6 +1187,7 @@ class Assignment extends SyntaxUnit {
         //-- Must be changed in part 2:
         variable.check(curDecls);
         expression.check(curDecls);
+	Fa
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -1853,6 +1857,8 @@ class FactorOperator extends Operator {
                 case divideToken: comp = "fdivp"; break;
             }
             Code.genInstr("", comp, "","Compute " + (comp.equals("fmulp") ? "*" : "/") );
+	    Code.genInstr("", "movl", "%eax,tmp","");
+	    Code.genInstr("", "fildl",".tmp","  "+opType.typeName());
 
         } else {
             Code.genInstr("", "movl", "%eax,%ecx", "");
@@ -2075,7 +2081,7 @@ class FunctionCall extends Operand {
         Declaration funcDecl = curFunc.fb.localDeclList.findDecl(callName, this);
         exprList.genCode(curFunc);        
         Code.genInstr("", "call", callName, "Call " + callName);
-        Code.genInstr("", "addl", ((FuncDecl)funcDecl).paramSize + ",%esp", "Remove parameters"); 
+        Code.genInstr("", "addl", "$"+((FuncDecl)funcDecl).paramSize + ",%esp", "Remove parameters"); 
     }
 
     @Override void parse() {
@@ -2175,7 +2181,7 @@ class Variable extends Operand {
             Code.genInstr("", "movl", varName+",%eax", varName);
         else {
             if (valType.typeName().compareTo("int") == 0) {
-                Code.genInstr("", "movl", off+"(%ebp),%eax", varName+ "HOOOIO");
+                Code.genInstr("", "movl", off+"(%ebp),%eax", varName);
             } else {
                 Code.genInstr("", "fldl", off+"(%ebp)",varName);
             }

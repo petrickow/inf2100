@@ -1,9 +1,4 @@
 package no.uio.ifi.cflat.syntax;
-/*PUT in before call!
-  Code.genInstr("", "movl" , (curFunc.stackOffset + declSize()) + "(%ebp),%eax", name);
-  curFunc.stackOffset = curFunc.stackOffset + declSize();
-  Code.genInstr("", "pushl", "%eax", "");
- */
 /*
  * module Syntax
  */
@@ -32,7 +27,6 @@ public class Syntax {
 
     public static void init() {
         //1- Must be changed in part 1:
-
         makeLibrary();
     }
 
@@ -729,10 +723,7 @@ class ParamDecl extends VarDecl {
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2: TODO, sjekk at den faktisk finnes i det lokale skopet og type sjekk
 
-        /*
-           Declaration d = curDecls.findDecl(name, this);
-           if (d == null)
-           Error.error(lineNum, " )*/
+        ((LocalDeclList)curDecls).offset = offSet = declSize() + ((LocalDeclList)curDecls).offset;
     }
 
     @Override void checkWhetherArray(SyntaxUnit use) {
@@ -745,6 +736,7 @@ class ParamDecl extends VarDecl {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+
     }
 
     @Override void parse() {
@@ -767,10 +759,11 @@ class FuncDecl extends Declaration {
 
     //-- Must be changed in part 1+2:
 
-    int stackOffset;
+    int stackOffset, paramSize;
     // egne
     FuncBody fb = new FuncBody();
-    ParamDeclList paramDecl = new ParamDeclList();;
+    ParamDeclList paramDecl = new ParamDeclList();
+
 
     FuncDecl(String n) {
         // Used for user functions:
@@ -786,6 +779,7 @@ class FuncDecl extends Declaration {
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
         paramDecl.check(curDecls);
+        paramSize = paramDecl.dataSize();
         fb.check(paramDecl);
     }
 
@@ -801,7 +795,6 @@ class FuncDecl extends Declaration {
     @Override void checkWhetherFunction(int nParamsUsed, SyntaxUnit use) {
         //-- Must be changed in part 2:
         //TODO nParamsUsed
-        // DENNE ER OK
     }
 
     @Override void checkWhetherSimpleVar(SyntaxUnit use) {
@@ -881,9 +874,9 @@ class FuncBody extends SyntaxUnit {
 
     @Override void check(DeclList currBody) {
         //1- Must be changed in part 2:
-        //Declerations has been checked in parsing
+        //Param Declerations has been checked in parsing
         // --->  Må uansett gjøre det samme i findDecl. line 200
-        //ParamDeclList copyParamDecl = (ParamDeclList) currBody;
+        //DeclList copyParamDecl = (ParamDeclList) currBody;
 
         localDeclList.check(currBody);	
 
@@ -1192,21 +1185,21 @@ class Assignment extends SyntaxUnit {
         //-- Must be changed in part 2:
 
         expression.genCode(curFunc);
-	if (variable.valType.typeName().equals("double")) {
-	    //Code.genInstr("", "movl", "%eax,.tmp","");
-	    if (variable.declRef.visible) {
-		Code.genInstr("", "fstpl", variable.varName, variable.varName + " =");
-	    } else {
-		Code.genInstr("", "fstpl", variable.o+"(%ebp)", variable.varName + " =");
-	    }
-	    
-	} else {
-	    if (variable.declRef.visible) {
-		Code.genInstr("", "movl", "%eax,"+variable.varName, variable.varName + " =");
-	    } else {
-		Code.genInstr("", "movl", "%eax,"+variable.o+"(%ebp)", variable.varName + " =");
-	    }
-	}
+        if (variable.valType.typeName().equals("double")) {
+            //Code.genInstr("", "movl", "%eax,.tmp","TEST...");
+            if (variable.declRef.visible) {
+                Code.genInstr("", "fstpl", variable.varName, variable.varName + " =");
+            } else {
+                Code.genInstr("", "fstpl", variable.o+"(%ebp)", variable.varName + " =");
+            }
+
+        } else {
+            if (variable.declRef.visible) {
+                Code.genInstr("", "movl", "%eax,"+variable.varName, variable.varName + " =");
+            } else {
+                Code.genInstr("", "movl", "%eax,"+variable.o+"(%ebp)", variable.varName + " =");
+            }
+        }
         //variable.genCode(curFunc);
     }
 
@@ -1251,28 +1244,28 @@ class IfStatm extends Statement {
 
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
-       
-	
-	Code.genInstr("", "", "", "Start if-statement");
+
+
+        Code.genInstr("", "", "", "Start if-statement");
         expression.genCode(curFunc);
-	
-	if (expression.firstTerm.firstFactor.firstOperand.valType.typeName().compareTo("int") == 0) {
-	    Code.genInstr("", "cmpl", "$0,%eax", "");
-	} else { // flyttall
-	    Code.genInstr("", "fstps", ".tmp", "");
-	    Code.genInstr("", "cmpl", "$0,.tmp", "");
-	}
-	String tempLabel = Code.getLocalLabel();
-	Code.genInstr("", "je", tempLabel, "");
-	statmList.genCode(curFunc);
-		
-	if (elsePart != null) {
-	  elsePart.genCode(curFunc);
-	  }
-	Code.genInstr(tempLabel, "", "", "End if-statement");
-	
+
+        if (expression.firstTerm.firstFactor.firstOperand.valType.typeName().compareTo("int") == 0) {
+            Code.genInstr("", "cmpl", "$0,%eax", "");
+        } else { // flyttall
+            Code.genInstr("", "fstps", ".tmp", "");
+            Code.genInstr("", "cmpl", "$0,.tmp", "");
+        }
+        String tempLabel = Code.getLocalLabel();
+        Code.genInstr("", "je", tempLabel, "");
+        statmList.genCode(curFunc);
+
+        if (elsePart != null) {
+            elsePart.genCode(curFunc);
+        }
+        Code.genInstr(tempLabel, "", "", "End if-statement");
+
     }
-    
+
     @Override void parse() {
         //1- Must be changed in part 1:
         Log.enterParser("<if-statm>");
@@ -1361,6 +1354,8 @@ class ReturnStatm extends Statement {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+        expression.genCode(curFunc);
+        Code.genInstr("", "jmp", ".exit$"+curFunc.name, "Return-statement");
     }
 
     @Override void parse() {
@@ -1437,7 +1432,7 @@ class CallStatm extends Statement {
 
     @Override void check(DeclList curDecls) {
         //-- Must be changed in part 2:
-        //Er funksjonen definert? Er argumentene riktig type?
+        //TODO Er funksjonen definert? Er argumentene riktig type?
         functionCall.check(curDecls);
     }
 
@@ -1471,6 +1466,7 @@ class CallStatm extends Statement {
 
 class ExprList extends SyntaxUnit {
     Expression firstExpr = null;
+    Expression lastExpr = null;
     int numOfExp = 0;
 
     @Override void check(DeclList curDecls) {
@@ -1485,11 +1481,21 @@ class ExprList extends SyntaxUnit {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+        Expression tempExpr = lastExpr;
+        int paramCount = numOfExp;
+        while (tempExpr != null) {
+            tempExpr.genCode(curFunc);
+            if (tempExpr.firstTerm.firstFactor.firstOperand.valType == Types.intType) {
+                Code.genInstr("", "pushl", "%eax", "Push parameter #"+ (paramCount--));
+            } else {
+                Code.genInstr("", "subl", "$8,%esp", "");
+                Code.genInstr("", "fstpl", "(%esp)", "Push parameter #"+(paramCount--));
+            }
+            tempExpr = tempExpr.prevExpr;
+        }
     }
 
     @Override void parse() {
-        Expression lastExpr = null;
-
         Log.enterParser("<expr list>");
         int i = 0;
         //1- Must be changed in part 1:
@@ -1498,7 +1504,9 @@ class ExprList extends SyntaxUnit {
                 firstExpr = lastExpr =  new Expression();
                 firstExpr.parse();
             } else {
+                Expression tmp = lastExpr;
                 lastExpr.nextExpr = lastExpr = new Expression(); //put in list
+                lastExpr.prevExpr = tmp;
                 lastExpr.parse();
             }
 
@@ -1530,6 +1538,7 @@ class ExprList extends SyntaxUnit {
  */
 class Expression extends Operand {
     Expression nextExpr = null;
+    Expression prevExpr = null;
     Term firstTerm = new Term(), secondTerm = null;
     Operator relOp = null;
     boolean innerExpr = false;
@@ -1548,7 +1557,7 @@ class Expression extends Operand {
         if (secondTerm != null) {
             secondTerm.check(curDecls);
             if (firstTerm.firstFactor.firstOperand.valType != secondTerm.firstFactor.firstOperand.valType)
-                    Error.error(lineNum, "Comparison operands should have the same type, not " + firstTerm.firstFactor.firstOperand.valType.typeName() + " and " + secondTerm.firstFactor.firstOperand.valType.typeName() );
+                Error.error(lineNum, "Comparison operands should have the same type, not " + firstTerm.firstFactor.firstOperand.valType.typeName() + " and " + secondTerm.firstFactor.firstOperand.valType.typeName() );
         }
     }
 
@@ -1556,7 +1565,7 @@ class Expression extends Operand {
         //1- Must be changed in part 2:
         firstTerm.genCode(curFunc);
         if (secondTerm != null) {
-	    secondTerm.genCode(curFunc);
+            secondTerm.genCode(curFunc);
         }
     }
 
@@ -1566,7 +1575,7 @@ class Expression extends Operand {
             Scanner.skip(leftParToken);
         firstTerm.parse();
 
-       
+
         if (Token.isRelOperator(Scanner.curToken)) {
             relOp = new RelOperator();
             relOp.parse();
@@ -1610,7 +1619,7 @@ class Term extends SyntaxUnit {
         //-- Must be changed in part 2:
         Factor tempFactor = firstFactor;
         Factor prev = null;
-	TermOperator tempOp = firstTermOp;
+        TermOperator tempOp = firstTermOp;
 
         while (tempFactor != null) {
             tempFactor.check(curDecls);
@@ -1619,8 +1628,8 @@ class Term extends SyntaxUnit {
                 if (tempFactor.firstOperand.valType != prev.firstOperand.valType) {
                     Error.error(lineNum, "Operands should have the same type, not " + prev.firstOperand.valType.typeName() + " and " + tempFactor.firstOperand.valType.typeName());
                 }
-		tempOp.opType = tempFactor.firstOperand.valType;
-		tempOp = tempOp.nextTermOp;
+                tempOp.opType = tempFactor.firstOperand.valType;
+                tempOp = tempOp.nextTermOp;
             }
             prev = tempFactor;
             tempFactor = tempFactor.nextFactor;
@@ -1636,12 +1645,12 @@ class Term extends SyntaxUnit {
 
         while (tempFactor != null) {
             if (count == 1) {
-		if (termOperator.opType == Types.intType) {
-		    Code.genInstr("", "pushl", "%eax", "");
-		} else {
-		    Code.genInstr("", "subl", "$8,%esp","");
-		    Code.genInstr("", "fstpl", "(%esp)","");
-		}
+                if (termOperator.opType == Types.intType) {
+                    Code.genInstr("", "pushl", "%eax", "");
+                } else {
+                    Code.genInstr("", "subl", "$8,%esp","");
+                    Code.genInstr("", "fstpl", "(%esp)","");
+                }
             }
             tempFactor.genCode(curFunc);
             tempFactor = tempFactor.nextFactor;
@@ -1714,15 +1723,15 @@ class Factor extends SyntaxUnit {
         Operand tempOperand = firstOperand;
         Operand prev = null;  
 
-	FactorOperator tempOp = firstFactorOp;
+        FactorOperator tempOp = firstFactorOp;
         while (tempOperand != null) {
             tempOperand.check(curDecls);
             if (prev != null) {
                 if (tempOperand.valType != prev.valType) {
                     Error.error(lineNum, "Operands should have the same type, not " + prev.valType.typeName() + " and " + tempOperand.valType.typeName());
                 }
-		tempOp.opType = tempOperand.valType;
-		tempOp = tempOp.nextFactorOp;
+                tempOp.opType = tempOperand.valType;
+                tempOp = tempOp.nextFactorOp;
             }
             prev = tempOperand;
             tempOperand = tempOperand.nextOperand;
@@ -1738,12 +1747,12 @@ class Factor extends SyntaxUnit {
 
         while (tempOperand != null) {
             if (count == 1) {
-		if (factorOperator.opType == Types.intType) {
-		    Code.genInstr("", "pushl", "%eax", "");
-		} else {
-		    Code.genInstr("", "subl", "$8,%esp","");
-		    Code.genInstr("", "fstpl", "(%esp)","");
-		}
+                if (factorOperator.opType == Types.intType) {
+                    Code.genInstr("", "pushl", "%eax", "");
+                } else {
+                    Code.genInstr("", "subl", "$8,%esp","");
+                    Code.genInstr("", "fstpl", "(%esp)","");
+                }
             }
             tempOperand.genCode(curFunc);
             tempOperand = tempOperand.nextOperand;
@@ -1763,10 +1772,10 @@ class Factor extends SyntaxUnit {
         Log.enterParser("<factor>");
         // lese inn [operand] og [factor opr] i while-loop
         Log.enterParser("<operand>");
-        
+
         firstOperand = Operand.makeNewOperand();
         firstOperand.parse();
-        
+
         if (Token.isFactorOperator(Scanner.curToken)) {
             firstFactorOp = new FactorOperator();
         }
@@ -1818,7 +1827,7 @@ abstract class Operator extends SyntaxUnit {
     Token opToken;
 
     @Override void check(DeclList curDecls) {}
-    }
+}
 
 
 //-- Must be changed in part 1+2:
@@ -1831,41 +1840,31 @@ class FactorOperator extends Operator {
     @Override void genCode(FuncDecl curFunc) {
         String comp = "";
 
-	if (opType == Types.doubleType) {
-	    Code.genInstr("", "fldl", "(%esp)","");
-	    Code.genInstr("", "addl", "$8,%esp","");
-	    switch (opToken) {
-            case multiplyToken: comp = "fmulp"; break;
-            case divideToken: comp = "fdivp"; break;
-	    }
-	    Code.genInstr("", comp, "","Compute " + (comp.equals("fmulp") ? "*" : "/") );
+        if (opType == Types.doubleType) {
+            Code.genInstr("", "fldl", "(%esp)","");
+            Code.genInstr("", "addl", "$8,%esp","");
+            switch (opToken) {
+                case multiplyToken: comp = "fmulp"; break;
+                case divideToken: comp = "fdivp"; break;
+            }
+            Code.genInstr("", comp, "","Compute " + (comp.equals("fmulp") ? "*" : "/") );
 
-	} else {
-	    Code.genInstr("", "movl", "%eax,%ecx", "");
-	    Code.genInstr("", "popl", "%eax", "");
-	    switch (opToken) {
-            case divideToken: 
-                Code.genInstr("", "cdq", "", "");
-                Code.genInstr("", "idivl", "%ecx", "Compute " + "/");
-                break;
-            case multiplyToken: 
-                Code.genInstr("", "imull", "%ecx,%eax", "Compute " + "*") ;
-                break;
-	    } 
-	    
-	}
+        } else {
+            Code.genInstr("", "movl", "%eax,%ecx", "");
+            Code.genInstr("", "popl", "%eax", "");
+            switch (opToken) {
+                case divideToken: 
+                    Code.genInstr("", "cdq", "", "");
+                    Code.genInstr("", "idivl", "%ecx", "Compute " + "/");
+                    break;
+                case multiplyToken: 
+                    Code.genInstr("", "imull", "%ecx,%eax", "Compute " + "*") ;
+                    break;
+            } 
 
-
-
-
-
-
-
-
-
-
-	
+        }
     }
+
 
     @Override void parse() {
         Log.enterParser("<factor operator>");
@@ -1889,30 +1888,30 @@ class FactorOperator extends Operator {
 
 class TermOperator extends Operator {
     TermOperator nextTermOp = null;
-    
+
     @Override void genCode(FuncDecl curFunc) {
-         
+
         String comp = "";
-        
-	if (opType.typeName().equals("double")) {
-	    //Code.genInstr("", "movl", "%eax,.tmp","");
-	    Code.genInstr("", "fldl", "(%esp)","");
-	    Code.genInstr("", "addl", "$8,%esp","");
-	    switch (opToken) {
-            case addToken: comp = "faddp"; break;
-            case subtractToken: comp = "fsubp"; break;
-	    }
-	    Code.genInstr("", comp, "","Compute " + (comp.equals("faddp") ? "+" : "-") );
-	    
-	} else {  // int
-	    Code.genInstr("", "movl", "%eax,%ecx", "");
-	    Code.genInstr("", "popl", "%eax", "");
-	    switch (opToken) {
-            case addToken: comp = "addl"; break;
-            case subtractToken: comp = "subl"; break;
-	    }
-	    Code.genInstr("", comp, "%ecx,%eax", "Compute " + (comp.equals("addl") ? "+" : "-") );
-	}
+
+        if (opType.typeName().equals("double")) {
+            //Code.genInstr("", "movl", "%eax,.tmp","");
+            Code.genInstr("", "fldl", "(%esp)","");
+            Code.genInstr("", "addl", "$8,%esp","");
+            switch (opToken) {
+                case addToken: comp = "faddp"; break;
+                case subtractToken: comp = "fsubp"; break;
+            }
+            Code.genInstr("", comp, "","Compute " + (comp.equals("faddp") ? "+" : "-") );
+
+        } else {  // int
+            Code.genInstr("", "movl", "%eax,%ecx", "");
+            Code.genInstr("", "popl", "%eax", "");
+            switch (opToken) {
+                case addToken: comp = "addl"; break;
+                case subtractToken: comp = "subl"; break;
+            }
+            Code.genInstr("", comp, "%ecx,%eax", "Compute " + (comp.equals("addl") ? "+" : "-") );
+        }
 
     }
 
@@ -1934,6 +1933,7 @@ class TermOperator extends Operator {
         }
     }
 }
+
 /*
  * A relational operator (==, !=, <, <=, > or >=).
  */
@@ -2034,18 +2034,11 @@ class FunctionCall extends Operand {
     @Override void check(DeclList curDecls) {
         //2- Must be changed in part 2:
         Declaration d = curDecls.findDecl(callName, this);
-        
-       
-        //ParamDeclList tempParaDecl = d.paramDecl
+
         FuncDecl tempFuncDecl = (FuncDecl)d;
-        d.checkWhetherFunction(10, this); // TODO - temp
-
-        Expression paramExp = exprList.firstExpr;
         Declaration par = tempFuncDecl.paramDecl.firstDecl;
-        
-            
-
         valType = tempFuncDecl.type;
+
         if (d.type == null) // function from library
             Log.noteBindingLib(callName, lineNum);
         else {
@@ -2053,33 +2046,37 @@ class FunctionCall extends Operand {
         }
         exprList.check(curDecls);
 
-        // test number of parameters
+        //d.checkWhetherFunction(exprList.numOfExp, this); //TODO switch the underlying if statement with this...
+
         if (tempFuncDecl.paramDecl.numOfPara != exprList.numOfExp) {
             Error.error(lineNum, "Calls to " + callName + " should have " + tempFuncDecl.paramDecl.numOfPara + " parameters, not " + exprList.numOfExp + "!");
         }
-        int count = 0;
+
+        Expression paramExp = exprList.firstExpr;
+        int atParaNum = 0;
+
         while (paramExp != null) {
             if (paramExp.valType != par.type)
-                Error.error(lineNum, " Parameter #"+ ++count + " is " + paramExp.valType.typeName() +  ", not " + par.type.typeName());
+                Error.error(lineNum, " Parameter #"+ ++atParaNum + " is " + paramExp.valType.typeName() +  ", not " + par.type.typeName());
             else
-                count++;
+                atParaNum++;
             paramExp = paramExp.nextExpr;
             par = par.nextDecl;
         }
-
     }                 
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
-        //Assem: call <functionName>
+        Declaration funcDecl = curFunc.fb.localDeclList.findDecl(callName, this);
+        exprList.genCode(curFunc);        
         Code.genInstr("", "call", callName, "Call " + callName);
+        Code.genInstr("", "addl", ((FuncDecl)funcDecl).paramSize + ",%esp", "Remove parameters"); 
     }
 
     @Override void parse() {
         //1- Must be changed in part 1:
         Log.enterParser("<function call>");
         callName = Scanner.curName; 
-        valType = Types.intType; //TODO NJET! Finn riktig
         Scanner.skip(nameToken);
         Scanner.skip(leftParToken);
         exprList.parse();
@@ -2142,7 +2139,7 @@ class Variable extends Operand {
     String varName;
     VarDecl declRef = null;
     Expression index = null;
-int o = 0;
+    int o = 0;
 
     @Override void check(DeclList curDecls) {
         Declaration d = curDecls.findDecl(varName, this);
@@ -2156,7 +2153,7 @@ int o = 0;
         }
         declRef = (VarDecl)d;
         o = 0-declRef.offSet;
-	Log.noteBinding(declRef.name, lineNum, declRef.lineNum);
+        Log.noteBinding(declRef.name, lineNum, declRef.lineNum);
         if (index != null)
             index.check(curDecls);
     }
@@ -2164,12 +2161,12 @@ int o = 0;
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
         if (declRef.visible)
-	    Code.genInstr("", "movl", varName+",%eax", varName);
-	else {
-	    if (valType.typeName().compareTo("int") == 0) {
-                Code.genInstr("", "movl", o+"(%ebp),%eax", varName);
-            } else if (valType.typeName().compareTo("double") == 0) {
-		Code.genInstr("", "fldl", o+"(%ebp)",varName);
+            Code.genInstr("", "movl", varName+",%eax", varName);
+        else {
+            if (valType.typeName().compareTo("int") == 0) {
+                Code.genInstr("", "movl", o+"(%ebp),%eax", varName+ "HOOOIO");
+            } else {
+                Code.genInstr("", "fldl", o+"(%ebp)",varName);
             }
         }
     }

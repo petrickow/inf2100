@@ -1259,7 +1259,7 @@ class Assignment extends SyntaxUnit {
             //SAVE DOUBLE AS INT
             else {
                 if (variable.declRef.visible) {
-                    Code.genInstr("", "movl", "%eax,"+variable.varName, variable.varName + " = (int)");
+                    Code.genInstr("", "fistpl", variable.varName, variable.varName + " = (int)");
                 } else {
                     Code.genInstr("", "fistpl", variable.off+"(%ebp)", variable.varName + " = (int)");
                 }
@@ -2237,7 +2237,12 @@ class Variable extends Operand {
         //-- Must be changed in part 2:
                 
         if (declRef.visible)
-            Code.genInstr("", "movl", varName+",%eax", varName);
+            if (valType == Types.intType) {
+                Code.genInstr("", "movl", varName+",%eax", varName);
+            } else {
+                Code.genInstr("", "fldl", varName, varName);
+            }
+            
         else {
             if (valType.typeName().compareTo("int") == 0) {
                 Code.genInstr("", "movl", off+"(%ebp),%eax", varName);

@@ -224,7 +224,6 @@ abstract class DeclList extends SyntaxUnit {
             debugCount++;
             res += dx.declSize(); dx = dx.nextDecl;
         }
-        System.out.println("\nDEBUG COUNTER, " + debugCount + " of decls");
         return res;
     }
 

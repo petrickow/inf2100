@@ -559,6 +559,7 @@ class GlobalArrayDecl extends VarDecl {
     }
 
     @Override void parse() {
+        boolean neg = false;
         Log.enterParser("<var decl>");
 
         //2- Must be changed in part 1:
@@ -569,8 +570,18 @@ class GlobalArrayDecl extends VarDecl {
         //name = Scanner.curName; //already done in constructor
         Scanner.skip(nameToken);
         Scanner.skip(leftBracketToken);
+        
+        if (Scanner.curName.equals("-")) {
+            neg = true;
+            Scanner.skip(subtractToken);
+        }
+        if (Scanner.curToken != numberToken) 
+            Syntax.error(this, "A numberToken expected, but found a " + Scanner.curToken + "!");
+        
 
         nElems = Integer.parseInt(Scanner.curName);
+        if (neg)
+            nElems = -nElems;
         type = new ArrayType(nElems, arrType);
         Scanner.skip(numberToken);
 
@@ -660,16 +671,23 @@ class LocalArrayDecl extends VarDecl {
 
     @Override void parse() {
         //1- Must be changed in part 1:
+        boolean neg = false;
         Log.enterParser("<var decl>");
         Type arrType = Types.getType(Scanner.curToken);
         Scanner.skip(intToken, doubleToken);
 
         Scanner.skip(nameToken);
         Scanner.skip(leftBracketToken);
-
+        if (Scanner.curName.equals("-")){ //Temp solution, should be in check... scanner does not read -4, just -
+            neg = true;
+            Scanner.skip(subtractToken);
+        }
+        if (Scanner.curToken != numberToken)
+            Syntax.error(this, "A numberToken expected, but found a " + Scanner.curToken + "!");
         int nElems = Integer.parseInt(Scanner.curName);
         Scanner.skip(numberToken);
-
+        if (neg)
+            nElems = -nElems;
         type = new ArrayType(nElems, arrType);
 
         Scanner.skip(rightBracketToken);

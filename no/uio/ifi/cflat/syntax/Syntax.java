@@ -1272,16 +1272,15 @@ class Assignment extends SyntaxUnit {
         //-- Must be changed in part 2:
 
         expression.genCode(curFunc);
-        //SAVE DOUBLE AS DOUBLE/INT AS INT
         if (expression.valType == variable.valType) {
+            //SAVE DOUBLE AS DOUBLE   
             if (variable.valType == Types.doubleType) {
-                
                 if (variable.declRef.visible) {
                     Code.genInstr("", "fstpl", variable.varName, variable.varName + " =");
                 } else {
                     Code.genInstr("", "fstpl", variable.declRef.offSet+"(%ebp)", variable.varName + " =");
                 }
-
+            //INT AS INT
             } else {
                 if (variable.declRef.visible) {
                     Code.genInstr("", "movl", "%eax,"+variable.varName, variable.varName + " =");
@@ -1292,7 +1291,6 @@ class Assignment extends SyntaxUnit {
         } else {
             //SAVE INT AS DOUBLE
             if (variable.valType.typeName().equals("double")) {
-                //Code.genInstr("", "movl", "%eax,.tmp","TEST...");
                 Code.genInstr("", "movl", "%eax,.tmp", ""); //konvertere til flyt
                 Code.genInstr("", "fildl", ".tmp", "  (double)");
 
@@ -1304,7 +1302,7 @@ class Assignment extends SyntaxUnit {
             }  
             //SAVE DOUBLE AS INT
             else {
-                if (variable.declRef.visible) { //TODO denne slår til ved getInt! Må 
+                if (variable.declRef.visible) { 
                     Code.genInstr("", "fistpl", variable.varName, variable.varName + " = (int)");
                 } else {
                     Code.genInstr("", "fistpl", variable.declRef.offSet+"(%ebp)", variable.varName + " = (int)");
@@ -2285,7 +2283,6 @@ class Variable extends Operand {
     String varName;
     VarDecl declRef = null;
     Expression index = null;
-    int off;
     
     @Override void check(DeclList curDecls) {
         Declaration d = curDecls.findDecl(varName, this);
@@ -2294,36 +2291,37 @@ class Variable extends Operand {
             valType = d.type;
         } else {
             d.checkWhetherArray(this);
-             index.check(curDecls);
-	    index.valType.checkType(lineNum, Types.intType, "Array index");
+            index.check(curDecls);
+	        index.valType.checkType(lineNum, Types.intType, "Array index");
             valType = ((ArrayType)d.type).elemType;
         }
         declRef = (VarDecl)d;
-        if (declRef instanceof ParamDecl) {
-            off = declRef.offSet;
-        } else {
-            off = 0-declRef.offSet;
-        }
-
         Log.noteBinding(declRef.name, lineNum, declRef.lineNum);
     }
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
-                
-        if (declRef.visible)
-            if (valType == Types.intType) {
-                Code.genInstr("", "movl", varName+",%eax", varName);
-            } else {
-                Code.genInstr("", "fldl", varName, varName);
-            }
-            
+        //ARRAY?
+        if (declRef.type.typeName2().equals("array") ) {       
+            System.out.println("ARRAY");
+        }
         else {
-            if (valType == Types.intType) {
-                Code.genInstr("", "movl", declRef.offSet+"(%ebp),%eax", varName);
-            } else {
-                Code.genInstr("", "fldl", declRef.offSet+"(%ebp)",varName);
+            //simple global
+            if (declRef.visible) {
+                if (valType == Types.intType) {
+                    Code.genInstr("", "movl", varName+",%eax", varName);
+                } else {
+                    Code.genInstr("", "fldl", varName, varName);
+                }
             }
+            //simple local
+                else {
+                    if (valType == Types.intType) {
+                        Code.genInstr("", "movl", declRef.offSet+"(%ebp),%eax", varName);
+                    } else {
+                        Code.genInstr("", "fldl", declRef.offSet+"(%ebp)",varName);
+                    }
+                }
         }
     }
 

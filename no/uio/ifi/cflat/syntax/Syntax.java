@@ -2303,7 +2303,14 @@ class Variable extends Operand {
         //-- Must be changed in part 2:
         //ARRAY?
         if (declRef.type.typeName2().equals("array") ) {       
-            System.out.println("ARRAY");
+            //array global
+            if (declRef.visible) {
+
+            }
+            //array local
+            else {
+
+            }
         }
         else {
             //simple global
@@ -2315,13 +2322,13 @@ class Variable extends Operand {
                 }
             }
             //simple local
-                else {
-                    if (valType == Types.intType) {
-                        Code.genInstr("", "movl", declRef.offSet+"(%ebp),%eax", varName);
-                    } else {
-                        Code.genInstr("", "fldl", declRef.offSet+"(%ebp)",varName);
-                    }
+            else {
+                if (valType == Types.intType) {
+                    Code.genInstr("", "movl", declRef.offSet+"(%ebp),%eax", varName);
+                } else {
+                    Code.genInstr("", "fldl", declRef.offSet+"(%ebp)",varName);
                 }
+            }
         }
     }
 

@@ -346,7 +346,7 @@ class LocalDeclList extends DeclList {
 
         while (dx != null) {
             dx.offSet =  -(tempOffset + dx.declSize());
-            tempOffset += dx.declSize();
+	    tempOffset += dx.declSize();
             dx = dx.nextDecl;
         }
     }
@@ -407,11 +407,17 @@ class ParamDeclList extends DeclList {
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
         Declaration tempDecl = firstDecl;
-        int tempOffset = dataSize();
-        while (tempDecl != null) {
-            tempDecl.offSet = tempOffset + tempDecl.declSize();
-            tempOffset += tempDecl.declSize();
-            tempDecl.genCode(curFunc);
+        int tempOffset = 8; //dataSize();
+        
+      
+	while (tempDecl != null) {
+            if (tempDecl == firstDecl) {
+		tempDecl.offSet = tempOffset;
+	    }  else {
+		tempDecl.offSet = tempOffset + tempDecl.declSize();
+		tempOffset += tempDecl.declSize();
+	    }
+	    tempDecl.genCode(curFunc);
             tempDecl = tempDecl.nextDecl;
         }
     }
@@ -1082,7 +1088,18 @@ class ForStatm extends Statement {
     }
 
     @Override void genCode(FuncDecl curFunc) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
+	String startLabel = Code.getLocalLabel();
+	String exitLabel = Code.getLocalLabel();
+	forControl.assignment1.genCode(curFunc);
+	Code.genInstr(startLabel, "", "", "Start for-statement");
+	forControl.expression.genCode(curFunc);
+	Code.genInstr("", "cmpl", "$0,%eax", "");
+	Code.genInstr("", "je", exitLabel, "");
+	forControl.assignment2.genCode(curFunc);
+	statmList.genCode(curFunc);
+	Code.genInstr("", "jmp", startLabel, "");
+	Code.genInstr(exitLabel, "", "", "End for-statement");
     }
 
     @Override void parse() {
@@ -1131,6 +1148,9 @@ class ForControl extends SyntaxUnit {
 
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
+	//assignment1.genCode(curFunc);
+	//expression.genCode(curFunc);
+	//assignment2.genCode(curFunc);
     }
 
     @Override void parse() {
@@ -1324,16 +1344,23 @@ class IfStatm extends Statement {
         
         
         String exitLabel = Code.getLocalLabel();
-        String elseLabel = Code.getLocalLabel();
-        if (elsePart != null) {
-            Code.genInstr("", "je", elseLabel, "");
-        }
-
-        statmList.genCode(curFunc);
-        Code.genInstr("", "jmp", exitLabel, "");
-
-        if (elsePart != null) {
-            Code.genInstr(elseLabel, "","","Else-part");
+        String elseLabel = "";
+        
+	
+	if (elsePart != null) {
+            elseLabel = Code.getLocalLabel();
+	    Code.genInstr("", "je", elseLabel, "");
+	    statmList.genCode(curFunc);
+	    Code.genInstr("", "jmp", exitLabel, "");
+	}
+	else {
+	    statmList.genCode(curFunc);
+	    Code.genInstr("", "je", exitLabel, "");
+	}
+	
+    
+	if (elsePart != null) {
+            Code.genInstr(elseLabel, "","","  else-part");
             elsePart.genCode(curFunc);
         }
         Code.genInstr(exitLabel, "", "", "End if-statement");
@@ -2160,7 +2187,11 @@ class FunctionCall extends Operand {
         Declaration funcDecl = curFunc.fb.localDeclList.findDecl(callName, this);
         exprList.genCode(curFunc);        
         Code.genInstr("", "call", callName, "Call " + callName);
-        Code.genInstr("", "addl", "$"+((FuncDecl)funcDecl).paramSize + ",%esp", "Remove parameters"); 
+
+	if (valType == Types.intType) 
+	    Code.genInstr("", "addl", "$"+((FuncDecl)funcDecl).paramSize + ",%esp", "Remove parameters"); 
+	else 
+	    Code.genInstr("", "fstps", ".tmp","Remove return value."); 
     }
 
     @Override void parse() {

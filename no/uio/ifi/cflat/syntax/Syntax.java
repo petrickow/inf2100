@@ -803,7 +803,7 @@ class FuncDecl extends Declaration {
         //1- Must be changed in part 2:
         paramDecl.check(curDecls);
         paramSize = paramDecl.dataSize();
-        fb.check(paramDecl);
+	fb.check(paramDecl);
     }
 
 
@@ -1539,7 +1539,7 @@ class CallStatm extends Statement {
     }
 
     @Override void genCode(FuncDecl curFunc) {
-        //-- Must be changed in part 2:
+        //1- Must be changed in part 2:
         functionCall.genCode(curFunc);
     }
 
@@ -2148,6 +2148,7 @@ class FunctionCall extends Operand {
     //-- Must be changed in part 1+2:
     ExprList exprList = new ExprList();
     String callName = "";
+    int exprSize = 0;
 
     @Override void check(DeclList curDecls) {
         //2- Must be changed in part 2:
@@ -2163,34 +2164,41 @@ class FunctionCall extends Operand {
         exprList.check(curDecls);
 
         valType = tempFuncDecl.type; //FOR DENNE BLIR IKKE SATT! alltid...
-        System.out.println(valType);
-        //d.checkWhetherFunction(exprList.numOfExp, this); //TODO switch the underlying if statement with this...
+	//d.checkWhetherFunction(exprList.numOfExp, this); //TODO switch the underlying if statement with this...
         if (tempFuncDecl.paramDecl.numOfPara != exprList.numOfExp) {
             Error.error(lineNum, "Calls to " + callName + " should have " + tempFuncDecl.paramDecl.numOfPara + " parameters, not " + exprList.numOfExp + "!");
         }
 
         Expression paramExp = exprList.firstExpr;
-        int atParaNum = 0;
+	if (paramExp != null)
+	    exprSize += paramExp.valType.size();	
+	int atParaNum = 0;
         //TODO, hvorfor får vi nullpointer her om vi ikke har med paramSize testen?        
         while (paramExp != null && tempFuncDecl.paramSize != 0) {
             if (paramExp.valType != par.type)
                 Error.error(lineNum, " Parameter #"+ ++atParaNum + " is " + paramExp.valType.typeName() +  ", not " + par.type.typeName());
             else
                 atParaNum++;
-            paramExp = paramExp.nextExpr;
+	    if (paramExp != exprList.firstExpr)
+		exprSize += paramExp.valType.size();	
+	    paramExp = paramExp.nextExpr;
             par = par.nextDecl;
         }
     }                 
 
     @Override void genCode(FuncDecl curFunc) {
-        //-- Must be changed in part 2:
-        Declaration funcDecl = curFunc.fb.localDeclList.findDecl(callName, this);
+        //1- Must be changed in part 2:
+	Declaration funcDecl = curFunc.fb.localDeclList.findDecl(callName, this);
         exprList.genCode(curFunc);        
         Code.genInstr("", "call", callName, "Call " + callName);
 
-	if (valType == Types.intType) 
-	    Code.genInstr("", "addl", "$"+((FuncDecl)funcDecl).paramSize + ",%esp", "Remove parameters"); 
-	else 
+	if (valType == Types.intType) { 
+	    // dette er main sin paramsize
+	    // functionCall sin exprList sin numOfExp
+	    if (exprSize > 0)
+		Code.genInstr("", "addl", "$"+exprSize + ",%esp", "Remove parameters"); 
+	    //Code.genInstr("", "addl", "$"+((FuncDecl)funcDecl).paramSize + ",%esp", "--Remove parameters"); 
+	} else 
 	    Code.genInstr("", "fstps", ".tmp","Remove return value."); 
     }
 
@@ -2269,7 +2277,8 @@ class Variable extends Operand {
             valType = d.type;
         } else {
             d.checkWhetherArray(this);
-            index.valType.checkType(lineNum, Types.intType, "Array index");
+             index.check(curDecls);
+	    index.valType.checkType(lineNum, Types.intType, "Array index");
             valType = ((ArrayType)d.type).elemType;
         }
         declRef = (VarDecl)d;
@@ -2280,8 +2289,6 @@ class Variable extends Operand {
         }
 
         Log.noteBinding(declRef.name, lineNum, declRef.lineNum);
-        if (index != null)
-            index.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {

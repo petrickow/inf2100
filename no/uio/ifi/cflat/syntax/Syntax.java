@@ -1271,13 +1271,24 @@ class Assignment extends SyntaxUnit {
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
 
-        expression.genCode(curFunc);
+        if (variable.declRef.type.typeName2().equals("array")) {
+	    variable.index.genCode(curFunc);
+	    Code.genInstr("", "pushl", "%eax", "");
+	}
+
+	expression.genCode(curFunc);
 	
         if (expression.valType == variable.valType) {
             //SAVE DOUBLE AS DOUBLE   
 	    if (variable.valType == Types.doubleType) {
 		if (variable.declRef.type.typeName2().equals("array")) {
-		    System.out.println("array");
+		    if (variable.declRef.visible) {
+			Code.genInstr("", "leal", variable.varName+",%edx", "");
+		    } else {
+			Code.genInstr("", "leal", variable.declRef.offSet+"(%ebp),%edx", "");
+		    }
+		    Code.genInstr("", "popl", "%ecx","");
+		    Code.genInstr("", "fstpl", "(%edx,%ecx," + variable.valType.size()+ ")", variable.varName+"[...] =");
 		} else {
 		    if (variable.declRef.visible) {
 			Code.genInstr("", "fstpl", variable.varName, variable.varName + " =");
@@ -1307,28 +1318,52 @@ class Assignment extends SyntaxUnit {
 	} else {
 	    //SAVE INT AS DOUBLE
 	    if (variable.valType.typeName().equals("double")) {
-		Code.genInstr("", "movl", "%eax,.tmp", ""); //konvertere til flyt
-		Code.genInstr("", "fildl", ".tmp", "  (double)");
 		
-		if (variable.declRef.visible) {
-		    Code.genInstr("", "fstpl", variable.varName, variable.varName + " =");
+		if (variable.declRef.type.typeName2().equals("array")) {
+		    if (variable.declRef.visible) { 
+			Code.genInstr("", "leal", variable.varName+",%edx", "");
+		    } else {
+			Code.genInstr("", "leal", variable.declRef.offSet+"(%ebp),%edx", "");
+		    }
+		    Code.genInstr("", "popl", "%ecx", ""); 
+		    Code.genInstr("", "movl", "%eax,.tmp", "");
+		    Code.genInstr("", "fildl", ".tmp", "  (double)");
+       		    Code.genInstr("", "fstpl", "(%edx,%ecx," + variable.valType.size() + ")", variable.varName + "[...] =");
 		} else {
-		    Code.genInstr("", "fstpl", variable.declRef.offSet+"(%ebp)", variable.varName + " =");
-                }
-            }  
-            //SAVE DOUBLE AS INT
-            else {
-                if (variable.declRef.visible) { 
-                    Code.genInstr("", "fistpl", variable.varName, variable.varName + " = (int)");
-                } else {
-                    Code.genInstr("", "fistpl", variable.declRef.offSet+"(%ebp)", variable.varName + " = (int)");
-                }
-            }
-        }
-        
-        //variable.genCode(curFunc);
+		    Code.genInstr("", "movl", "%eax,.tmp", "");
+		    Code.genInstr("", "fildl", ".tmp", "  (double)");
+		    if (variable.declRef.visible) {
+			Code.genInstr("", "fstpl", variable.varName, variable.varName + " =");
+		    } else {
+			Code.genInstr("", "fstpl", variable.declRef.offSet+"(%ebp)", variable.varName + " =");
+		    }
+		}
+	    }  
+	    //SAVE DOUBLE AS INT
+	    else {
+		
+		if (variable.declRef.type.typeName2().equals("array")) {
+		    if (variable.declRef.visible) {
+			//Code.genInstr("", "fldl", variable.valType.size()+"(%ebp)", variable.varName); // TODO
+			Code.genInstr("", "leal", variable.varName+",%edx", "");
+		    } else {
+			Code.genInstr("", "leal", variable.declRef.offSet+"(%ebp),%edx", "");
+		    }
+		    Code.genInstr("", "popl", "%ecx","");
+		    Code.genInstr("", "fistpl", "(%edx,%ecx,"+variable.valType.size()+")", variable.varName+"[...] = (int)" );
+		    
+		} else {
+		    
+		    if (variable.declRef.visible) { 
+			Code.genInstr("", "fistpl", variable.varName, variable.varName + " = (int)");
+		    } else {
+			Code.genInstr("", "fistpl", variable.declRef.offSet+"(%ebp)", variable.varName + " = (int)");
+		    }
+		}
+	    }
+	}
     }
-
+	
     @Override void parse() {
         //1- Must be changed in part 1:
         Log.enterParser("<assignnment>");

@@ -1113,8 +1113,8 @@ class ForStatm extends Statement {
 	forControl.expression.genCode(curFunc);
 	Code.genInstr("", "cmpl", "$0,%eax", "");
 	Code.genInstr("", "je", exitLabel, "");
-	forControl.assignment2.genCode(curFunc);
 	statmList.genCode(curFunc);
+	forControl.assignment2.genCode(curFunc);
 	Code.genInstr("", "jmp", startLabel, "");
 	Code.genInstr(exitLabel, "", "", "End for-statement");
     }
@@ -1313,6 +1313,7 @@ class Assignment extends SyntaxUnit {
 		    } else {
 			Code.genInstr("", "movl", "%eax,"+ variable.declRef.offSet +"(%ebp)", variable.varName + " =");
 		    }
+		    
 		}
 	    }
 	} else {
@@ -2353,15 +2354,20 @@ class Variable extends Operand {
     @Override void genCode(FuncDecl curFunc) {
         //-- Must be changed in part 2:
         //ARRAY?
+
+	if (index != null)
+	    index.genCode(curFunc);
+
         if (declRef.type.typeName2().equals("array") ) {       
             //array global
             if (declRef.visible) {
-
+		Code.genInstr("", "leal", varName+",%edx", varName+"[...]");
             }
             //array local
             else {
-
+		Code.genInstr("", "leal", declRef.offSet+"(%ebp),%edx", varName+"[...]");
             }
+	    Code.genInstr("", "movl", "(%edx,%eax,"+valType.size()+"),%eax", "");
         }
         else {
             //simple global

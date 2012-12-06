@@ -1342,7 +1342,6 @@ class Assignment extends SyntaxUnit {
 	    }  
 	    //SAVE DOUBLE AS INT
 	    else {
-		
 		if (variable.declRef.type.typeName2().equals("array")) {
 		    if (variable.declRef.visible) {
 			//Code.genInstr("", "fldl", variable.valType.size()+"(%ebp)", variable.varName); // TODO
@@ -1421,8 +1420,8 @@ class IfStatm extends Statement {
 	    Code.genInstr("", "jmp", exitLabel, "");
 	}
 	else {
-	    statmList.genCode(curFunc);
 	    Code.genInstr("", "je", exitLabel, "");
+	    statmList.genCode(curFunc);
 	}
 	
     
@@ -1518,7 +1517,7 @@ class ReturnStatm extends Statement {
 
     @Override void check(DeclList curDecls) {
         //1- Must be changed in part 2:
-        expression.check(curDecls);
+	expression.check(curDecls);
     }
 
     @Override void genCode(FuncDecl curFunc) {
@@ -2031,8 +2030,8 @@ class FactorOperator extends Operator {
                 case divideToken: comp = "fdivp"; break;
             }
             Code.genInstr("", comp, "","Compute " + (comp.equals("fmulp") ? "*" : "/") );
-	    Code.genInstr("", "movl", "%eax,tmp","");
-	    Code.genInstr("", "fildl",".tmp","  "+opType.typeName());
+	    //Code.genInstr("", "movl", "%eax,tmp","");
+	    //Code.genInstr("", "fildl",".tmp","  "+opType.typeName());
 
         } else {
             Code.genInstr("", "movl", "%eax,%ecx", "");
@@ -2237,8 +2236,9 @@ class FunctionCall extends Operand {
         }
 
         Expression paramExp = exprList.firstExpr;
-	if (paramExp != null)
+	if (paramExp != null) {
 	    exprSize += paramExp.valType.size();	
+	}
 	int atParaNum = 0;
         //TODO, hvorfor får vi nullpointer her om vi ikke har med paramSize testen?        
         while (paramExp != null && tempFuncDecl.paramSize != 0) {
@@ -2246,8 +2246,9 @@ class FunctionCall extends Operand {
                 Error.error(lineNum, " Parameter #"+ ++atParaNum + " is " + paramExp.valType.typeName() +  ", not " + par.type.typeName());
             else
                 atParaNum++;
-	    if (paramExp != exprList.firstExpr)
-		exprSize += paramExp.valType.size();	
+	    if (paramExp != exprList.firstExpr) {
+		exprSize += paramExp.valType.size();
+	    }
 	    paramExp = paramExp.nextExpr;
             par = par.nextDecl;
         }
@@ -2259,14 +2260,21 @@ class FunctionCall extends Operand {
         exprList.genCode(curFunc);        
         Code.genInstr("", "call", callName, "Call " + callName);
 
+	if (exprSize > 0)
+	    Code.genInstr("", "addl", "$"+exprSize + ",%esp", "Remove parameters"); 
+	
 	if (valType == Types.intType) { 
 	    // dette er main sin paramsize
 	    // functionCall sin exprList sin numOfExp
-	    if (exprSize > 0)
-		Code.genInstr("", "addl", "$"+exprSize + ",%esp", "Remove parameters"); 
+	    //if (exprSize > 0)
+	    //Code.genInstr("", "addl", "$"+exprSize + ",%esp", "Remove parameters"); 
 	    //Code.genInstr("", "addl", "$"+((FuncDecl)funcDecl).paramSize + ",%esp", "--Remove parameters"); 
-	} else 
-	    Code.genInstr("", "fstps", ".tmp","Remove return value."); 
+	} else { 
+	    //	Code.genInstr("", "fstps", ".tmp","Remove return value."); 
+	    //Code.genInstr("", "fstps", ".tmp","Remove return value."); 
+	    
+	    
+	}
     }
 
     @Override void parse() {
@@ -2367,8 +2375,12 @@ class Variable extends Operand {
             else {
 		Code.genInstr("", "leal", declRef.offSet+"(%ebp),%edx", varName+"[...]");
             }
-	    Code.genInstr("", "movl", "(%edx,%eax,"+valType.size()+"),%eax", "");
-        }
+	    if (valType == Types.intType) {
+		Code.genInstr("", "movl", "(%edx,%eax,"+valType.size()+"),%eax", "");
+	    } else {
+		Code.genInstr("", "fldl", "(%edx,%eax,"+valType.size()+")", "");
+	    }
+	}
         else {
             //simple global
             if (declRef.visible) {

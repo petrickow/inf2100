@@ -408,13 +408,23 @@ class ParamDeclList extends DeclList {
         Declaration tempDecl = firstDecl;
         int tempOffset = 8; //dataSize();
         
-      
+	boolean firstInt = true;
+	
 	while (tempDecl != null) {
             if (tempDecl == firstDecl) {
+		if (tempDecl.type == Types.intType)
+		    firstInt = false;
 		tempDecl.offSet = tempOffset;
 	    }  else {
-		tempDecl.offSet = tempOffset + tempDecl.declSize();
-		tempOffset += tempDecl.declSize();
+		if (firstInt && tempDecl.type == Types.intType) {
+		    firstInt = false;
+		    tempDecl.offSet = tempOffset + 8;
+		    tempOffset += 8;
+		} else {
+		    tempDecl.offSet = tempOffset + tempDecl.declSize();
+		    tempOffset += tempDecl.declSize();
+		}
+		
 	    }
 	    tempDecl.genCode(curFunc);
             tempDecl = tempDecl.nextDecl;
@@ -2219,7 +2229,8 @@ class FunctionCall extends Operand {
     @Override void check(DeclList curDecls) {
         //2- Must be changed in part 2:
         Declaration d = curDecls.findDecl(callName, this);
-
+	
+	boolean firstInt = true;
         FuncDecl tempFuncDecl = (FuncDecl)d;
         Declaration par = tempFuncDecl.paramDecl.firstDecl;
         if (d.type == null) // function from library
@@ -2237,7 +2248,7 @@ class FunctionCall extends Operand {
 
         Expression paramExp = exprList.firstExpr;
 	if (paramExp != null) {
-	    exprSize += paramExp.valType.size();	
+	    exprSize += paramExp.valType.size();
 	}
 	int atParaNum = 0;
         //TODO, hvorfor får vi nullpointer her om vi ikke har med paramSize testen?        
@@ -2262,19 +2273,7 @@ class FunctionCall extends Operand {
 
 	if (exprSize > 0)
 	    Code.genInstr("", "addl", "$"+exprSize + ",%esp", "Remove parameters"); 
-	
-	if (valType == Types.intType) { 
-	    // dette er main sin paramsize
-	    // functionCall sin exprList sin numOfExp
-	    //if (exprSize > 0)
-	    //Code.genInstr("", "addl", "$"+exprSize + ",%esp", "Remove parameters"); 
-	    //Code.genInstr("", "addl", "$"+((FuncDecl)funcDecl).paramSize + ",%esp", "--Remove parameters"); 
-	} else { 
-	    //	Code.genInstr("", "fstps", ".tmp","Remove return value."); 
-	    //Code.genInstr("", "fstps", ".tmp","Remove return value."); 
 	    
-	    
-	}
     }
 
     @Override void parse() {
@@ -2393,7 +2392,7 @@ class Variable extends Operand {
             //simple local
             else {
                 if (valType == Types.intType) {
-                    Code.genInstr("", "movl", declRef.offSet+"(%ebp),%eax", varName);
+		    Code.genInstr("", "movl", declRef.offSet+"(%ebp),%eax", varName);
                 } else {
                     Code.genInstr("", "fldl", declRef.offSet+"(%ebp)",varName);
                 }

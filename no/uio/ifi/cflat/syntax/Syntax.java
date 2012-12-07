@@ -984,7 +984,7 @@ class StatmList extends SyntaxUnit {
         Statement tempStatm = firstStatm;
         while (tempStatm != null) {
             tempStatm.check(curDecls);
-            tempStatm = tempStatm.nextStatm;
+	    tempStatm = tempStatm.nextStatm;
         }
     }
 
@@ -993,7 +993,7 @@ class StatmList extends SyntaxUnit {
         Statement tempStatm = firstStatm;
         while (tempStatm != null) {
             tempStatm.genCode(curFunc);
-            tempStatm = tempStatm.nextStatm;
+	    tempStatm = tempStatm.nextStatm;
         }
     }
 
@@ -1617,6 +1617,8 @@ class CallStatm extends Statement {
     @Override void genCode(FuncDecl curFunc) {
         //1- Must be changed in part 2:
         functionCall.genCode(curFunc);
+	if (functionCall.valType == Types.doubleType)
+	    Code.genInstr("","fstps",".tmp","Remove return value.");
     }
 
     @Override void parse() {
